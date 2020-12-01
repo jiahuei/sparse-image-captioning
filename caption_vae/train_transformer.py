@@ -5,7 +5,7 @@ Created on 28 Aug 2020 17:34:10
 """
 import os
 import torch
-from time import time, sleep
+from time import time
 from opts import parse_opt
 from utils import losses, optim
 from utils.config import Config
@@ -55,9 +55,6 @@ class CaptioningModel(LightningModule):
                     k: v.cuda(non_blocking=True) if isinstance(v, torch.Tensor) else v
                     for k, v in data.items()
                 }
-                # TODO: remove sleep
-                if config.thermal_throttle_sleep > 0:
-                    sleep(config.thermal_throttle_sleep)
                 optimizer.zero_grad()
 
                 # with autograd.detect_anomaly():

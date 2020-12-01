@@ -47,12 +47,6 @@ def parse_opt() -> Namespace:
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
         help="str: Logging level.",
     )
-    parser.add_argument(
-        "--thermal_throttle_sleep",
-        type=float,
-        default=0.,
-        help="float: Sleep seconds, thermal throttle.",
-    )
     # parser.add_argument(
     #     "--cache_dir",
     #     type=str,
