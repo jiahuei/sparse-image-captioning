@@ -47,3 +47,6 @@
 *.PDF  diff=astextplain
 *.rtf  diff=astextplain
 *.RTF  diff=astextplain
+
+*.p linguist-detectable=false
+*.gz linguist-detectable=false
