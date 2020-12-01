@@ -1,4 +1,4 @@
-# Image Captioning with Transformer
+# Sparse Image Captioning with Transformer
 
 ## Features
 
