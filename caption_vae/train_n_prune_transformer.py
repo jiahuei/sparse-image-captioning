@@ -46,7 +46,7 @@ class CaptioningModel(LightningModule):
         scst_loss_fn = losses.RewardCriterion()
 
         optim_params = [{"params": list(model.all_weights(named=False))}]
-        print(f"Model trainable parameters (weight): {model.total_weight_params:,d}")
+        print(f"Model trainable params (excluding pruning masks): {model.total_weight_params:,d}")
         if model.mask_type in prune.SUPER_MASKS:
             optim_params += [
                 {
@@ -54,9 +54,9 @@ class CaptioningModel(LightningModule):
                     "lr": config.prune_supermask_lr, "weight_decay": 0, "eps": 1e-2
                 }
             ]
-            print(f"Model trainable parameters (mask): {model.total_mask_params:,d}")
+            print(f"Model trainable params (pruning masks): {model.total_mask_params:,d}")
         else:
-            print(f"Model parameters (mask): {model.total_mask_params:,d}")
+            print(f"Model params (pruning masks): {model.total_mask_params:,d}")
         optimizer = self.optimizer = optim.get_optim(optim_params, config)
 
         # Maybe load model

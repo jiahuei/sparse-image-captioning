@@ -36,7 +36,7 @@ class CaptioningModel(LightningModule):
             loss_fn = losses.LanguageModelCriterion()
         scst_loss_fn = losses.RewardCriterion()
 
-        print(f"Model trainable parameters: {sum(_.nelement() for _ in model.parameters()):,d}")
+        print(f"Model trainable params: {sum(_.nelement() for _ in model.parameters() if _.requires_grad):,d}")
         optimizer = self.optimizer = optim.get_optim(model.parameters(), config)
 
         # Maybe load model
