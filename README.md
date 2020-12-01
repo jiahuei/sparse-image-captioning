@@ -28,6 +28,11 @@
     * _(to be added)_ Flickr8k, Flickr30k, InstaPIC-1.1M
 
 
+## Pre-trained Sparse Models
+
+The checkpoints are [available at this repo](https://github.com/jiahuei/sparse-image-captioning-models).
+
+
 ## Main Requirements
 
 * python >= 3.6
