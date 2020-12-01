@@ -1,9 +1,8 @@
-*.tar.gz
-*.json
-*.zip
 # Internal references
 _ref_/
-
+caption_vae/mem_watch.txt
+caption_vae/scripts/memory_watch.py
+caption_vae/scripts/scp_stuff.sh
 
 # Object Relation Transformer
 # Ignore emacs backup files
@@ -19,6 +18,10 @@ eval_results
 
 # PyCharm
 .idea/
+
+# VS Code
+*.code-workspace
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -400,4 +403,3 @@ TSWLatexianTemp*
 
 # generated if using elsarticle.cls
 *.spl
-

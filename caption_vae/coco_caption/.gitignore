@@ -1,0 +1,8 @@
+# SPICE temp and cache files, Stanford CoreNLP JAR files
+
+pycocoevalcap/spice/tmp/
+pycocoevalcap/spice/cache/
+pycocoevalcap/tokenizer/tmp*
+*3.6.0.jar
+*3.6.0-models.jar
+
