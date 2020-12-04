@@ -3,7 +3,6 @@ SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
 DATASET_DIR="/master/datasets/mscoco"
-THERMAL_SLEEP=0
 CACHE_FREE_RAM=0.3
 
 export MPLCONFIGDIR="/tmp/matplotlib"
@@ -43,8 +42,7 @@ python /master/src/caption_vae/train_transformer.py \
     --learning_rate 0.01 \
     --optim_epsilon 0.01 \
     --id ${MODEL_ID}__baseline \
-    --cache_min_free_ram ${CACHE_FREE_RAM} \
-    --thermal_throttle_sleep ${THERMAL_SLEEP}
+    --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # Pruning
 MODEL_TYPE="up_down_lstm_prune"
@@ -67,8 +65,7 @@ for PRUNE_TYPE in "supermask"; do
                 --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
                 --prune_supermask_sparsity_weight ${PRUNE_WEIGHT} \
                 --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-                --cache_min_free_ram ${CACHE_FREE_RAM} \
-                --thermal_throttle_sleep ${THERMAL_SLEEP}
+                --cache_min_free_ram ${CACHE_FREE_RAM}
         done
     done
 done
@@ -86,8 +83,7 @@ for PRUNE_TYPE in "mag_grad_uniform" "snip"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -106,8 +102,7 @@ for PRUNE_TYPE in "mag_blind" "mag_uniform" "mag_dist"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -125,8 +120,7 @@ for PRUNE_TYPE in "lottery_mag_uniform"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -146,8 +140,7 @@ for PRUNE_TYPE in "lottery_mask_freeze"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -176,8 +169,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --scst_mode ${SCST_MODE} \
     --scst_bleu_weight 0,0,0,1 \
     --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
-    --cache_min_free_ram ${CACHE_FREE_RAM} \
-    --thermal_throttle_sleep ${THERMAL_SLEEP}
+    --cache_min_free_ram ${CACHE_FREE_RAM}
 
 
 ######################
@@ -196,8 +188,7 @@ python /master/src/caption_vae/train_transformer.py \
     --log_dir ${LOG_DIR} \
     --lr_scheduler ${SCHEDULER} \
     --id ${MODEL_ID}__baseline \
-    --cache_min_free_ram ${CACHE_FREE_RAM} \
-    --thermal_throttle_sleep ${THERMAL_SLEEP}
+    --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # Fine-tune
 BASELINE="${LOG_DIR}/${MODEL_ID}__baseline/model_best.pth"
@@ -221,8 +212,7 @@ python /master/src/caption_vae/train_transformer.py \
     --scst_mode ${SCST_MODE} \
     --scst_bleu_weight 0,0,0,1 \
     --id ${MODEL_ID}__baseline__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
-    --cache_min_free_ram ${CACHE_FREE_RAM} \
-    --thermal_throttle_sleep ${THERMAL_SLEEP}
+    --cache_min_free_ram ${CACHE_FREE_RAM}
 
 
 # Pruning
@@ -244,8 +234,7 @@ for PRUNE_TYPE in "supermask"; do
                 --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
                 --prune_supermask_sparsity_weight ${PRUNE_WEIGHT} \
                 --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-                --cache_min_free_ram ${CACHE_FREE_RAM} \
-                --thermal_throttle_sleep ${THERMAL_SLEEP}
+                --cache_min_free_ram ${CACHE_FREE_RAM}
         done
     done
 done
@@ -261,8 +250,7 @@ for PRUNE_TYPE in "mag_grad_uniform" "snip"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -279,8 +267,7 @@ for PRUNE_TYPE in "mag_blind" "mag_uniform" "mag_dist"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -296,8 +283,7 @@ for PRUNE_TYPE in "lottery_mag_uniform"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -315,8 +301,7 @@ for PRUNE_TYPE in "lottery_mask_freeze"; do
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM} \
-            --thermal_throttle_sleep ${THERMAL_SLEEP}
+            --cache_min_free_ram ${CACHE_FREE_RAM}
     done
 done
 
@@ -345,7 +330,6 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --scst_mode ${SCST_MODE} \
     --scst_bleu_weight 0,0,0,1 \
     --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
-    --cache_min_free_ram ${CACHE_FREE_RAM} \
-    --thermal_throttle_sleep ${THERMAL_SLEEP}
+    --cache_min_free_ram ${CACHE_FREE_RAM}
 
 
