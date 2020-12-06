@@ -1,8 +1,12 @@
+"""
+https://github.com/yahoo/object_relation_transformer
+
 ##########################################################
 # Copyright 2019 Oath Inc.
 # Licensed under the terms of the MIT license.
 # Please see LICENSE file in the project root for terms.
 ##########################################################
+"""
 
 import logging
 import math

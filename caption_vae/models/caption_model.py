@@ -1,10 +1,14 @@
-# This file contains ShowAttendTell and AllImg model
+"""
+https://github.com/ruotianluo/self-critical.pytorch/tree/3.2
 
-# ShowAttendTell is from Show, Attend and Tell: Neural Image Caption Generation with Visual Attention
-# https://arxiv.org/abs/1502.03044
+This file contains ShowAttendTell and AllImg model
 
-# AllImg is a model where
-# img feature is concatenated with word embedding at every time step as the input of lstm
+ShowAttendTell is from Show, Attend and Tell: Neural Image Caption Generation with Visual Attention
+https://arxiv.org/abs/1502.03044
+
+AllImg is a model where
+img feature is concatenated with word embedding at every time step as the input of lstm
+"""
 
 import numpy as np
 import torch

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 14 Oct 2020 14:19:19
+https://github.com/ruotianluo/self-critical.pytorch/tree/3.2
 
 This file contains UpDown model
 
