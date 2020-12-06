@@ -127,3 +127,9 @@ To perform online server evaluation:
 3. Zip the files and [submit](https://competitions.codalab.org/competitions/3221#participate).
 
 
+## Acknowledgements
+
+* SCST, Up-Down: [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
+* Object Relation Transformer: [yahoo/object_relation_transformer](https://github.com/yahoo/object_relation_transformer)
+* `coco_caption` in Python 3: [salaniz/pycocoevalcap](https://github.com/salaniz/pycocoevalcap/tree/ad63453cfab57a81a02b2949b17a91fab1c3df77)
+
