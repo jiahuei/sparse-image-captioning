@@ -11,16 +11,7 @@ from torch import optim
 logger = logging.getLogger(__name__)
 
 
-# class NoamRate:
-#     def __init__(self, model_size, warmup):
-#         super().__init__()
-#         self.warmup = warmup
-#         self.model_size = model_size
-#
-#     def __call__(self, step):
-#         return self.model_size ** (-0.5) * min(step ** (-0.5), step * self.warmup ** (-1.5))
-
-
+# noinspection PyAttributeOutsideInit
 class RateOpt:
     """Optim wrapper that implements rate."""
 
@@ -29,9 +20,11 @@ class RateOpt:
         self._step += 1
         self._epoch = epoch
         rate = self.rate()
-        # for p in self.optimizer.param_groups:
-        #     p["lr"] = rate
-        self.optimizer.param_groups[0]["lr"] = rate
+        for p in self.optimizer.param_groups:
+            if "pruning_mask" in p:
+                logger.debug("Pruning masks encountered. Skip LR setting.")
+                continue
+            p["lr"] = rate
         self._rate = rate
         self.optimizer.step()
 

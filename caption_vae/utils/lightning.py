@@ -37,7 +37,8 @@ class LightningModule:
     A placeholder got Pytorch Lightning `LightningModule`
     """
     ALL_METRICS = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
-    SCST_MODES = ["greedy_baseline", "sample_baseline", "beam_search"]
+    SCST_SAMPLE = ["beam_search", "random"]
+    SCST_BASELINE = ["greedy", "sample"]
     config: Config
     data: KarpathyDataset
     collate_fn: Dict[str, Callable]
@@ -200,22 +201,27 @@ class LightningModule:
             f"Expected `model_inputs` to be dict, saw {type(model_inputs)}"
         assert config.scst_num_samples > 0, \
             f"Expected `config.scst_num_samples` to be > 0, saw {config.scst_num_samples}"
-        assert config.scst_mode in self.SCST_MODES, \
-            f"Expected `config.scst_mode` to be one of `{self.SCST_MODES}`, saw {config.scst_mode}"
+        assert config.scst_sample in self.SCST_SAMPLE, \
+            f"Expected `config.scst_sample` to be one of `{self.SCST_SAMPLE}`, saw {config.scst_sample}"
+        assert config.scst_baseline in self.SCST_BASELINE, \
+            f"Expected `config.scst_baseline` to be one of `{self.SCST_BASELINE}`, saw {config.scst_baseline}"
 
-        greedy_res = None
-        if config.scst_mode in ("greedy_baseline", "beam_search"):
+        if config.scst_baseline == "greedy":
             # Greedy decoding baseline
             model.eval()
             with torch.no_grad():
                 greedy_res, _ = model(model_inputs, mode="sample")
+        else:
+            assert config.scst_baseline == "sample"
+            greedy_res = None
         model.train()
-        if config.scst_mode == "beam_search":
+        if config.scst_sample == "beam_search":
             sample_res, sample_logprobs = model(
                 model_inputs, mode="sample",
                 opt={"beam_size": config.scst_num_samples},
             )
         else:
+            assert config.scst_sample == "random"
             sample_res, sample_logprobs = model(
                 model_inputs, mode="sample",
                 opt={"num_random_sample": config.scst_num_samples, "beam_size": 0},
@@ -232,7 +238,7 @@ class LightningModule:
         sc_sample, sc_greedy = self.scst_scorer(
             refs=gts, sample=sample_decoded, greedy=greedy_decoded
         )
-        if config.scst_mode in ("greedy_baseline", "beam_search"):
+        if config.scst_baseline == "greedy":
             assert greedy_decoded is not None
             sc_baseline = sc_greedy
         else:
@@ -478,9 +484,14 @@ class LightningModule:
             help="int: Number of samples per example for SCST, must be > 0."
         )
         parser.add_argument(
-            "--scst_mode", type=str, default="greedy_baseline",
-            choices=LightningModule.SCST_MODES,
-            help="str: SCST reward computation method."
+            "--scst_sample", type=str, default="random",
+            choices=LightningModule.SCST_SAMPLE,
+            help="str: SCST sampling method."
+        )
+        parser.add_argument(
+            "--scst_baseline", type=str, default="sample",
+            choices=LightningModule.SCST_BASELINE,
+            help="str: SCST baseline method."
         )
         parser.add_argument(
             "--scst_cider_weight", type=float, default=1.,

@@ -149,7 +149,8 @@ PRUNE_SPARSITY_TARGET=0.991
 BASELINE="${LOG_DIR}/${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__wg_120.0/model_best_bin_mask.pth"
 EPOCHS=10
 SCST_NUM_SAMPLES=60
-SCST_MODE="sample_baseline"
+SCST_SAMPLE="random"
+SCST_BASELINE="sample"
 
 python /master/src/caption_vae/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
@@ -166,9 +167,10 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
-    --scst_mode ${SCST_MODE} \
+    --scst_sample ${SCST_SAMPLE} \
+    --scst_baseline ${SCST_BASELINE} \
     --scst_bleu_weight 0,0,0,1 \
-    --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
+    --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_SAMPLE}_${SCST_BASELINE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 
@@ -194,7 +196,8 @@ python /master/src/caption_vae/train_transformer.py \
 BASELINE="${LOG_DIR}/${MODEL_ID}__baseline/model_best.pth"
 EPOCHS=10
 SCST_NUM_SAMPLES=15
-SCST_MODE="sample_baseline"
+SCST_SAMPLE="random"
+SCST_BASELINE="sample"
 
 python /master/src/caption_vae/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
@@ -209,9 +212,10 @@ python /master/src/caption_vae/train_transformer.py \
     --drop_prob_lm 0.1 \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
-    --scst_mode ${SCST_MODE} \
+    --scst_sample ${SCST_SAMPLE} \
+    --scst_baseline ${SCST_BASELINE} \
     --scst_bleu_weight 0,0,0,1 \
-    --id ${MODEL_ID}__baseline__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
+    --id ${MODEL_ID}__baseline__SCST_${SCST_SAMPLE}_${SCST_BASELINE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 
@@ -310,7 +314,8 @@ PRUNE_SPARSITY_TARGET=0.9875
 BASELINE="${LOG_DIR}/${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__wg_80.0/model_best_bin_mask.pth"
 EPOCHS=10
 SCST_NUM_SAMPLES=15
-SCST_MODE="sample_baseline"
+SCST_SAMPLE="random"
+SCST_BASELINE="sample"
 
 python /master/src/caption_vae/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
@@ -327,9 +332,10 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
-    --scst_mode ${SCST_MODE} \
+    --scst_sample ${SCST_SAMPLE} \
+    --scst_baseline ${SCST_BASELINE} \
     --scst_bleu_weight 0,0,0,1 \
-    --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_MODE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
+    --id ${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__SCST_${SCST_SAMPLE}_${SCST_BASELINE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 

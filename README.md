@@ -11,19 +11,21 @@
     * Lottery ticket
     * One-shot magnitude pruning
     * Single-shot Network Pruning (SNIP)
+* Self-Critical Sequence Training (SCST)
+    * Random sampling + Greedy search baseline: [vanilla SCST](https://openaccess.thecvf.com/content_cvpr_2017/html/Rennie_Self-Critical_Sequence_Training_CVPR_2017_paper.html)
+    * Beam search sampling + Greedy search baseline: à la [Up-Down](http://openaccess.thecvf.com/content_cvpr_2018/html/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.html)
+    * Random sampling + Sample mean baseline: ("new SCST" in `ruotianluo/self-critical.pytorch`)
+    * Beam search sampling + Sample mean baseline: à la [M2 Transformer](http://openaccess.thecvf.com/content_CVPR_2020/html/Cornia_Meshed-Memory_Transformer_for_Image_Captioning_CVPR_2020_paper.html)
+    * Based on [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
+* Multiple captions per image during teacher-forcing training
+    * Reduce training time: run encoder once, optimize on multiple training captions
+* Incremental decoding (Transformer with attention cache)
 * Data caching during training
     * Training examples will be cached in memory to reduce disk I/O
     * With sufficient memory, the entire training set can be loaded from memory after the first epoch
     * Memory usage can be controlled via `cache_min_free_ram` flag
 * `coco_caption` in Python 3
     * Based on [salaniz/pycocoevalcap](https://github.com/salaniz/pycocoevalcap/tree/ad63453cfab57a81a02b2949b17a91fab1c3df77)
-* Multiple captions per image during teacher-forcing training
-    * Reduce training time: run encoder once, optimize on multiple training captions
-* Incremental decoding (Transformer with attention cache)
-* Self-Critical Sequence Training (SCST)
-    * Sampling: Random sample (>= 1 samples per image) or beam search _(untested)_
-    * Baseline: Greedy search or random sample
-    * Based on [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
 * Tokenizer based on `sentencepiece`
     * Word
     * _(untested)_ Unigram, BPE, Character

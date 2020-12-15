@@ -51,7 +51,8 @@ class CaptioningModel(LightningModule):
             optim_params += [
                 {
                     "params": list(model.active_pruning_masks(named=False)),
-                    "lr": config.prune_supermask_lr, "weight_decay": 0, "eps": 1e-2
+                    "lr": config.prune_supermask_lr, "weight_decay": 0, "eps": 1e-2,
+                    "pruning_mask": True,
                 }
             ]
             print(f"Model trainable params (pruning masks): {model.total_mask_params:,d}")
