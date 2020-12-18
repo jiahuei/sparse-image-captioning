@@ -3,8 +3,8 @@
 ## Features
 
 * Captioning models built using PyTorch
-    * Up-Down LSTM
-    * Object Relation Transformer
+    * [Up-Down LSTM](http://openaccess.thecvf.com/content_cvpr_2018/html/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.html)
+    * [Object Relation Transformer](https://papers.nips.cc/paper/9293-image-captioning-transforming-objects-into-words.pdf)
 * Unstructured weight pruning
     * Supermask (end-to-end pruning)
     * Gradual magnitude pruning
