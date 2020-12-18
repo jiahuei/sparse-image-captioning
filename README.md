@@ -51,7 +51,7 @@ For convenience, setup is done using Docker.
 
 1. Run `bash docker/docker_build.sh` to build the Docker image.
 2. Run `bash docker/docker_run_clean.sh` to launch a container. Edit paths in the script as needed.
-3. Run `python caption_vae/scripts/setup.sh` to perform dataset pre-processing.
+3. In the container, run `python /master/src/caption_vae/scripts/setup.sh` to perform dataset pre-processing.
 4. Done
 
 
