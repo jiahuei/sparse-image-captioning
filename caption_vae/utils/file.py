@@ -25,6 +25,7 @@ import zipfile
 import six
 import requests
 import json
+import logging
 
 from itertools import chain
 from PIL import Image
@@ -33,6 +34,8 @@ from tqdm import tqdm
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlretrieve
+
+logger = logging.getLogger(__name__)
 
 
 def file_size(path, suffix="B"):
@@ -72,6 +75,11 @@ def read_json(path, utf8=True):
 def dump_json(path, data, utf8=True, lf_newline=True, **json_kwargs):
     encoding = "utf8" if utf8 else None
     newline = "\n" if lf_newline else None
+    if utf8 and json_kwargs.get("ensure_ascii", True):
+        logger.warning(
+            f"Opening file handler for `{path}` in UTF-8 mode, "
+            "but `ensure_ascii` is set to True (default) for JSON"
+        )
     with open(path, "w", encoding=encoding, newline=newline) as f:
         json.dump(data, f, **json_kwargs)
     return path
