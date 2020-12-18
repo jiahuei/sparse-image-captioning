@@ -16,6 +16,7 @@
     * Beam search sampling + Greedy search baseline: à la [Up-Down](http://openaccess.thecvf.com/content_cvpr_2018/html/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.html)
     * Random sampling + Sample mean baseline: ("new SCST" in `ruotianluo/self-critical.pytorch`)
     * Beam search sampling + Sample mean baseline: à la [M2 Transformer](http://openaccess.thecvf.com/content_CVPR_2020/html/Cornia_Meshed-Memory_Transformer_for_Image_Captioning_CVPR_2020_paper.html)
+    * Optimise CIDEr and/or BLEU scores with custom weightage
     * Based on [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
 * Multiple captions per image during teacher-forcing training
     * Reduce training time: run encoder once, optimize on multiple training captions
@@ -57,6 +58,8 @@ For convenience, setup is done using Docker.
 ## Usage
 
 Refer to `commands.sh` for more examples.
+
+These paths below assume a Docker setup following `docker/docker_run_clean.sh`.
 
 ### Training
 ```shell script
