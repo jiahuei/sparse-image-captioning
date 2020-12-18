@@ -10,12 +10,12 @@ import logging
 import json
 import torch
 import numpy as np
-import tensorboardX as tb
 # import pytorch_lightning as pl
 from tqdm import tqdm
 from argparse import ArgumentParser, _ArgumentGroup
 from typing import Dict, Callable, Union
 from torch import nn
+from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from utils.config import Config
 from utils.misc import csv_to_float_list
@@ -34,7 +34,7 @@ CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 # class ImgCapLightningModule(pl.LightningModule):
 class LightningModule:
     """
-    A placeholder got Pytorch Lightning `LightningModule`
+    A placeholder for Pytorch Lightning `LightningModule`
     """
     ALL_METRICS = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
     SCST_SAMPLE = ["beam_search", "random"]
@@ -122,7 +122,7 @@ class LightningModule:
         self.train_loader = self.train_dataloader()
         self.val_loader = self.val_dataloader()
         # self.test_loader = self.test_dataloader()
-        self.tb_summary_writer = tb.SummaryWriter(config.log_dir)
+        self.tb_summary_writer = SummaryWriter(config.log_dir)
         self.scst_scorer = CaptionScorer(
             config.cached_tokens,
             cider_weight=config.scst_cider_weight,
