@@ -14,4 +14,4 @@ docker run -it \
     -v "${SCRIPT_ROOT}/datasets:/master/datasets" \
     -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY="$DISPLAY" \
     -u "$(id -u)":"$(id -g)" \
-    --rm jiahuei/pytorch:1.6.0-tf2.3-java8
+    --rm jiahuei/pytorch:1.6.0-java8
