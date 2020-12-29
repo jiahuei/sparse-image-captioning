@@ -5,9 +5,8 @@ Created on Thu Jun 22 14:48:09 2017
 @author: jiahuei
 """
 import os
-import pickle
 import logging
-import json
+from packaging import version
 from typing import Union, Type, TypeVar, Dict
 from argparse import ArgumentParser, Namespace
 from copy import deepcopy
@@ -19,7 +18,7 @@ T = TypeVar("T")
 
 class Config:
     """ Configuration object."""
-    VERSION = "0.2.0"
+    VERSION = "0.3.0"
 
     @classmethod
     def from_argument_parser(cls: Type[T], parser_or_args: Union[ArgumentParser, Namespace]) -> T:
@@ -41,20 +40,22 @@ class Config:
 
     @classmethod
     def load_config_json(cls, config_filepath):
-        c_dict = read_json(config_filepath)
-        loaded_version = c_dict.get("version", None)
-        if loaded_version != cls.VERSION:
-            logger.warning(
-                f"{cls.__name__}: Version mismatch: "
-                f"Current is `{cls.VERSION}`, loaded config is `{loaded_version}`"
-            )
-            c_dict = cls.compat(c_dict)
+        c_dict = cls.compat(read_json(config_filepath))
         logger.info(f"{cls.__name__}: Loaded from `{config_filepath}`.")
         return cls(**c_dict)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    def __setattr__(self, key, value):
+        self_dict = vars(self)
+        if logger.isEnabledFor(logging.DEBUG) and key in self_dict and self_dict[key] != value:
+            logger.warning(
+                f"{self.__class__.__name__}: "
+                f"Overwriting `self.{key}` from `{self_dict[key]}` to `{value}`"
+            )
+        super().__setattr__(key, value)
 
     # noinspection PyUnresolvedReferences
     def save_config(self, exist_ok=True):
@@ -92,7 +93,14 @@ class Config:
 
     @classmethod
     def compat(cls, config_dict: Dict):
-        loaded_version = config_dict.get("version", None)
+        loaded_version = version.parse(config_dict.get("version", "0.1.0"))
+        if loaded_version == version.parse(cls.VERSION):
+            return config_dict
+
+        logger.warning(
+            f"{cls.__name__}: Version mismatch: "
+            f"Current is `{cls.VERSION}`, loaded config is `{loaded_version}`"
+        )
 
         def get_key(key):
             if key in config_dict:
@@ -102,7 +110,17 @@ class Config:
                     f"{cls.__name__}: Expected loaded config to have key `{key}` but not found."
                 )
 
-        if loaded_version is None:
+        if loaded_version < version.parse("0.3.0"):
+            config_dict["vocab_size"] += 1
+            if "transformer" in config_dict["caption_model"]:
+                config_dict["d_model"] = config_dict["input_encoding_size"]
+                config_dict["dim_feedforward"] = config_dict["rnn_size"]
+                config_dict["drop_prob_src"] = config_dict["drop_prob_lm"]
+                del config_dict["input_encoding_size"]
+                del config_dict["rnn_size"]
+                del config_dict["drop_prob_lm"]
+
+        if loaded_version == version.parse("0.1.0"):
             # SCST_MODES = ["greedy_baseline", "sample_baseline", "beam_search"]
             if "scst_mode" in config_dict:
                 scst_mode = config_dict["scst_mode"]
@@ -126,7 +144,8 @@ class Config:
                 scst_sample = "random"
             config_dict["scst_baseline"] = scst_baseline
             config_dict["scst_sample"] = scst_sample
-        else:
+
+        if loaded_version == version.parse("0.0.0"):
             raise ValueError(
                 f"{cls.__name__}: Compatibility error, "
                 f"unable to convert config from version `{loaded_version}`."

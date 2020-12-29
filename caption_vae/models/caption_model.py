@@ -129,14 +129,13 @@ class CaptionModel(nn.Module):
         device = init_logprobs.device
         # INITIALIZATIONS
         beam_seq_table = [torch.LongTensor(batch_size, bdash, 0).to(device) for _ in range(group_size)]
-        beam_seq_logprobs_table = [torch.FloatTensor(batch_size, bdash, 0, self.vocab_size + 1).to(device) for _ in
-                                   range(group_size)]
+        beam_seq_logprobs_table = [
+            torch.FloatTensor(batch_size, bdash, 0, self.vocab_size).to(device) for _ in range(group_size)
+        ]
         beam_logprobs_sum_table = [torch.zeros(batch_size, bdash).to(device) for _ in range(group_size)]
 
         # logprobs # logprobs predicted in last time step, shape (beam_size, vocab_size+1)
         done_beams_table = [[[] for __ in range(group_size)] for _ in range(batch_size)]
-        # state_table = [list(torch.unbind(_)) for _ in torch.stack(init_state).chunk(group_size, 2)]
-        # state_table = list(zip(*[_.reshape(-1, batch_size * bdash, group_size, *_.shape[2:]).chunk(group_size, 2) for _ in init_state]))
         state_table = [[_.clone() for _ in init_state] for _ in range(group_size)]
         # logprobs_table = list(init_logprobs.reshape(batch_size * bdash, group_size, -1).chunk(group_size, 0))
         logprobs_table = [init_logprobs.clone() for _ in range(group_size)]

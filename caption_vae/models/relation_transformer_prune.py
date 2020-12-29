@@ -115,7 +115,7 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
     def make_model(self, h=8, dropout=0.1 / 3):
         """Helper: Construct a model from hyperparameters."""
         d_model = self.input_encoding_size
-        tgt_vocab = self.vocab_size + 1
+        tgt_vocab = self.vocab_size
         mask_type = self.config.prune_type
         mask_init_value = self.config.prune_supermask_init
 

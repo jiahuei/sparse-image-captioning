@@ -368,11 +368,16 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         self._load_processor()
         # Copy tokenizer attributes over to Config
         for attr in self.special_token_attributes:
-            setattr(self.config, attr, getattr(self, attr, None))
-        self.config.vocab_size = len(self)
-        self.config.num_control_symbols = len(self.control_symbols)
-        self.config.num_special_symbols = len(self.control_symbols) + 4
+            self._update_config(attr, getattr(self, attr, None))
+        self._update_config("vocab_size", len(self))
+        self._update_config("num_control_symbols", len(self.control_symbols))
+        self._update_config("num_special_symbols", len(self.control_symbols) + 4)
         logger.info(f"{self.__class__.__name__}: Init complete.")
+
+    def _update_config(self, key, value):
+        if key in vars(self.config):
+            return
+        setattr(self.config, key, value)
 
     def encode(
             self,

@@ -68,7 +68,7 @@ class AttModel(CaptionModel):
 
     def make_model(self):
         self.embed = nn.Sequential(
-            nn.Embedding(self.vocab_size + 1, self.input_encoding_size),  # TODO: fix vocab_size, remove + 1
+            nn.Embedding(self.vocab_size, self.input_encoding_size),
             nn.ReLU(),
             nn.Dropout(self.drop_prob_lm)
         )
@@ -91,14 +91,14 @@ class AttModel(CaptionModel):
 
         self.logit_layers = self.config.get('logit_layers', 1)
         if self.logit_layers == 1:
-            self.logit = nn.Linear(self.rnn_size, self.vocab_size + 1)
+            self.logit = nn.Linear(self.rnn_size, self.vocab_size)
         else:
             self.logit = [
                 [nn.Linear(self.rnn_size, self.rnn_size), nn.ReLU(), nn.Dropout(self.drop_prob_lm)]
                 for _ in range(self.config.logit_layers - 1)
             ]
             self.logit = nn.Sequential(
-                *(reduce(lambda x, y: x + y, self.logit) + [nn.Linear(self.rnn_size, self.vocab_size + 1)])
+                *(reduce(lambda x, y: x + y, self.logit) + [nn.Linear(self.rnn_size, self.vocab_size)])
             )
         self.ctx2att = nn.Linear(self.rnn_size, self.att_hid_size)
 
@@ -138,7 +138,7 @@ class AttModel(CaptionModel):
         seq_per_img = seqs.shape[0] // batch_size
         state = self.init_hidden(batch_size * seq_per_img)
 
-        outputs = fc_feats.new_zeros(batch_size * seq_per_img, seqs.size(1), self.vocab_size + 1)
+        outputs = fc_feats.new_zeros(batch_size * seq_per_img, seqs.size(1), self.vocab_size)
 
         # Prepare the features
         p_fc_feats, p_att_feats, pp_att_feats, p_att_masks = self._prepare_feature(fc_feats, att_feats, att_masks)
@@ -197,7 +197,7 @@ class AttModel(CaptionModel):
         state = self.init_hidden(batch_size)
 
         if num_random_sample <= 0 and beam_size > 1:
-            assert beam_size <= self.vocab_size + 1
+            assert beam_size <= self.vocab_size
             it = att_feats.new_full([batch_size], self.bos_idx, dtype=torch.long)
             seq_logprobs = att_feats.new_zeros(batch_size, beam_size, self.seq_length)
             seq = att_feats.new_full((batch_size, beam_size, self.seq_length), self.pad_idx, dtype=torch.long)
@@ -246,7 +246,7 @@ class AttModel(CaptionModel):
         for t in range(self.seq_length + 1):
             logprobs, state = self.get_logprobs_state(it, fc_feats, att_feats, p_att_feats, att_masks, state)
             if decoding_constraint and t > 0:
-                tmp = logprobs.new_zeros(batch_size, self.vocab_size + 1)
+                tmp = logprobs.new_zeros(batch_size, self.vocab_size)
                 tmp.scatter_(1, seq[:, t - 1].data.unsqueeze(1), float("-inf"))
                 logprobs = logprobs + tmp
 

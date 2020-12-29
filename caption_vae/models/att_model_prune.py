@@ -25,7 +25,7 @@ class AttModel(att_model.AttModel):
             "mask_init_value": self.config.prune_supermask_init
         }
         self.embed = nn.Sequential(
-            MaskedEmbedding(self.vocab_size + 1, self.input_encoding_size, **mask_params),
+            MaskedEmbedding(self.vocab_size, self.input_encoding_size, **mask_params),
             nn.ReLU(),
             nn.Dropout(self.drop_prob_lm)
         )
@@ -48,7 +48,7 @@ class AttModel(att_model.AttModel):
 
         self.logit_layers = self.config.get('logit_layers', 1)
         if self.logit_layers == 1:
-            self.logit = MaskedLinear(self.rnn_size, self.vocab_size + 1, **mask_params)
+            self.logit = MaskedLinear(self.rnn_size, self.vocab_size, **mask_params)
         else:
             self.logit = [
                 [MaskedLinear(self.rnn_size, self.rnn_size, **mask_params), nn.ReLU(), nn.Dropout(self.drop_prob_lm)]
@@ -57,7 +57,7 @@ class AttModel(att_model.AttModel):
             self.logit = nn.Sequential(
                 *(
                         reduce(lambda x, y: x + y, self.logit) +
-                        [MaskedLinear(self.rnn_size, self.vocab_size + 1, **mask_params)]
+                        [MaskedLinear(self.rnn_size, self.vocab_size, **mask_params)]
                 )
             )
         self.ctx2att = MaskedLinear(self.rnn_size, self.att_hid_size, **mask_params)

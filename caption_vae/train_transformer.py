@@ -57,7 +57,6 @@ class CaptioningModel(LightningModule):
                 }
                 optimizer.zero_grad()
 
-                # with autograd.detect_anomaly():
                 if not sc_flag:
                     loss = loss_fn(
                         model(data), data["seqs"][:, 1:], data["masks"][:, 1:]
