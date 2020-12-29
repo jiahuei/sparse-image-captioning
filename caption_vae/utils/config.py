@@ -18,7 +18,7 @@ T = TypeVar("T")
 
 class Config:
     """ Configuration object."""
-    VERSION = "0.3.0"
+    VERSION = "0.4.0"
 
     @classmethod
     def from_argument_parser(cls: Type[T], parser_or_args: Union[ArgumentParser, Namespace]) -> T:
