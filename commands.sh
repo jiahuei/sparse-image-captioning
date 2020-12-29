@@ -209,7 +209,7 @@ python /master/src/caption_vae/train_transformer.py \
     --learning_rate_decay_start -1 \
     --batch_size 5 \
     --max_epochs ${EPOCHS} \
-    --drop_prob_lm 0.1 \
+    --drop_prob_src 0.1 \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
     --scst_sample ${SCST_SAMPLE} \
@@ -233,7 +233,7 @@ for PRUNE_TYPE in "supermask"; do
                 --dataset_dir ${DATASET_DIR} \
                 --log_dir ${LOG_DIR} \
                 --lr_scheduler ${SCHEDULER} \
-                --drop_prob_lm 0.1 \
+                --drop_prob_src 0.1 \
                 --prune_type ${PRUNE_TYPE} \
                 --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
                 --prune_supermask_sparsity_weight ${PRUNE_WEIGHT} \
@@ -250,7 +250,7 @@ for PRUNE_TYPE in "mag_grad_uniform" "snip"; do
             --dataset_dir ${DATASET_DIR} \
             --log_dir ${LOG_DIR} \
             --lr_scheduler ${SCHEDULER} \
-            --drop_prob_lm 0.1 \
+            --drop_prob_src 0.1 \
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
@@ -267,7 +267,7 @@ for PRUNE_TYPE in "mag_blind" "mag_uniform" "mag_dist"; do
             --log_dir ${LOG_DIR} \
             --max_epochs 10 \
             --lr_scheduler ${SCHEDULER} \
-            --drop_prob_lm 0.1 \
+            --drop_prob_src 0.1 \
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
@@ -283,7 +283,7 @@ for PRUNE_TYPE in "lottery_mag_uniform"; do
             --start_from ${BASELINE} \
             --log_dir ${LOG_DIR} \
             --lr_scheduler ${SCHEDULER} \
-            --drop_prob_lm 0.1 \
+            --drop_prob_src 0.1 \
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
@@ -301,7 +301,7 @@ for PRUNE_TYPE in "lottery_mask_freeze"; do
             --start_from ${BASELINE}__${PRUNE_SPARSITY_TARGET} \
             --log_dir ${LOG_DIR} \
             --lr_scheduler ${SCHEDULER} \
-            --drop_prob_lm 0.1 \
+            --drop_prob_src 0.1 \
             --prune_type ${PRUNE_TYPE} \
             --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
             --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
@@ -327,7 +327,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --learning_rate_decay_start -1 \
     --batch_size 5 \
     --max_epochs ${EPOCHS} \
-    --drop_prob_lm 0.1 \
+    --drop_prob_src 0.1 \
     --prune_type mask_freeze \
     --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
     --scst_start_epoch 0 \

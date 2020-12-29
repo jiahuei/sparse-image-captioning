@@ -80,6 +80,7 @@ class BasicCollate:
 
 class UpDownCollate:
     def __init__(self, config, tokenizer: Tokenizer, cache_dict: Optional[Dict] = None):
+        assert config.seq_per_img > 0, "`config.seq_per_img` should be greater than 0"
         self.config = config
         self.tokenizer = tokenizer
         # noinspection PyUnresolvedReferences

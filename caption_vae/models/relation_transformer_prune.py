@@ -114,45 +114,43 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
 
     def make_model(self, h=8, dropout=0.1 / 3):
         """Helper: Construct a model from hyperparameters."""
-        d_model = self.input_encoding_size
-        tgt_vocab = self.vocab_size
         mask_type = self.config.prune_type
         mask_init_value = self.config.prune_supermask_init
 
         bbox_attn = BoxMultiHeadedAttention(
-            mask_type, mask_init_value, h, d_model, self.box_trigonometric_embedding
+            mask_type, mask_init_value, h, self.d_model, self.box_trigonometric_embedding
         )
-        attn = MultiHeadedAttention(mask_type, mask_init_value, h, d_model)
-        ff = PositionwiseFeedForward(mask_type, mask_init_value, d_model, self.rnn_size, dropout)
-        position = rtrans.PositionalEncoding(d_model, dropout)
+        attn = MultiHeadedAttention(mask_type, mask_init_value, h, self.d_model)
+        ff = PositionwiseFeedForward(mask_type, mask_init_value, self.d_model, self.dim_feedforward, dropout)
+        position = rtrans.PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
             mask_type=mask_type, mask_freeze_scope="",
             encoder=rtrans.Encoder(rtrans.EncoderLayer(
-                d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
+                self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
             ),
             decoder=rtrans.Decoder(rtrans.DecoderLayer(
-                d_model, deepcopy(attn), deepcopy(attn), deepcopy(ff), dropout), self.num_layers
+                self.d_model, deepcopy(attn), deepcopy(attn), deepcopy(ff), dropout), self.num_layers
             ),
-            src_embed=lambda x: x,  # nn.Sequential(Embeddings(d_model, src_vocab), deepcopy(position)),
+            src_embed=lambda x: x,
             tgt_embed=nn.Sequential(
-                Embeddings(mask_type, mask_init_value, d_model, tgt_vocab), deepcopy(position)
+                Embeddings(mask_type, mask_init_value, self.d_model, self.vocab_size), deepcopy(position)
             ),
-            generator=Generator(mask_type, mask_init_value, d_model, tgt_vocab)
+            generator=Generator(mask_type, mask_init_value, self.d_model, self.vocab_size)
         )
         self.att_embed = nn.Sequential(
             MaskedLinear(
-                self.att_feat_size, self.input_encoding_size,
+                self.att_feat_size, self.d_model,
                 mask_type, mask_init_value,
             ),
             nn.ReLU(),
-            nn.Dropout(self.drop_prob_lm)
+            nn.Dropout(self.drop_prob_src)
         )
         # This was important from their code.
         # Initialize parameters with Glorot / fan_avg.
         for p in model.all_weights(named=False):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
-        return model
+        self.model = model
 
     def __init__(self, config):
         super().__init__(

@@ -118,6 +118,12 @@ class LightningModule:
 
     def prepare(self):
         config = self.config
+
+        assert config.max_epochs > 0, "`config.max_epochs` should be > 0"
+        assert config.beam_size_val > 0, "`config.beam_size_val` should be > 0"
+        assert config.save_checkpoint_every > 0, "`config.save_checkpoint_every` should be > 0"
+        assert config.losses_log_every > 0, "`config.losses_log_every` should be > 0"
+
         self.config_path = self.config.save_config(exist_ok=False)
         self.train_loader = self.train_dataloader()
         self.val_loader = self.val_dataloader()
@@ -280,7 +286,7 @@ class LightningModule:
             out_dir = os.path.join(config.log_dir, f"test2014_beam_{config.beam_size}")
         else:
             out_dir = os.path.join(config.log_dir, f"{split}_beam_{config.beam_size}")
-        
+
         if config.get("eval_dir_suffix", None):
             out_dir += f"_{config.eval_dir_suffix}"
         json_fpath = os.path.join(out_dir, f"caption_{self.global_step:08d}.json")

@@ -118,7 +118,7 @@ def get_optim(parameters, config):
             logger.warning(f"Noam scheduler should be used with ADAM. Ignoring optim choice: {config.optim}")
         return NoamOpt(
             torch.optim.Adam(parameters, lr=0, betas=(0.9, 0.98), eps=1e-9),
-            model_size=config.input_encoding_size,
+            model_size=config.d_model,
             factor=config.noamopt_factor,
             warmup=config.noamopt_warmup,
         )

@@ -112,18 +112,6 @@ def parse_opt() -> Namespace:
 
     args = parser.parse_args()
 
-    # Check if args are valid
-    assert args.seq_per_img > 0, "seq_per_img should be greater than 0"
-    assert args.rnn_size > 0, "rnn_size should be greater than 0"
-    assert args.input_encoding_size > 0, "input_encoding_size should be greater than 0"
-    assert args.max_epochs > 0, "max_epochs should be greater than 0"
-    assert args.batch_size > 0, "batch_size should be greater than 0"
-    assert args.drop_prob_lm >= 0 and args.drop_prob_lm < 1, "drop_prob_lm should be between 0 and 1"
-    assert args.scst_num_samples > 0, "`scst_num_samples` should be greater than 0"
-    assert args.beam_size_val > 0 and args.beam_size_test > 0, "beam_size should be greater than 0"
-    assert args.save_checkpoint_every > 0, "save_checkpoint_every should be greater than 0"
-    assert args.losses_log_every > 0, "losses_log_every should be greater than 0"
-
     # Paths
     args.log_dir = os.path.join(args.log_dir, f"{args.id}")
     return args
