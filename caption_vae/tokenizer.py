@@ -537,7 +537,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         parser.add_argument(
             "--tokenizer_vocab_size",
             type=int,
-            default=10000,
+            default=10001,
             help="int: Maximum vocabulary size.",
         )
         # fmt: on
