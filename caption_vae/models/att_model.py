@@ -175,7 +175,7 @@ class AttModel(CaptionModel):
 
         return logprobs, state
 
-    def _sample(self, fc_feats, att_feats, att_masks=None, opt=None):
+    def _sample(self, fc_feats, att_feats, att_masks=None, opt=None, **kwargs):
         if opt is None:
             opt = {}
         num_random_sample = opt.get("num_random_sample", 0)

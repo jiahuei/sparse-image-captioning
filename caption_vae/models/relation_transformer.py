@@ -364,7 +364,7 @@ class RelationTransformerModel(CachedTransformerBase):
         return logprobs, [ys.unsqueeze(0)] + self._retrieve_caches()
 
     # noinspection PyMethodOverriding
-    def _sample(self, att_feats, boxes, att_masks=None, opt=None):
+    def _sample(self, att_feats, boxes, att_masks=None, opt=None, **kwargs):
         if opt is None:
             opt = {}
         att_feats, boxes, seq, att_masks, seq_mask = self._prepare_feature(att_feats, att_masks, boxes)
