@@ -9,14 +9,10 @@ https://arxiv.org/abs/1502.03044
 AllImg is a model where
 img feature is concatenated with word embedding at every time step as the input of lstm
 """
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from argparse import ArgumentParser, _ArgumentGroup
-from typing import Union
-from functools import reduce
 from utils import model_utils as model_utils
 
 

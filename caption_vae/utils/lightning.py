@@ -272,7 +272,7 @@ class LightningModule:
                 for k, v in data.items()
             }
             with torch.no_grad():
-                seq = model(data, opt=config, mode="sample")[0]
+                seq = model(**data, opt=config, mode="sample")[0]
 
             predictions += [self.tokenizer.decode(_[0]) for _ in seq]
             image_paths += data["image_paths"]

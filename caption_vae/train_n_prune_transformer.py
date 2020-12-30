@@ -76,7 +76,7 @@ class CaptioningModel(LightningModule):
                     for k, v in data.items()
                 }
                 loss = loss_fn(
-                    model(data), data["seqs"][:, 1:], data["masks"][:, 1:]
+                    model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
                 )
                 loss.backward()
         if model.mask_type in prune.MAG_HARD + prune.LOTTERY + [prune.SNIP]:
@@ -121,7 +121,7 @@ class CaptioningModel(LightningModule):
                 optimizer.zero_grad()
                 if not sc_flag:
                     loss = loss_fn(
-                        model(data), data["seqs"][:, 1:], data["masks"][:, 1:]
+                        model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
                     )
                     reward = sc_sample = sc_greedy = None
                 else:

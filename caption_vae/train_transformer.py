@@ -59,7 +59,7 @@ class CaptioningModel(LightningModule):
 
                 if not sc_flag:
                     loss = loss_fn(
-                        model(data), data["seqs"][:, 1:], data["masks"][:, 1:]
+                        model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
                     )
                     reward = sc_sample = sc_greedy = None
                 else:

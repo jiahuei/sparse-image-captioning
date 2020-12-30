@@ -19,7 +19,7 @@ from functools import reduce
 from models import register_model
 from models.caption_model import CaptionModel
 from data.collate import AttCollate
-from utils.model_utils import repeat_tensors, pack_wrapper, filter_model_inputs
+from utils.model_utils import repeat_tensors, pack_wrapper
 from tokenizer import Tokenizer
 
 bad_endings = [
@@ -56,15 +56,6 @@ class AttModel(CaptionModel):
         else:
             self.bad_endings_ix = [tokenizer.token_to_id(w) for w in bad_endings]
         self.make_model()
-
-    def forward(self, input_dict: Dict, **kwargs):
-        inputs = filter_model_inputs(
-            input_dict=input_dict,
-            mode=kwargs.get("mode", "forward"),
-            required_keys=("fc_feats", "att_feats", "att_masks"),
-            forward_keys=("seqs",)
-        )
-        return super().forward(**inputs, **kwargs)
 
     def make_model(self):
         self.embed = nn.Sequential(
@@ -131,7 +122,7 @@ class AttModel(CaptionModel):
 
         return fc_feats, att_feats, p_att_feats, att_masks
 
-    def _forward(self, fc_feats, att_feats, seqs, att_masks=None):
+    def _forward(self, fc_feats, att_feats, seqs, att_masks=None, **kwargs):
         batch_size = fc_feats.size(0)
         if seqs.ndim == 3:  # B * seq_per_img * seq_len
             seqs = seqs.reshape(-1, seqs.shape[2])

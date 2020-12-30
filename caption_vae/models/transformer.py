@@ -19,7 +19,7 @@ from itertools import chain
 from models import register_model
 from models.caption_model import CaptionModel
 from data.collate import UpDownCollate
-from utils.model_utils import repeat_tensors, clones, filter_model_inputs
+from utils.model_utils import repeat_tensors, clones
 
 logger = logging.getLogger(__name__)
 
@@ -403,6 +403,12 @@ class CachedTransformerBase(CaptionModel):
         self.pad_idx = config.pad_token_id
         assert self.num_layers > 0, "num_layers should be greater than 0"
 
+    def _reset_parameters(self):
+        r"""Initiate parameters in the transformer model."""
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
     @staticmethod
     def enable_incremental_decoding(module):
         if hasattr(module, "incremental_decoding"):
@@ -598,16 +604,7 @@ class Transformer(CachedTransformerBase):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, input_dict: Dict, **kwargs):
-        inputs = filter_model_inputs(
-            input_dict=input_dict,
-            mode=kwargs.get("mode", "forward"),
-            required_keys=("att_feats", "att_masks"),
-            forward_keys=("seqs",)
-        )
-        return super().forward(**inputs, **kwargs)
-
-    def _forward(self, att_feats: Tensor, att_masks: Tensor, seqs: Tensor):
+    def _forward(self, att_feats: Tensor, att_masks: Tensor, seqs: Tensor, **kwargs):
         """
         Args:
             att_feats: (N, S, E)

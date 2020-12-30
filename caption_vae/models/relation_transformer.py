@@ -24,7 +24,7 @@ from models.transformer import (
     Decoder, DecoderLayer, CachedTransformerBase
 )
 from data.collate import ObjectRelationCollate
-from utils.model_utils import repeat_tensors, pack_wrapper, clones, filter_model_inputs
+from utils.model_utils import repeat_tensors, pack_wrapper, clones
 from utils.misc import str_to_bool
 
 logger = logging.getLogger(__name__)
@@ -310,15 +310,6 @@ class RelationTransformerModel(CachedTransformerBase):
                 nn.init.xavier_uniform_(p)
         self.model = model
 
-    def forward(self, input_dict: Dict, **kwargs):
-        inputs = filter_model_inputs(
-            input_dict=input_dict,
-            mode=kwargs.get("mode", "forward"),
-            required_keys=("att_feats", "att_masks", "boxes"),
-            forward_keys=("seqs",)
-        )
-        return super().forward(**inputs, **kwargs)
-
     def _prepare_feature(
             self,
             att_feats: Tensor,
@@ -348,7 +339,7 @@ class RelationTransformerModel(CachedTransformerBase):
         return att_feats, boxes, seq, att_masks, seq_mask
 
     # noinspection PyMethodOverriding
-    def _forward(self, att_feats, boxes, seqs, att_masks=None):
+    def _forward(self, att_feats, boxes, seqs, att_masks=None, **kwargs):
         att_feats, boxes, seq, att_masks, seq_mask = self._prepare_feature(att_feats, att_masks, boxes, seqs)
         out = self.model(att_feats, boxes, seq, att_masks, seq_mask)
         outputs = self.model.generator(out)
