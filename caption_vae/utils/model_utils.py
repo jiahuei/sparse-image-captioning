@@ -6,10 +6,10 @@ import logging
 import random
 import numpy as np
 import torch
-from torch import nn, optim
+from torch import nn
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 from copy import deepcopy
-from typing import Dict, Type, Callable, Any, Union, List, Tuple
+from typing import Type, Callable, Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,26 +23,6 @@ def set_seed(seed: int):
     # noinspection PyUnresolvedReferences
     torch.cuda.manual_seed_all(seed)
     logger.debug(f"RNG seed set to {seed}.")
-
-
-def filter_model_inputs(
-        input_dict: Dict,
-        mode: str,
-        required_keys: Union[List, Tuple],
-        forward_keys: Union[List, Tuple]
-):
-    required_keys = tuple(required_keys)
-    if mode == "forward":
-        required_keys += tuple(forward_keys)
-    try:
-        inputs = {k: input_dict[k] for k in required_keys}
-    except (KeyError, TypeError):
-        raise ValueError(
-            f"When calling the model in `{mode}` mode, "
-            f"first argument `input_dict` must be a dict with keys `{required_keys}`. "
-            f"Received input of type: {type(input_dict)}"
-        )
-    return inputs
 
 
 def clones(module, N):
@@ -115,30 +95,6 @@ def find_beam_parent_index(previous: torch.Tensor, current: torch.Tensor):
     return loc
 
 
-# def compute_incremental_output(
-#         cache: Union[torch.Tensor, None], output: torch.Tensor,
-#         batch_beam_dim: int, time_dim: int
-# ):
-#     if isinstance(cache, torch.Tensor):
-#         # 1st step of beam search will have batch_beam_dim of (batch)
-#         # 2nd step onwards will have batch_beam_dim of (batch * beam)
-#         if cache.size(batch_beam_dim) != output.size(batch_beam_dim):
-#             assert cache.size(batch_beam_dim) < output.size(batch_beam_dim), (
-#                 f"cat_output_with_cache: "
-#                 f"Expected dim {batch_beam_dim} of cached tensor to be smaller than that of output. "
-#                 f"Saw cache = {cache.size()}, output = {output.size()}"
-#             )
-#             assert output.size(batch_beam_dim) % cache.size(batch_beam_dim) == 0, (
-#                 f"cat_output_with_cache: "
-#                 f"Expected dim {batch_beam_dim} of output tensor to be divisible by that of cached tensor. "
-#                 f"Saw cache = {cache.size()}, output = {output.size()}"
-#             )
-#             cache = repeat_tensors(output.size(batch_beam_dim) // cache.size(batch_beam_dim), cache)
-#         output = torch.cat((cache, output), dim=time_dim)
-#     cache = output.clone()
-#     return output, cache
-
-
 def map_structure_recursive(
         structure: Any,
         func: Callable,
@@ -202,9 +158,8 @@ def length_wu(length, logprobs, alpha=0.):
     "Google's Neural Machine Translation System" :cite:`wu2016google`.
     """
 
-    modifier = (((5 + length) ** alpha) /
-                ((5 + 1) ** alpha))
-    return (logprobs / modifier)
+    modifier = (((5 + length) ** alpha) / ((5 + 1) ** alpha))
+    return logprobs / modifier
 
 
 def length_average(length, logprobs, alpha=0.):
@@ -218,16 +173,16 @@ def length_average(length, logprobs, alpha=0.):
 #                'are', 'am', 'the']
 
 
-def sort_pack_padded_sequence(input, lengths):
+def sort_pack_padded_sequence(inputs, lengths):
     sorted_lengths, indices = torch.sort(lengths, descending=True)
-    tmp = pack_padded_sequence(input[indices], sorted_lengths, batch_first=True)
+    tmp = pack_padded_sequence(inputs[indices], sorted_lengths, batch_first=True)
     inv_ix = indices.clone()
     inv_ix[indices] = torch.arange(0, len(indices)).type_as(inv_ix)
     return tmp, inv_ix
 
 
-def pad_unsort_packed_sequence(input, inv_ix):
-    tmp, _ = pad_packed_sequence(input, batch_first=True)
+def pad_unsort_packed_sequence(inputs, inv_ix):
+    tmp, _ = pad_packed_sequence(inputs, batch_first=True)
     tmp = tmp[inv_ix]
     return tmp
 
