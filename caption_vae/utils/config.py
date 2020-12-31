@@ -11,6 +11,7 @@ from typing import Union, Type, TypeVar, Dict
 from argparse import ArgumentParser, Namespace
 from copy import deepcopy
 from utils.file import read_json, dump_json
+from version import __version__
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -18,7 +19,7 @@ T = TypeVar("T")
 
 class Config:
     """ Configuration object."""
-    VERSION = "0.3.0"
+    VERSION = __version__
 
     @classmethod
     def from_argument_parser(cls: Type[T], parser_or_args: Union[ArgumentParser, Namespace]) -> T:
