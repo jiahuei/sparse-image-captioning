@@ -112,6 +112,13 @@ class Embeddings(rtrans.Embeddings):
 @register_model("relation_transformer_prune")
 class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
 
+    def __init__(self, config):
+        super().__init__(
+            mask_type=config.prune_type,
+            mask_freeze_scope=config.prune_mask_freeze_scope,
+            config=config
+        )
+
     def make_model(self, h=8, dropout=0.1 / 3):
         """Helper: Construct a model from hyperparameters."""
         mask_type = self.config.prune_type
@@ -151,13 +158,6 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         self.model = model
-
-    def __init__(self, config):
-        super().__init__(
-            mask_type=config.prune_type,
-            mask_freeze_scope=config.prune_mask_freeze_scope,
-            config=config
-        )
 
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
