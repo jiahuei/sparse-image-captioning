@@ -328,10 +328,8 @@ class RelationTransformerModel(CachedTransformerBase):
         if seq is not None:
             # crop the last one
             seq = seq[:, :-1]
-            seq_mask = (seq.data != self.pad_idx)  # seq_mask: torch.Tensor
-            # noinspection PyUnresolvedReferences
+            seq_mask = seq.data.ne(self.pad_idx)  # seq_mask: torch.Tensor
             seq_mask = seq_mask.unsqueeze(-2)
-            # noinspection PyUnresolvedReferences
             seq_mask = seq_mask & self.subsequent_mask(seq.size(-1)).to(seq_mask)
         else:
             seq_mask = None
@@ -355,7 +353,6 @@ class RelationTransformerModel(CachedTransformerBase):
         else:
             # Retrieve reordered cache from state, and update them
             self._update_caches(state[1:])
-        # noinspection PyUnresolvedReferences
         out = self.model.decode(
             memory, mask, ys, self.subsequent_mask(ys.size(1)).to(memory.device)
         )
@@ -385,7 +382,7 @@ class RelationTransformerModel(CachedTransformerBase):
     def subsequent_mask(size):
         """Mask out subsequent positions."""
         attn_shape = (1, size, size)
-        mask = (torch.triu(torch.ones(attn_shape), diagonal=1) == 0)
+        mask = torch.triu(torch.ones(attn_shape), diagonal=1).eq(0)
         return mask
 
     @staticmethod
