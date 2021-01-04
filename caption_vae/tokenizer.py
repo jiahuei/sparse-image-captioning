@@ -456,7 +456,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         SentencePieceTrainer.train(
             f"--input={self.config.tokenizer_train_files} "
             f"--model_prefix={model_prefix} "
-            f"--vocab_size={self.config.tokenizer_vocab_size} "
+            f"--vocab_size={self.config.vocab_size} "
             f"--hard_vocab_limit=false "  # Allow final vocab size to be smaller if training set is too small
             f"--model_type={self.MODEL_TYPE} "
             f"--pad_id=0 --unk_id=1 --bos_id=2 --eos_id=3 "
@@ -535,7 +535,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
             help="comma-separated str: Paths to the tokenizer training text files.",
         )
         parser.add_argument(
-            "--tokenizer_vocab_size",
+            "--vocab_size",
             type=int,
             default=10001,
             help="int: Maximum vocabulary size.",

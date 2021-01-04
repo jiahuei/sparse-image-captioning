@@ -52,7 +52,7 @@ with open("train_captions.txt", "w") as f:
 config = Config()
 config.log_dir = "/master/src"
 config.tokenizer_train_files = "train_captions.txt"
-config.tokenizer_vocab_size = 10000
+config.vocab_size = 10000
 config.logging_level = 2
 tokenizer = get_tokenizer("word")(config)
 
