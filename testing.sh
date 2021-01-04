@@ -104,7 +104,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --save_checkpoint_every 10 \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
-exit 1
+
 # Fine-tune with mask frozen
 BASELINE="${LOG_DIR}/${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__wg_120.0/model_best_bin_mask.pth"
 EPOCHS=10
