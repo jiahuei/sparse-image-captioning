@@ -216,20 +216,20 @@ class LightningModule:
             # Greedy decoding baseline
             model.eval()
             with torch.no_grad():
-                greedy_res, _ = model(model_inputs, mode="sample")
+                greedy_res, _ = model(**model_inputs, mode="sample")
         else:
             assert config.scst_baseline == "sample"
             greedy_res = None
         model.train()
         if config.scst_sample == "beam_search":
             sample_res, sample_logprobs = model(
-                model_inputs, mode="sample",
+                **model_inputs, mode="sample",
                 opt={"beam_size": config.scst_num_samples},
             )
         else:
             assert config.scst_sample == "random"
             sample_res, sample_logprobs = model(
-                model_inputs, mode="sample",
+                **model_inputs, mode="sample",
                 opt={"num_random_sample": config.scst_num_samples, "beam_size": 0},
             )
 
