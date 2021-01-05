@@ -165,6 +165,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --drop_prob_lm 0.1 \
     --prune_type mask_freeze \
     --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
+    --losses_log_every 75 \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
     --scst_sample ${SCST_SAMPLE} \
@@ -210,6 +211,7 @@ python /master/src/caption_vae/train_transformer.py \
     --batch_size 5 \
     --max_epochs ${EPOCHS} \
     --drop_prob_src 0.1 \
+    --losses_log_every 75 \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
     --scst_sample ${SCST_SAMPLE} \
@@ -330,6 +332,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
     --drop_prob_src 0.1 \
     --prune_type mask_freeze \
     --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
+    --losses_log_every 75 \
     --scst_start_epoch 0 \
     --scst_num_samples ${SCST_NUM_SAMPLES} \
     --scst_sample ${SCST_SAMPLE} \
