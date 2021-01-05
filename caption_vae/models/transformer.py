@@ -533,7 +533,6 @@ class CachedTransformerBase(CaptionModel):
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
         # fmt: off
-        # CaptionModel.add_argparse_args(parser)
         parser.add_argument(
             "--d_model", type=int, default=512,
             help="int: The token and feature embedding size."
@@ -648,3 +647,10 @@ class Transformer(CachedTransformerBase):
         memory, att_masks = self.core.encode(src=att_feats, src_mask=att_masks)
         state = None
         return self._generate_captions(att_feats, att_masks, memory, state, opt)
+
+    @staticmethod
+    def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
+        # fmt: off
+        Transformer.COLLATE_FN.add_argparse_args(parser)
+        CachedTransformerBase.add_argparse_args(parser)
+        # fmt: on
