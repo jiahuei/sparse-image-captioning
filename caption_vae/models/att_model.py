@@ -354,7 +354,7 @@ class UpDownModel(AttModel):
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
         # fmt: off
-        # CaptionModel.add_argparse_args(parser)
+        UpDownModel.COLLATE_FN.add_argparse_args(parser)
         # CaptionModel args
         parser.add_argument(
             "--max_seq_length", type=int, default=16,

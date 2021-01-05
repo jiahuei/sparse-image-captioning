@@ -12,7 +12,8 @@ import numpy as np
 import multiprocessing.managers as mp
 import torch
 import torchvision.transforms as transforms
-from typing import List, Optional, Dict
+from argparse import ArgumentParser, _ArgumentGroup
+from typing import Union, Optional, Dict, List
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import Compose
@@ -80,13 +81,18 @@ class BasicCollate:
 
 class UpDownCollate:
     def __init__(self, config, tokenizer: Tokenizer, cache_dict: Optional[Dict] = None):
-        assert config.seq_per_img > 0, "`config.seq_per_img` should be greater than 0"
         self.config = config
         self.tokenizer = tokenizer
         # noinspection PyUnresolvedReferences
         self.cache_dict = cache_dict if isinstance(cache_dict, mp.DictProxy) else None
         if self.cache_dict is not None:
             logger.info(f"{self.__class__.__name__}: Using multiprocessing cache dict.")
+        if self.config.input_att_dir is None:
+            self.config.input_att_dir = self.join_default_bu_dir("cocobu_att")
+        assert self.config.seq_per_img > 0, "`self.config.seq_per_img` should be greater than 0"
+
+    def join_default_bu_dir(self, dirname):
+        return os.path.join(self.config.dataset_dir, "bu", dirname)
 
     def _cache_data(self, key, key_value_fn):
         if self.cache_dict is None:
@@ -109,6 +115,14 @@ class UpDownCollate:
         data = data.reshape(-1, data.shape[-1]).astype("float32")
         # data = np.random.normal(size=(36, 2048)).astype("float32")
         return data
+
+    def _debug_logging(self, data):
+        if logger.isEnabledFor(logging.DEBUG):
+            _batch = "\n".join(
+                f"{k}: {v.size() if isinstance(v, torch.Tensor) else v}"
+                for k, v in data.items()
+            )
+            logger.debug(f"{self.__class__.__name__}: Batch input: \n{_batch}")
 
     def __call__(self, batch):
         config = self.config
@@ -174,16 +188,26 @@ class UpDownCollate:
         }
         return data
 
-    def _debug_logging(self, data):
-        if logger.isEnabledFor(logging.DEBUG):
-            _batch = "\n".join(
-                f"{k}: {v.size() if isinstance(v, torch.Tensor) else v}"
-                for k, v in data.items()
-            )
-            logger.debug(f"{self.__class__.__name__}: Batch input: \n{_batch}")
+    @staticmethod
+    def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
+        # fmt: off
+        parser.add_argument(
+            "--seq_per_img", type=int, default=5,
+            help="Number of captions to sample for each image during training. "
+                 "Can reduce CNN forward passes / Reduce disk read load."
+        )
+        parser.add_argument(
+            "--input_att_dir", type=str, default=None,
+            help="str: path to the directory containing the preprocessed att feats"
+        )
+        # fmt: on
 
 
 class ObjectRelationCollate(UpDownCollate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.config.input_rel_box_dir is None:
+            self.config.input_rel_box_dir = self.join_default_bu_dir("cocobu_box_relative")
 
     @staticmethod
     def _get_boxes(path):
@@ -209,8 +233,23 @@ class ObjectRelationCollate(UpDownCollate):
         self._debug_logging(data)
         return data
 
+    @staticmethod
+    def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
+        # fmt: off
+        UpDownCollate.add_argparse_args(parser)
+        parser.add_argument(
+            "--input_rel_box_dir", type=str, default=None,
+            help="str: this directory contains the bounding boxes in relative coordinates "
+                 "for the corresponding image features in --input_att_dir"
+        )
+        # fmt: on
+
 
 class AttCollate(UpDownCollate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.config.input_fc_dir is None:
+            self.config.input_fc_dir = self.join_default_bu_dir("cocobu_fc")
 
     @staticmethod
     def _get_fc_feats(path):
@@ -229,3 +268,13 @@ class AttCollate(UpDownCollate):
         data["fc_feats"] = torch.tensor(fc_feats)
         self._debug_logging(data)
         return data
+
+    @staticmethod
+    def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
+        # fmt: off
+        UpDownCollate.add_argparse_args(parser)
+        parser.add_argument(
+            "--input_fc_dir", type=str, default=None,
+            help="str: path to the directory containing the preprocessed fc feats"
+        )
+        # fmt: on

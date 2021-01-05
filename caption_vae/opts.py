@@ -85,31 +85,6 @@ def parse_opt() -> Namespace:
     #     )
     # )
 
-    # Data input settings
-    args, unknown = parser.parse_known_args()
-    bu_dir = pjoin(args.dataset_dir, "bu")
-    parser.add_argument(
-        "--input_fc_dir", type=str, default=pjoin(bu_dir, "cocobu_fc"),
-        help="str: path to the directory containing the preprocessed fc feats"
-    )
-    parser.add_argument(
-        "--input_att_dir", type=str, default=pjoin(bu_dir, "cocobu_att"),
-        help="str: path to the directory containing the preprocessed att feats"
-    )
-    # parser.add_argument(
-    #     "--input_box_dir", type=str, default=pjoin(bu_dir, "cocobu_box"),
-    #     help="str: path to the directory containing the boxes of att feats"
-    # )
-    parser.add_argument(
-        "--input_rel_box_dir", type=str, default=pjoin(bu_dir, "cocobu_box_relative"),
-        help="str: this directory contains the bboxes in relative coordinates "
-             "for the corresponding image features in --input_att_dir"
-    )
-    parser.add_argument(
-        "--cached_tokens", type=str, default=pjoin(bu_dir, "coco-train-words"),
-        help="str: Cached token file for calculating cider score during self critical training."
-    )
-
     args = parser.parse_args()
 
     # Paths

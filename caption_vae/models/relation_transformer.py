@@ -388,6 +388,7 @@ class RelationTransformerModel(CachedTransformerBase):
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
         # fmt: off
+        RelationTransformerModel.COLLATE_FN.add_argparse_args(parser)
         CachedTransformerBase.add_argparse_args(parser)
         # Relation args
         parser.add_argument(

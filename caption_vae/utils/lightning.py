@@ -123,6 +123,8 @@ class LightningModule:
         assert config.beam_size_val > 0, "`config.beam_size_val` should be > 0"
         assert config.save_checkpoint_every > 0, "`config.save_checkpoint_every` should be > 0"
         assert config.losses_log_every > 0, "`config.losses_log_every` should be > 0"
+        if config.cached_tokens is None:
+            config.cached_tokens = os.path.join(config.dataset_dir, "bu", "coco-train-words")
 
         self.config_path = self.config.save_config(exist_ok=False)
         self.train_loader = self.train_dataloader()
@@ -366,13 +368,12 @@ class LightningModule:
             help="float: Minimum free RAM when caching training data. Set to 1.0 to disable."
         )
         parser.add_argument(
-            "--seq_per_img", type=int, default=5,
-            help="Number of captions to sample for each image during training. "
-                 "Can reduce CNN forward passes / Reduce disk read load."
-        )
-        parser.add_argument(
             "--num_workers", type=int, default=4,
             help="int: Number of workers for each `DataLoader`."
+        )
+        parser.add_argument(
+            "--cached_tokens", type=str, default=None,
+            help="str: Cached token file for calculating cider score during self critical training."
         )
         # Checkpoint
         parser.add_argument(
