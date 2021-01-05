@@ -27,7 +27,7 @@ python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
-    --id RTrans__supermask__0.90__wg_120.0
+    --id RTrans__supermask__0.991__wg_120.0
 
 python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
@@ -48,12 +48,6 @@ python /master/src/caption_vae/eval_model.py \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --id UpDownLSTM__supermask__0.991__wg_120.0
-
-python /master/src/caption_vae/eval_model.py \
-    --log_dir ${LOG_DIR} \
-    --beam_size_test 2 \
-    --eval_dir_suffix TESTING \
-    --id RTrans__supermask__0.991__wg_120.0
 
 
 ######################
