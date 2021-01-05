@@ -146,8 +146,6 @@ class CaptioningModel(LightningModule):
 
 def main(config: Config):
     set_seed(config.seed)
-    if os.path.isfile(os.path.join(config.log_dir, "config.json")):
-        raise ValueError(f"`config.log_dir` is not empty: `{config.log_dir}`")
     model = CaptioningModel(config)
     model.train()
     CaptioningModel.eval_test(config.log_dir)
