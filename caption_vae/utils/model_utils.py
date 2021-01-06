@@ -127,8 +127,8 @@ def map_structure_recursive(
         raise TypeError(error_mssg)
 
 
-def count_nonzero(tensor, dim=None):
-    return (tensor != 0).sum(dim=dim)
+def count_nonzero(tensor):
+    return tensor.ne(0).float().sum()
 
 
 def densify_state_dict(state_dict):

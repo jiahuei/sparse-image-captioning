@@ -139,7 +139,7 @@ class PruningMixin:
     @property
     def all_weight_sparsities(self):
         names, weights = zip(*self.all_pruned_weights(named=True))
-        return self.calculate_sparsities(weights, lambda x: count_nonzero(x, dim=None)) + (names,)
+        return self.calculate_sparsities(weights, count_nonzero) + (names,)
 
     @property
     def all_mask_sparsities(self):
