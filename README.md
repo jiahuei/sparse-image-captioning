@@ -37,7 +37,7 @@
 
 ## Main Requirements
 
-* python >= 3.6
+* python == 3.7, 3.8
 * pytorch >= 1.6
 * sentencepiece >= 0.1.91
 * torchvision >= 0.7.0
