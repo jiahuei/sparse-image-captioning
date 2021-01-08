@@ -35,11 +35,8 @@ class CaptionScorer(object):
         else:
             assert isinstance(bleu_weight, (list, tuple))
         assert len(bleu_weight) == 4
-
-        self.scorers = {
-            "ciderD": CiderD(df=path_to_cached_tokens),
-            "bleu": BleuSilent(4),
-        }
+        self.path_to_cached_tokens = path_to_cached_tokens
+        self.scorers = None
         self.weights = {
             "ciderD": cider_weight,
             "bleu": bleu_weight,
@@ -57,6 +54,11 @@ class CaptionScorer(object):
             )
 
     def __call__(self, refs, sample, greedy=None):
+        if self.scorers is None:
+            self.scorers = {
+                "ciderD": CiderD(df=self.path_to_cached_tokens),
+                "bleu": BleuSilent(4),
+            }
         self.input_check(refs, same_sub_len=False)
         self.input_check(sample)
         assert len(refs) == len(sample), (
