@@ -3,7 +3,7 @@
 Created on 06 Jan 2021 16:57:17
 @author: jiahuei
 
-python -m unittest tests/test_coco_caption.py
+python -m unittest coco_caption/test_coco_caption.py
 """
 import unittest
 import os
@@ -12,7 +12,7 @@ from data.mscoco import MscocoDataset
 from utils.misc import BASE_DIR
 
 
-class TestSum(unittest.TestCase):
+class TestCocoCaption(unittest.TestCase):
     METRICS = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
 
     def test_mscoco_score(self):
