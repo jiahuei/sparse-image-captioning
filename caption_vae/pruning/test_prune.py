@@ -157,8 +157,8 @@ class TestPrune(unittest.TestCase):
                 prune.LOTTERY_MAG_DIST,
         ):
             sub_test = f"Testing mask_type = {mask_type}"
-            print(sub_test)
             with self.subTest(sub_test):
+                print(sub_test)
                 self._test_model(mask_type)
 
 
