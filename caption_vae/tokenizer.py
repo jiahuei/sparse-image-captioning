@@ -44,7 +44,7 @@ def register_tokenizer(name):
             (...)
 
     Args:
-        name (str): the name of the model
+        name (str): the name of the tokenizer
     """
 
     def register_tokenizer_cls(cls):

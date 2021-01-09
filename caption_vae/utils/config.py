@@ -103,14 +103,6 @@ class Config:
             f"Current is `{cls.VERSION}`, loaded config is `{loaded_version}`"
         )
 
-        def get_key(key):
-            if key in config_dict:
-                return config_dict[key]
-            else:
-                raise KeyError(
-                    f"{cls.__name__}: Expected loaded config to have key `{key}` but not found."
-                )
-
         if loaded_version < version.parse("0.3.0"):
             config_dict["vocab_size"] += 1
             if "transformer" in config_dict["caption_model"]:
