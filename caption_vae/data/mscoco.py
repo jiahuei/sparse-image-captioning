@@ -11,10 +11,7 @@ from shutil import copyfile
 from argparse import ArgumentParser, _ArgumentGroup
 # from torchvision.transforms import Compose
 from data import KarpathyDataset, register_dataset
-from utils import (
-    misc as misc_utils,
-    file as file_utils,
-)
+from utils import file as file_utils
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +101,3 @@ class MscocoDataset(KarpathyDataset):
 @register_dataset("mscoco_testing")
 class MscocoTesting(MscocoDataset):
     RAW_JSON_FILE = "dataset_coco_testing.json"
-
-    def __init__(self, config):
-        config.dataset_dir = os.path.join(misc_utils.BASE_DIR, "test_data")
-        super().__init__(config)
