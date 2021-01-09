@@ -43,7 +43,7 @@ def get_model(name: str) -> Any:
         return MODEL_REGISTRY[name]
     except KeyError:
         _list = "\n".join(MODEL_REGISTRY.keys())
-        error_mssg = f"Dataset specified `{name}` is invalid. Available options are: \n{_list}"
+        error_mssg = f"Model specified `{name}` is invalid. Available options are: \n{_list}"
         raise ValueError(error_mssg)
 
 
