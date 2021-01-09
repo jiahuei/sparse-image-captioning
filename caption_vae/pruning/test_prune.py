@@ -6,8 +6,6 @@ Created on 06 Jan 2021 21:29:39
 python -m unittest pruning/test_prune.py
 """
 import unittest
-import os
-import numpy as np
 import torch
 from copy import deepcopy
 from torch import nn, optim
@@ -99,6 +97,9 @@ class Model(prune.PruningMixin, nn.Module):
 
 class TestPrune(unittest.TestCase):
     SPARSITY_TARGET = 0.8
+
+    def setUp(self) -> None:
+        set_seed(8888)
 
     def _test_model(self, mask_type):
         model = Model(mask_type)
