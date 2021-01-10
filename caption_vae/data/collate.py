@@ -275,16 +275,3 @@ class AttCollate(UpDownCollate):
             help="str: path to the directory containing the preprocessed fc feats"
         )
         # fmt: on
-
-
-class GanCollate(ObjectRelationCollate):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __call__(self, batch):
-        config = self.config
-        image_paths, image_ids, captions, all_captions, all_gts = zip(*batch)
-        data = super().__call__(batch)
-        # Sample some captions
-        self._debug_logging(data)
-        return data
