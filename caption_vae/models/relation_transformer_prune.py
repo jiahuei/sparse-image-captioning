@@ -37,7 +37,7 @@ class Generator(rtrans.Generator):
 
 
 # noinspection PyAbstractClass
-class MultiHeadedAttention(rtrans.MultiHeadedAttention):
+class CachedMultiHeadedAttention(rtrans.CachedMultiHeadedAttention):
     def __init__(self, mask_type, mask_init_value, h, d_model, dropout=0.1 / 3, self_attention=False):
         """Take in model size and number of heads."""
         nn.Module.__init__(self)
@@ -127,7 +127,9 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
         bbox_attn = BoxMultiHeadedAttention(
             mask_type, mask_init_value, h, self.d_model, self.box_trigonometric_embedding
         )
-        attn = MultiHeadedAttention(mask_type, mask_init_value, h, self.d_model)
+        attn = CachedMultiHeadedAttention(mask_type, mask_init_value, h, self.d_model)
+        self_attn = deepcopy(attn)
+        self_attn.self_attention = True
         ff = PositionwiseFeedForward(mask_type, mask_init_value, self.d_model, self.dim_feedforward, dropout)
         position = rtrans.PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
@@ -136,7 +138,7 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
                 self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
             ),
             decoder=rtrans.Decoder(rtrans.DecoderLayer(
-                self.d_model, deepcopy(attn), deepcopy(attn), deepcopy(ff), dropout), self.num_layers
+                self.d_model, self_attn, attn, deepcopy(ff), dropout), self.num_layers
             ),
             src_embed=lambda x: x,
             tgt_embed=nn.Sequential(

@@ -18,7 +18,7 @@ from typing import Optional, Union, Dict
 from copy import deepcopy
 from models import register_model
 from models.transformer import (
-    MultiHeadedAttention, PositionwiseFeedForward, PositionalEncoding,
+    CachedMultiHeadedAttention, PositionwiseFeedForward, PositionalEncoding,
     InputEmbedding as Embeddings, OutputEmbedding as Generator,
     LayerNorm, SublayerConnection,
     Decoder, DecoderLayer, CachedTransformerBase
@@ -284,7 +284,9 @@ class RelationTransformerModel(CachedTransformerBase):
     def make_model(self, h=8, dropout=0.1):
         """Helper: Construct a model from hyperparameters."""
         bbox_attn = BoxMultiHeadedAttention(h, self.d_model, self.box_trigonometric_embedding)
-        attn = MultiHeadedAttention(h, self.d_model)
+        attn = CachedMultiHeadedAttention(h, self.d_model)
+        self_attn = deepcopy(attn)
+        self_attn.self_attention = True
         ff = PositionwiseFeedForward(self.d_model, self.dim_feedforward, dropout)
         position = PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
@@ -292,7 +294,7 @@ class RelationTransformerModel(CachedTransformerBase):
                 self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
             ),
             Decoder(DecoderLayer(
-                self.d_model, deepcopy(attn), deepcopy(attn), deepcopy(ff), dropout), self.num_layers
+                self.d_model, self_attn, attn, deepcopy(ff), dropout), self.num_layers
             ),
             lambda x: x,  # nn.Sequential(Embeddings(self.d_model, src_vocab), deepcopy(position)),
             nn.Sequential(Embeddings(self.d_model, self.vocab_size), deepcopy(position)),

@@ -182,7 +182,6 @@ class DecoderLayer(nn.Module):
         super().__init__()
         self.size = size
         self.self_attn = self_attn
-        self.self_attn.self_attention = True
         self.src_attn = src_attn
         self.feed_forward = feed_forward
         self.sublayer = clones(SublayerConnection(size, dropout), 3)
@@ -205,15 +204,10 @@ class MultiHeadedAttention(nn.Module):
         self.d_k = d_model // h
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
-        # self.attn = None
         self.self_attention = self_attention
         self.dropout = nn.Dropout(p=dropout)
-        self.incremental_decoding = False
         self.cache = [None, None]
         self.cache_size = 2
-
-    def reset_cache(self):
-        self.cache = [None, None]
 
     def forward(self, query, key, value, mask=None):
         """Implements Figure 2"""
@@ -253,7 +247,7 @@ class MultiHeadedAttention(nn.Module):
             mask = None
 
         # Cache key and value tensors
-        if self.incremental_decoding:
+        if getattr(self, "incremental_decoding", False):
             self.cache = [key, value]
 
         # 2) Apply attention on all the projected vectors in batch.
@@ -277,6 +271,22 @@ class MultiHeadedAttention(nn.Module):
         if dropout is not None:
             p_attn = dropout(p_attn)
         return torch.matmul(p_attn, value), p_attn
+
+
+# noinspection PyAbstractClass
+class CachedMultiHeadedAttention(MultiHeadedAttention):
+    def __init__(self, *args, **kwargs):
+        """Take in model size and number of heads."""
+        super().__init__(*args, **kwargs)
+        self.incremental_decoding = False
+
+    def reset_cache(self):
+        self.cache = [None, None]
+
+
+# Aliases
+MHA = MultiHeadedAttention
+CMHA = CachedMultiHeadedAttention
 
 
 # noinspection PyAbstractClass
@@ -573,7 +583,6 @@ class Transformer(CachedTransformerBase):
         nhead = 8
         dropout = 0.1
 
-        attn = MultiHeadedAttention(nhead, self.d_model)
         ff = PositionwiseFeedForward(self.d_model, self.dim_feedforward, dropout)
         position = PositionalEncoding(self.d_model, dropout)
         self.core = EncoderDecoder(
@@ -583,12 +592,16 @@ class Transformer(CachedTransformerBase):
                 nn.Dropout(self.drop_prob_src)
             ),
             encoder=Encoder(
-                EncoderLayer(self.d_model, deepcopy(attn), deepcopy(ff), dropout),
+                EncoderLayer(self.d_model, MHA(nhead, self.d_model), deepcopy(ff), dropout),
                 self.num_layers
             ),
             tgt_embed=nn.Sequential(InputEmbedding(self.d_model, self.vocab_size), deepcopy(position)),
             decoder=Decoder(
-                DecoderLayer(self.d_model, deepcopy(attn), deepcopy(attn), deepcopy(ff), dropout),
+                DecoderLayer(
+                    self.d_model,
+                    CMHA(nhead, self.d_model, self_attention=True), CMHA(nhead, self.d_model),
+                    deepcopy(ff), dropout
+                ),
                 self.num_layers
             ),
             generator=OutputEmbedding(self.d_model, self.vocab_size),
