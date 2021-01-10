@@ -135,11 +135,8 @@ class UpDownCollate:
             for imgid in image_ids
         ]
 
-        if len(set([_.shape[0] for _ in att_feats])) == 1:
-            att_masks = None
-        else:
-            att_masks = [torch.ones(_.shape[0]) for _ in att_feats]
-            att_masks = torch.nn.utils.rnn.pad_sequence(att_masks, batch_first=True, padding_value=0)
+        att_masks = [torch.ones(_.shape[0]) for _ in att_feats]
+        att_masks = torch.nn.utils.rnn.pad_sequence(att_masks, batch_first=True, padding_value=0)
 
         # labels = [
         #     torch.as_tensor(
@@ -278,3 +275,16 @@ class AttCollate(UpDownCollate):
             help="str: path to the directory containing the preprocessed fc feats"
         )
         # fmt: on
+
+
+class GanCollate(ObjectRelationCollate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, batch):
+        config = self.config
+        image_paths, image_ids, captions, all_captions, all_gts = zip(*batch)
+        data = super().__call__(batch)
+        # Sample some captions
+        self._debug_logging(data)
+        return data

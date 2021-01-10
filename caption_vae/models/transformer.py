@@ -654,7 +654,7 @@ class Transformer(CachedTransformerBase):
         # Add layer cache into state list, transposed so that beam_step can reorder them
         return logprobs, [ys.unsqueeze(0)] + self._retrieve_caches()
 
-    def _sample(self, att_feats, att_masks=None, opt=None, **kwargs):
+    def _sample(self, att_feats: Tensor, att_masks: Tensor, opt=None, **kwargs):
         if opt is None:
             opt = {}
         memory, att_masks = self.core.encode(src=att_feats, src_mask=att_masks)
