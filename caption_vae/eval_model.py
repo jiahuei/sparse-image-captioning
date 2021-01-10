@@ -28,7 +28,7 @@ def parse_opt() -> Namespace:
     )
     parser.add_argument(
         "--id", type=str, default="",
-        help="An id identifying this run/job."
+        help="str: An id identifying this run/job."
     )
     parser.add_argument(
         "--log_dir", type=str, default="",
@@ -64,8 +64,16 @@ def parse_opt() -> Namespace:
         action="store_true",
         help="bool: If `True`, run inference on MS-COCO `test2014` split.",
     )
+    parser.add_argument(
+        "--dataset", type=str, default=None,
+        help="str: Dataset name. If not provided, load from config.",
+    )
+    parser.add_argument(
+        "--dataset_dir", type=str, default=None,
+        help="str: Dataset directory. If not provided, load from config.",
+    )
     args = parser.parse_args()
-    args.log_dir = os.path.join(args.log_dir, f"{args.id}")
+    args.log_dir = os.path.join(args.log_dir, args.id)
     return args
 
 
@@ -73,7 +81,7 @@ def main(args):
     config = Config.load_config_json(os.path.join(args.log_dir, "config.json"))
     if config.caption_model.endswith("_prune"):
         config.caption_model = replace_from_right(config.caption_model, "_prune", "", 1)
-    config.update(vars(args))
+    config.update({k: v for k, v in vars(args).items() if v is not None})
     # config.max_seq_length = 3
 
     ckpt_path = os.path.join(args.log_dir, args.model_file)
