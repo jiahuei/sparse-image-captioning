@@ -10,12 +10,14 @@ export STANZA_CACHE_DIR="${DATASET_DIR}/stanza_resources"
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export CUDA_VISIBLE_DEVICES="0"
 
+
+# `--id` is optional if `--log_dir` points to the experiment directory
+
 python /master/src/caption_vae/eval_model.py \
-    --log_dir ${LOG_DIR} \
+    --log_dir ${LOG_DIR}/RTrans__baseline \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
-    --model_file model_best.pth \
-    --id RTrans__baseline
+    --model_file model_best.pth
 
 python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
