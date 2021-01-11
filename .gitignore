@@ -4,6 +4,10 @@ caption_vae/experiments
 caption_vae/mem_watch.txt
 caption_vae/scripts/memory_watch.py
 caption_vae/scripts/scp_stuff.sh
+docker/docker_run_jh.sh
+train.sh
+train_0.sh
+train_1.sh
 
 # Object Relation Transformer
 # Ignore emacs backup files
