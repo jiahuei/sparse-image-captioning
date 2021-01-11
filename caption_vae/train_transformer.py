@@ -10,7 +10,7 @@ from opts import parse_opt
 from utils import losses, optim
 from utils.config import Config
 from utils.misc import configure_logging
-from utils.model_utils import set_seed
+from utils.model_utils import set_seed, map_to_cuda
 from utils.lightning import LightningModule
 
 
@@ -25,7 +25,7 @@ class CaptioningModel(LightningModule):
         batch_size = self.train_loader.batch_size
 
         # Assure in training mode
-        model.cuda()
+        map_to_cuda(model)
         model.train()
         # Save init weights for Lottery Ticket
         torch.save(model.state_dict(), self.checkpoint_path.format("init"))
@@ -51,10 +51,7 @@ class CaptioningModel(LightningModule):
                 sc_flag = False
 
             for batch_idx, data in enumerate(self.train_loader):
-                data = {
-                    k: v.cuda(non_blocking=True) if isinstance(v, torch.Tensor) else v
-                    for k, v in data.items()
-                }
+                data = map_to_cuda(data)
                 optimizer.zero_grad()
 
                 if not sc_flag:

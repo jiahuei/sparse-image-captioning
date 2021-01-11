@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader
 from utils.config import Config
 from utils.misc import csv_to_float_list
 from utils.optim import ALL_OPTIMIZERS, ALL_SCHEDULERS
+from utils.model_utils import map_to_cuda
 from data import get_dataset, KarpathyDataset
 from tokenizer import get_tokenizer, Tokenizer
 from models import get_model
@@ -253,7 +254,7 @@ class LightningModule:
             assert greedy_decoded is None
             sc_baseline = np.mean(sc_sample.reshape(-1, config.scst_num_samples), axis=-1)
         sc_baseline = np.repeat(sc_baseline, config.scst_num_samples)
-        reward = torch.from_numpy(sc_sample - sc_baseline).type_as(sample_logprobs).cuda()
+        reward = map_to_cuda(torch.from_numpy(sc_sample - sc_baseline).type_as(sample_logprobs))
         mask = sample_res.view(sample_res.size(0) * sample_res.size(1), -1) != model.pad_idx
         loss = loss_fn(sample_logprobs, mask=mask, reward=reward)
         return loss, reward, sc_sample, sc_baseline
@@ -269,10 +270,7 @@ class LightningModule:
         image_paths = []
         predictions = []
         for batch_idx, data in enumerate(tqdm(loader, desc="Evaluating model")):
-            data = {
-                k: v.cuda(non_blocking=True) if isinstance(v, torch.Tensor) else v
-                for k, v in data.items()
-            }
+            data = map_to_cuda(data)
             with torch.no_grad():
                 seq = model(**data, opt=config, mode="sample")[0]
 
@@ -339,7 +337,7 @@ class LightningModule:
             f"`config` should be an instance of `utils.config.Config`, saw {type(config)}"
         self = cls(config)
         self.model.load_state_dict(state_dict)
-        self.model.cuda()
+        map_to_cuda(self.model)
         if split == "val":
             self.test_loader = self.val_dataloader()
         elif split == "test":

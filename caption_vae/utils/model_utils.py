@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 from copy import deepcopy
-from typing import Type, Callable, Any
+from typing import Any, Union, Type, Callable, Tuple, List, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -95,36 +95,40 @@ def find_beam_parent_index(previous: torch.Tensor, current: torch.Tensor):
     return loc
 
 
-def map_structure_recursive(
-        structure: Any,
-        func: Callable,
-        end_type: Type[torch.Tensor] = torch.Tensor
-):
+def map_recursive(x: Any, func: Callable):
     """
-    Applies `func` to elements of structure recursively.
+    Applies `func` to elements of x recursively.
     Args:
-        structure: A `Tensor`, or a potentially nested structure containing `Tensor`.
+        x: An item or a potentially nested structure of tuple, list or dict.
         func: A single argument function.
-        end_type: The type of element that `func` expects. Defaults to `torch.Tensor`.
     Returns:
-        The same structure but with `func` applied.
+        The same x but with `func` applied.
     """
-    error_mssg = (
-        f"Expected `structure` to be either a `tuple`, `list` or `dict`, "
-        f"received {type(structure)} instead."
-    )
-    if isinstance(structure, end_type):
-        return func(structure)
-    elif structure is None:
-        return None
-    elif isinstance(structure, tuple):
-        return tuple(map_structure_recursive(item, func, end_type) for item in structure)
-    elif isinstance(structure, list):
-        return list(map_structure_recursive(item, func, end_type) for item in structure)
-    elif isinstance(structure, dict):
-        return {key: map_structure_recursive(value, func, end_type) for key, value in structure.items()}
+    if isinstance(x, tuple):
+        return tuple(map_recursive(item, func) for item in x)
+    elif isinstance(x, list):
+        return list(map_recursive(item, func) for item in x)
+    elif isinstance(x, dict):
+        return {key: map_recursive(value, func) for key, value in x.items()}
     else:
-        raise TypeError(error_mssg)
+        return func(x)
+
+
+def to_cuda(x: Any):
+    if torch.cuda.is_available():
+        if isinstance(x, nn.Module):
+            x.cuda()
+        elif isinstance(x, torch.Tensor):
+            x = x.cuda(non_blocking=True)
+        # else:
+        #     raise TypeError(
+        #         "`to_cuda()` function only accepts input types: `torch.nn.Module` and `torch.Tensor`"
+        #     )
+    return x
+
+
+def map_to_cuda(x: Any):
+    return map_recursive(x, to_cuda)
 
 
 def count_nonzero(tensor):
@@ -193,3 +197,8 @@ def pack_wrapper(module, att_feats, att_masks):
         return pad_unsort_packed_sequence(PackedSequence(module(packed[0]), packed[1]), inv_ix)
     else:
         return module(att_feats)
+
+
+def requires_grad(model, flag=True):
+    for p in model.parameters():
+        p.requires_grad = flag

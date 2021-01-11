@@ -216,7 +216,7 @@ class BoxMultiHeadedAttention(nn.Module):
         position_mat = torch.cat((delta_x, delta_y, delta_w, delta_h), -1)
 
         if trigonometric_embedding:
-            feat_range = torch.arange(dim_g / 8).cuda()
+            feat_range = torch.arange(dim_g / 8, device=f_g.device)
             dim_mat = feat_range / (dim_g / 8)
             dim_mat = 1. / (torch.pow(wave_len, dim_mat))
 

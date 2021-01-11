@@ -10,7 +10,7 @@ from opts import parse_opt
 from utils import losses, optim
 from utils.config import Config
 from utils.misc import configure_logging, replace_from_right
-from utils.model_utils import set_seed, densify_state_dict
+from utils.model_utils import set_seed, map_to_cuda, densify_state_dict
 from utils.lightning import LightningModule
 from pruning import prune
 
@@ -31,7 +31,7 @@ class CaptioningModel(LightningModule):
         batch_size = self.train_loader.batch_size
 
         # Assure in training mode
-        model.cuda()
+        map_to_cuda(model)
         model.train()
         # Save init weights for Lottery Ticket
         torch.save(
@@ -71,10 +71,7 @@ class CaptioningModel(LightningModule):
                 if batch_idx == config.prune_snip_grad_accum:
                     logger.debug(f"{self.__class__.__name__}: SNIP: Accumulated gradients across {batch_idx} batches.")
                     break
-                data = {
-                    k: v.cuda(non_blocking=True) if isinstance(v, torch.Tensor) else v
-                    for k, v in data.items()
-                }
+                data = map_to_cuda(data)
                 loss = loss_fn(
                     model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
                 )
@@ -114,10 +111,7 @@ class CaptioningModel(LightningModule):
                 sc_flag = False
 
             for batch_idx, data in enumerate(self.train_loader):
-                data = {
-                    k: v.cuda(non_blocking=True) if isinstance(v, torch.Tensor) else v
-                    for k, v in data.items()
-                }
+                data = map_to_cuda(data)
                 optimizer.zero_grad()
                 if not sc_flag:
                     loss = loss_fn(
@@ -252,7 +246,7 @@ class CaptioningModel(LightningModule):
         model = self.model
         model.load_state_dict(torch.load(ckpt_path))
         logger.info(f"{self.__class__.__name__}: Model weights loaded from `{ckpt_path}`")
-        model.cuda()
+        map_to_cuda(model)
 
         # Prune weights and calculate sparsities
         with torch.no_grad():
