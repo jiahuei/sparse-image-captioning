@@ -7,9 +7,6 @@ import unittest
 import os
 from copy import deepcopy
 from utils import model_utils
-from utils.misc import BASE_DIR
-
-TEST_DATA_DIR = os.path.join(BASE_DIR, "test_data")
 
 
 class TestModelUtils(unittest.TestCase):
