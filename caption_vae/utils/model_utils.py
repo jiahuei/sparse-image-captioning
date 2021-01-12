@@ -9,9 +9,10 @@ import torch
 from torch import nn
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 from copy import deepcopy
-from typing import Any, Union, Type, Callable, Tuple, List, Dict
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
+USE_CUDA = torch.cuda.is_available()
 
 
 def set_seed(seed: int):
@@ -70,31 +71,6 @@ def reorder_beam(tensor: torch.Tensor, beam_idx: torch.Tensor, beam_dim: int = 0
     return tensor.index_select(beam_dim, beam_idx)
 
 
-def find_beam_parent_index(previous: torch.Tensor, current: torch.Tensor):
-    """
-    Tensors must have shape (batch, beam, time, ...)
-    """
-    assert previous.dim() > 2, f"`previous` must have at least 3 dims (batch, beam, N). Saw {previous.shape}"
-    assert current.dim() > 2, f"`current` must have at least 3 dims (batch, beam, N). Saw {current.shape}"
-
-    batch, beam, ct = current.shape[:3]
-    pt = previous.size(2)
-    if ct != pt:
-        assert ct - pt == 1, (
-            f"Shape mismatch between `current` and `previous`. "
-            f"current = {current.shape}"
-            f"previous = {previous.shape}"
-        )
-        # current = current.index_select(time_dim, index=torch.arange(previous.size(time_dim)))
-        current = current[:, :, :-1, ...]
-    match = (previous.unsqueeze(1) == current.unsqueeze(2)).all(dim=-1)
-    loc = match.nonzero(as_tuple=False)[:, -1]
-    loc = loc.view(batch, beam)
-    offset = torch.arange(batch).unsqueeze(1) * beam
-    loc = (loc + offset).view(-1)
-    return loc
-
-
 def map_recursive(x: Any, func: Callable):
     """
     Applies `func` to elements of x recursively.
@@ -115,15 +91,11 @@ def map_recursive(x: Any, func: Callable):
 
 
 def to_cuda(x: Any):
-    if torch.cuda.is_available():
-        if isinstance(x, nn.Module):
-            x.cuda()
-        elif isinstance(x, torch.Tensor):
+    if USE_CUDA:
+        if isinstance(x, torch.Tensor):
             x = x.cuda(non_blocking=True)
-        # else:
-        #     raise TypeError(
-        #         "`to_cuda()` function only accepts input types: `torch.nn.Module` and `torch.Tensor`"
-        #     )
+        elif isinstance(x, nn.Module):
+            x.cuda()
     return x
 
 
@@ -171,10 +143,6 @@ def length_average(length, logprobs, alpha=0.):
     Returns the average probability of tokens in a sequence.
     """
     return logprobs / length
-
-
-# bad_endings = ['a', 'an', 'the', 'in', 'for', 'at', 'of', 'with', 'before', 'after', 'on', 'upon', 'near', 'to', 'is',
-#                'are', 'am', 'the']
 
 
 def sort_pack_padded_sequence(inputs, lengths):
