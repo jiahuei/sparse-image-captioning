@@ -73,7 +73,7 @@ class CaptioningModel(LightningModule):
                 # Console log
                 if self.global_step % 5 == 0:
                     num_ex = batch_size * 5 * (1 if sc_flag else config.seq_per_img)
-                    t_taken = time() - t_start
+                    t_taken, t_start = time() - t_start, time()
                     eta = (
                             (len(self.train_loader) * config.max_epochs - self.global_step)
                             * (t_taken / 5) / 3600
@@ -84,7 +84,6 @@ class CaptioningModel(LightningModule):
                         f"Speed = {num_ex / t_taken:4.0f} ex/sec, ETA = {eta:5.1f} hr, "
                         f"LR = {optimizer.rate():.2e}"
                     )
-                    t_start = time()
                     if not sc_flag:
                         print(f"{log_str}, Loss = {train_loss:6.3f}")
                     else:
