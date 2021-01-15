@@ -37,7 +37,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python & \
 
 ### Python Packages ###
 COPY requirements.txt requirements.txt
+#COPY requirements_extra.txt requirements_extra.txt
 RUN pip install --upgrade -r requirements.txt
+#RUN pip install --upgrade -r requirements.txt -r requirements_extra.txt
 
 # Perhaps install TensorRT to suppress TensorFlow warnings
 # https://stackoverflow.com/questions/60368298/could-not-load-dynamic-library-libnvinfer-so-6
