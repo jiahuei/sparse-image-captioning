@@ -5,7 +5,6 @@ LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
 DATASET_DIR="/master/datasets/mscoco"
 CACHE_FREE_RAM=0.3
 
-export MPLCONFIGDIR="/tmp/matplotlib"
 export STANZA_CACHE_DIR="${DATASET_DIR}/stanza_resources"
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export CUDA_VISIBLE_DEVICES="1"
