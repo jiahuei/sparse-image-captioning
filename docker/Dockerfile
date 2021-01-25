@@ -5,7 +5,7 @@ RUN cat /usr/include/cudnn.h | grep CUDNN_MAJOR -A 2
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
 
 
-RUN apt-get update && apt-get install -y apt-utils
+RUN apt-get update && apt-get install -y apt-utils sudo
 
 ### Time Zone ###
 ARG TZ=Asia/Kuala_Lumpur
