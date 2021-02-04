@@ -138,3 +138,14 @@ To perform online server evaluation:
 * Object Relation Transformer: [yahoo/object_relation_transformer](https://github.com/yahoo/object_relation_transformer)
 * `coco_caption` in Python 3: [salaniz/pycocoevalcap](https://github.com/salaniz/pycocoevalcap/tree/ad63453cfab57a81a02b2949b17a91fab1c3df77)
 
+
+## Notes
+
+### `pycocotools` installation issues
+
+* One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
+* To resolve it, either:
+    * Install `numpy` and `cython` prior to installing `pycocotools`
+    * Maybe try `pycocotools-fix` instead
+* This issue may lead to GitHub CI failing, if a different `numpy` version is reinstalled after `pycocotools` is built
+
