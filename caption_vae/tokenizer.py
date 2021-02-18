@@ -331,40 +331,8 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         self.config = config
         self.tokenizer_dir = os.path.join(self.config.log_dir, "tokenizer")
         self.sp_model_path = os.path.join(self.tokenizer_dir, f"{self.MODEL_TYPE}.model")
-        # Maybe reload tokenizer from another training checkpoint dir
-        if not config.start_from:
-            start_from = ""
-        elif os.path.isfile(config.start_from):
-            start_from = os.path.dirname(config.start_from)
-        elif os.path.isdir(config.start_from):
-            start_from = config.start_from
-        else:
-            raise ValueError(
-                f"{self.__class__.__name__}: `config.start_from` must be either dir or file. "
-                f"Got `{config.start_from}`"
-            )
-        src_model_path = os.path.join(start_from, "tokenizer", f"{self.MODEL_TYPE}.model")
-        if not os.path.isfile(self.sp_model_path) and os.path.isfile(src_model_path):
-            # shutil.copytree(os.path.dirname(src_model_path), self.tokenizer_dir)
-            shutil.copy2(src_model_path, self.sp_model_path)
-            shutil.copy2(
-                src_model_path.replace(".model", ".vocab"),
-                self.sp_model_path.replace(".model", ".vocab")
-            )
-            train_file = os.path.join(self.tokenizer_dir, "train_captions.txt")
-            if os.path.isfile(train_file):
-                os.remove(train_file)
-            self.config.tokenizer_train_files = None
-        # Train the tokenizer if model file is not found
-        if not os.path.isfile(self.sp_model_path):
-            if not isinstance(self.config.tokenizer_train_files, str):
-                error_mssg = (
-                    "`config.tokenizer_train_files` must be provided in absence of `sp_model_path`."
-                )
-                raise ValueError(error_mssg)
-            sp_model_path = self.train()
-            logger.info(f"{self.__class__.__name__}: Tokenizer model saved to `{sp_model_path}`.")
-            assert self.sp_model_path == sp_model_path
+        sp_model_path = self.train()
+        assert self.sp_model_path == sp_model_path
         self._load_processor()
         # Copy tokenizer attributes over to Config
         for attr in self.special_token_attributes:
@@ -384,7 +352,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
             input_str: str,
             add_bos_eos: bool = True,
             max_seq_length: int = 16,
-            sampling=False,
+            sampling: bool = False,
     ) -> List[int]:
         if sampling:
             ids = self.processor.encode(
@@ -438,7 +406,40 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         return self.process_tokens(" " + input_str, pieces, lambda x: x.replace("\u2581", " "))
 
     def train(self):
-        logger.info(f"{self.__class__.__name__}: Training on `{self.config.tokenizer_train_files}`.")
+        if os.path.isfile(self.sp_model_path):
+            logger.info(f"{self.__class__.__name__}: Found existing tokenizer model file.")
+            return self.sp_model_path
+        config = self.config
+
+        # Maybe reload tokenizer from another training checkpoint dir
+        if os.path.isfile(config.start_from):
+            start_from = os.path.dirname(config.start_from)
+        elif os.path.isdir(config.start_from):
+            start_from = config.start_from
+        else:
+            start_from = ""
+
+        src_model_path = os.path.join(start_from, "tokenizer", f"{self.MODEL_TYPE}.model")
+        if os.path.isfile(src_model_path):
+            # shutil.copytree(os.path.dirname(src_model_path), self.tokenizer_dir)
+            shutil.copy2(src_model_path, self.sp_model_path)
+            shutil.copy2(
+                src_model_path.replace(".model", ".vocab"),
+                self.sp_model_path.replace(".model", ".vocab")
+            )
+            train_file = os.path.join(self.tokenizer_dir, "train_captions.txt")
+            if os.path.isfile(train_file):
+                os.remove(train_file)
+            config.tokenizer_train_files = None
+            return self.sp_model_path
+
+        # Train the tokenizer if model file is not found
+        if not isinstance(config.tokenizer_train_files, str):
+            raise ValueError(
+                f"{self.__class__.__name__}: "
+                f"`config.tokenizer_train_files` must be provided in absence of `sp_model_path`."
+            )
+        logger.info(f"{self.__class__.__name__}: Training on `{config.tokenizer_train_files}`.")
         os.makedirs(self.tokenizer_dir, exist_ok=True)
 
         model_prefix = os.path.join(self.tokenizer_dir, self.MODEL_TYPE)
@@ -451,12 +452,12 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         #     ), f"`user_defined_symbols` must not start with a comma `,`."
 
         log_level = 2
-        if isinstance(self.config.logging_level, int):
-            log_level = int((self.config.logging_level - 10) / 10)
+        if isinstance(config.logging_level, int):
+            log_level = int((config.logging_level - 10) / 10)
         SentencePieceTrainer.train(
-            f"--input={self.config.tokenizer_train_files} "
+            f"--input={config.tokenizer_train_files} "
             f"--model_prefix={model_prefix} "
-            f"--vocab_size={self.config.vocab_size} "
+            f"--vocab_size={config.vocab_size} "
             f"--hard_vocab_limit=false "  # Allow final vocab size to be smaller if training set is too small
             f"--model_type={self.MODEL_TYPE} "
             f"--pad_id=0 --unk_id=1 --bos_id=2 --eos_id=3 "
@@ -466,7 +467,9 @@ class SentencePieceUnigramTokenizer(Tokenizer):
             # f"--user_defined_symbols={user_defined_symbols} "
             # f"--minloglevel={log_level} "
         )
-        return f"{model_prefix}.model"
+        sp_model_path = f"{model_prefix}.model"
+        logger.info(f"{self.__class__.__name__}: Tokenizer model saved to `{sp_model_path}`.")
+        return sp_model_path
 
     def token_to_id(self, token):
         return self.processor.piece_to_id(token)
