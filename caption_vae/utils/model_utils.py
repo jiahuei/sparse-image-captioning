@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: ruotianluo
+@author: jiahuei, ruotianluo
 """
 import logging
 import random
