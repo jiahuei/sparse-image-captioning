@@ -357,10 +357,6 @@ class UpDownModel(AttModel):
         UpDownModel.COLLATE_FN.add_argparse_args(parser)
         # CaptionModel args
         parser.add_argument(
-            "--max_seq_length", type=int, default=16,
-            help="int: Maximum sequence length excluding <bos> and <eos>.",
-        )
-        parser.add_argument(
             "--rnn_size", type=int, default=1000,
             help="int: Size of the RNN (number of units)."
         )

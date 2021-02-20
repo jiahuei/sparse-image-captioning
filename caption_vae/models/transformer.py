@@ -556,10 +556,6 @@ class CachedTransformerBase(CaptionModel):
             help="int: Number of transformer layers."
         )
         parser.add_argument(
-            "--max_seq_length", type=int, default=16,
-            help="int: Maximum sequence length excluding <BOS> and <EOS>.",
-        )
-        parser.add_argument(
             "--drop_prob_src", type=float, default=0.5,
             help="float: Dropout rate applied to source embedding at the Encoder."
         )

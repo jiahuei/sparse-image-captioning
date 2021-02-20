@@ -252,36 +252,3 @@ class CaptionModel(nn.Module):
             it = torch.distributions.Categorical(logits=logprobs.detach()).sample()
             sample_logprobs = logprobs.gather(1, it.unsqueeze(1))  # gather the logprobs at sampled positions
         return it, sample_logprobs
-
-    # def decode_sequence(self, seq):
-    #     return utils.decode_sequence(self.vocab, seq)
-
-    # @staticmethod
-    # def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
-    #     # fmt: off
-    #     parser.add_argument(
-    #         "--max_seq_length", type=int, default=16,
-    #         help="int: Maximum sequence length excluding <bos> and <eos>.",
-    #     )
-    #     parser.add_argument(
-    #         "--rnn_size", type=int, default=2048,
-    #         help="int: Size of the rnn in number of hidden nodes in each layer"
-    #     )
-    #     parser.add_argument(
-    #         "--num_layers", type=int, default=6,
-    #         help="int: Number of layers in the model"
-    #     )
-    #     parser.add_argument(
-    #         "--input_encoding_size", type=int, default=512,
-    #         help="int: The encoding size of each token in the vocabulary, and the image."
-    #     )
-    #     parser.add_argument(
-    #         "--att_feat_size", type=int, default=2048,
-    #         help="int: 2048 for resnet, 512 for vgg"
-    #     )
-    #     parser.add_argument(
-    #         "--drop_prob_lm", type=float, default=0.5,
-    #         help="float: Strength of dropout in the Language Model RNN"
-    #     )
-    #     # fmt: on
-    #     # return parser

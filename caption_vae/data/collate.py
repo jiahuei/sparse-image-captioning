@@ -138,16 +138,9 @@ class UpDownCollate:
         att_masks = [torch.ones(_.shape[0]) for _ in att_feats]
         att_masks = torch.nn.utils.rnn.pad_sequence(att_masks, batch_first=True, padding_value=0)
 
-        # labels = [
-        #     torch.as_tensor(
-        #         self.tokenizer.encode(_, add_bos_eos=True, max_seq_length=config.max_seq_length + 2),
-        #         dtype=torch.int64
-        #     )
-        #     for _ in captions
-        # ]
         labels = [
             torch.as_tensor(
-                self.tokenizer.encode(_, add_bos_eos=True, max_seq_length=config.max_seq_length + 2),
+                self.tokenizer.encode(_, add_bos_eos=True, max_seq_length=config.max_seq_length),
                 dtype=torch.int64
             )
             for gt in all_captions for _ in random.sample(gt, min(config.seq_per_img, len(gt)))
@@ -188,6 +181,10 @@ class UpDownCollate:
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
         # fmt: off
+        parser.add_argument(
+            "--max_seq_length", type=int, default=18,
+            help="int: Maximum sequence length including <BOS> and <EOS>.",
+        )
         parser.add_argument(
             "--seq_per_img", type=int, default=5,
             help="Number of captions to sample for each image during training. "

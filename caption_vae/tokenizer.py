@@ -23,10 +23,9 @@ import shutil
 import stanza
 from argparse import ArgumentParser, _ArgumentGroup
 from abc import ABC, abstractmethod
-from typing import Type, Optional, Union, List, NamedTuple
+from typing import Union, List, NamedTuple
 from torch import Tensor
 from numpy import ndarray
-from utils.config import Config
 from sentencepiece import SentencePieceTrainer, SentencePieceProcessor
 
 logger = logging.getLogger(__name__)
@@ -337,7 +336,6 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         # Copy tokenizer attributes over to Config
         for attr in self.special_token_attributes:
             self._update_config(attr, getattr(self, attr, None))
-        self._update_config("vocab_size", len(self))
         self._update_config("num_control_symbols", len(self.control_symbols))
         self._update_config("num_special_symbols", len(self.control_symbols) + 4)
         logger.info(f"{self.__class__.__name__}: Init complete.")
@@ -383,10 +381,10 @@ class SentencePieceUnigramTokenizer(Tokenizer):
             ids = ids[:max_seq_length]
         return ids
 
-    def decode(self, input_ids: List[int]) -> str:
+    def decode(self, input_ids: Union[List[int], Tensor, ndarray]) -> str:
         if isinstance(input_ids, (Tensor, ndarray)):
             if len(input_ids.shape) == 1:
-                input_ids = list(map(int, input_ids))
+                input_ids = input_ids.tolist()
             elif len(input_ids.shape) == 0:
                 input_ids = [int(input_ids)]
             else:
@@ -394,7 +392,6 @@ class SentencePieceUnigramTokenizer(Tokenizer):
                     f"`input_tensor` can be either 1D or 0D, saw `{len(input_ids.shape)}`D instead."
                 )
                 raise ValueError(error_mssg)
-        # TODO: remove after vocab_size is fixed
         input_ids = [_ if _ < len(self) else self.config.unk_token_id for _ in input_ids]
         sent = self.processor.decode_ids(input_ids).replace("<unk>", " <unk>")
         if sent.startswith(" "):
