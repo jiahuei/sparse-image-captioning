@@ -115,7 +115,7 @@ class KarpathyDataset(ABC):
             # The rest
             img_path = os.path.join(self.dataset_dir, d.get("filepath", "images"), d["filename"])
             split = "train" if d["split"] == "restval" else d["split"]
-            # coco_caption scorers require tokenized GT captions
+            # For SCST: coco_caption scorers require tokenized GT captions
             all_gts = [" ".join(sent["tokens"]) for sent in d["sentences"]]
             all_captions = [
                 sent["raw"] if self.config.retokenize_captions else " ".join(sent["tokens"])

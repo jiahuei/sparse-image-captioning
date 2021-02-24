@@ -68,7 +68,7 @@ class MscocoDataset(KarpathyDataset):
         data = [
             {
                 "img_path": p, "img_id": i,
-                "caption": "", "all_captions": [[""]], "all_gts": [[""]],
+                "caption": "", "all_captions": [""], "all_gts": [""],
             }
             for p, i in zip(img_paths, img_ids)
         ]

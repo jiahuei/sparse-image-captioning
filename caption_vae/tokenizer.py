@@ -63,8 +63,7 @@ def get_tokenizer(name: str):
         return TOKENIZER_REGISTRY[name]
     except KeyError:
         _list = "\n".join(TOKENIZER_REGISTRY.keys())
-        error_mssg = f"Tokenizer specified `{name}` is invalid. Available options are: \n{_list}"
-        raise ValueError(error_mssg)
+        raise ValueError(f"Tokenizer specified `{name}` is invalid. Available options are: \n{_list}")
 
 
 class PosTagger:
@@ -388,10 +387,10 @@ class SentencePieceUnigramTokenizer(Tokenizer):
             elif len(input_ids.shape) == 0:
                 input_ids = [int(input_ids)]
             else:
-                error_mssg = (
+                raise ValueError(
+                    f"{self.__class__.__name__}: "
                     f"`input_tensor` can be either 1D or 0D, saw `{len(input_ids.shape)}`D instead."
                 )
-                raise ValueError(error_mssg)
         input_ids = [_ if _ < len(self) else self.config.unk_token_id for _ in input_ids]
         sent = self.processor.decode_ids(input_ids).replace("<unk>", " <unk>")
         if sent.startswith(" "):
@@ -473,8 +472,11 @@ class SentencePieceUnigramTokenizer(Tokenizer):
 
     def id_to_token(self, token_id):
         if token_id >= len(self):
-            error_mssg = f"`token_id` ({token_id}) exceeded the vocab size ({len(self)}). Max ID is `{len(self) - 1}`."
-            raise ValueError(error_mssg)
+            raise ValueError(
+                f"{self.__class__.__name__}: "
+                f"`token_id` ({token_id}) exceeded the vocab size ({len(self)}). "
+                f"Max ID is `{len(self) - 1}`."
+            )
         return self.processor.id_to_piece(token_id)
 
     def _load_processor(self):
