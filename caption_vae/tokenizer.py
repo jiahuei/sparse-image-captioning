@@ -743,18 +743,7 @@ class RadixTokenizer(SentencePieceUnigramTokenizer):
     @staticmethod
     def add_argparse_args(parser: Union[_ArgumentGroup, ArgumentParser]):
         # fmt: off
-        parser.add_argument(
-            "--tokenizer_train_files",
-            type=str,
-            default=None,
-            help="comma-separated str: Paths to the tokenizer training text files.",
-        )
-        parser.add_argument(
-            "--vocab_size",
-            type=int,
-            default=10001,
-            help="int: Maximum vocabulary size.",
-        )
+        SentencePieceUnigramTokenizer.add_argparse_args(parser)
         parser.add_argument(
             "--radix_base",
             type=int,
