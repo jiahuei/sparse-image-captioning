@@ -29,6 +29,7 @@
     * Based on [salaniz/pycocoevalcap](https://github.com/salaniz/pycocoevalcap/tree/ad63453cfab57a81a02b2949b17a91fab1c3df77)
 * Tokenizer based on `sentencepiece`
     * Word
+    * [Radix encoding](https://github.com/jiahuei/COMIC-Compact-Image-Captioning-with-Attention)
     * _(untested)_ Unigram, BPE, Character
 * Datasets
     * MS-COCO
