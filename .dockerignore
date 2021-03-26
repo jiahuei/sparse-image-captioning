@@ -1,14 +1,12 @@
 # Internal references
 _ref_/
-plot_data/
-caption_vae/experiments
-caption_vae/mem_watch.txt
-caption_vae/scripts/memory_watch.py
-caption_vae/scripts/scp_stuff.sh
-docker/docker_run_jh.sh
+docker_run_jh.sh
 train.sh
 train_0.sh
 train_1.sh
+
+# Ignore since we do not copy code into Docker image
+caption_vae/
 
 # Object Relation Transformer
 # Ignore emacs backup files
@@ -21,13 +19,11 @@ vis/imgs/*.jpg
 # Generated results
 eval_results
 
-
 # PyCharm
 .idea/
 
 # VS Code
 *.code-workspace
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -113,7 +109,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
@@ -154,7 +150,7 @@ Latex
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
-*.log
+#*.log
 *.lot
 *.fls
 *.out
@@ -398,7 +394,6 @@ TSWLatexianTemp*
 *~[0-9]*
 
 # auto folder when using emacs and auctex
-./auto/*
 *.el
 
 # expex forward references with \gathertags
@@ -408,4 +403,4 @@ TSWLatexianTemp*
 *.sta
 
 # generated if using elsarticle.cls
-*.spl
+#*.spl
