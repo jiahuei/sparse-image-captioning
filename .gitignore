@@ -1,6 +1,7 @@
 # Internal references
 _ref_/
 plot_data/
+scripts/*.png
 caption_vae/experiments
 caption_vae/mem_watch.txt
 caption_vae/scripts/memory_watch.py
