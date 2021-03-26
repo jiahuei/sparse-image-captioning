@@ -1,0 +1,8 @@
+tensorflow~=2.4.0
+tensorflow-addons~=0.12.1
+tensorflow-datasets~=4.2.0
+tensorflow-hub~=0.11.0
+Keras-Preprocessing~=1.1.2
+psutil~=5.7.0
+pipreqs~=0.4.10
+requests~=2.24.0
