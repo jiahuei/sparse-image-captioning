@@ -3,14 +3,11 @@
 Created on 09 Nov 2020 22:25:38
 @author: jiahuei
 
-
 cd caption_vae
-python -m scripts.plot_nonzero_weights_kde
+python -m scripts.plot_nonzero_weights_kde --log_dir x --id x
 """
 import os
-import re
 import logging
-import json
 import torch
 import numpy as np
 import seaborn as sns
@@ -24,9 +21,20 @@ from utils.file import list_dir
 from utils.config import Config
 
 logger = logging.getLogger(__name__)
+gray3 = sns.color_palette("gray_r", n_colors=3)
+crest3 = sns.color_palette("crest_r", n_colors=3)
+summer3 = sns.color_palette("summer_r", n_colors=4)[1:]
+mako3 = sns.color_palette("mako_r", n_colors=3)
+flare3 = sns.color_palette("flare", n_colors=3)
+blue3 = sns.cubehelix_palette(3, start=.5, rot=-.5)
+cranberry3 = sns.dark_palette("#b2124d", n_colors=3, reverse=True)[:3]
+coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
+sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealpha": 0.7})
 
 
 class KDE:
+    CONTEXT = "paper"
+    FIG_SCALE = 1.5
     FIG_DPI = 600
     PRUNE_TYPE_TITLE = {
         prune.REGULAR: "Proposed",
@@ -49,24 +57,34 @@ class KDE:
 
     def __call__(self, model_dir, visualise_weights_only=True):
         print(f"Processing `{model_dir}`")
-        model_config = Config.load_config_json(os.path.join(model_dir, "config.json"))
-        ckpt_path = [os.path.join(model_dir, _) for _ in self.config.model_file]
-        ckpt_path = list(filter(os.path.isfile, ckpt_path))
-        if len(ckpt_path) > 0:
-            ckpt_path = ckpt_path[0]
-        else:
-            return None
-        state_dict = densify_state_dict(torch.load(ckpt_path, map_location=torch.device("cpu")))
-        print(f"Model weights loaded from `{ckpt_path}`")
+        try:
+            model_config = Config.load_config_json(os.path.join(model_dir, "config.json"))
+            ckpt_path = [os.path.join(model_dir, _) for _ in self.config.model_file]
+            ckpt_path = list(filter(os.path.isfile, ckpt_path))
+            if len(ckpt_path) > 0:
+                ckpt_path = ckpt_path[0]
+            else:
+                return None
+            state_dict = densify_state_dict(torch.load(ckpt_path, map_location=torch.device("cpu")))
+            print(f"Model weights loaded from `{ckpt_path}`")
+            if visualise_weights_only:
+                state_dict = {k: v for k, v in state_dict.items() if "weight" in k}
+            flat_weights_np = np.concatenate([_.view(-1).numpy() for _ in state_dict.values()])
 
-        if visualise_weights_only:
-            state_dict = {k: v for k, v in state_dict.items() if "weight" in k}
-        flat_weights_np = np.concatenate([_.view(-1).numpy() for _ in state_dict.values()])
+        except FileNotFoundError:
+            flat_weights_np = np.load(os.path.join(model_dir, "nonzero_weights_flat.npy"))
+            model_config = {
+                # Just hard-code this for now
+                "caption_model": "Soft-Attention LSTM",
+                "prune_type": prune.REGULAR if "REG" in model_dir else prune.MAG_GRAD_BLIND,
+                "prune_sparsity_target": 0.975
+            }
+
         nonzero_weights = flat_weights_np[flat_weights_np != 0]
         np.save(os.path.join(model_dir, "nonzero_weights_flat.npy"), nonzero_weights)
 
         # Output Naming
-        net_name = model_config.caption_model
+        net_name = model_config.get("caption_model")
         if net_name.endswith("_prune"):
             net_name = replace_from_right(net_name, "_prune", "", 1)
         # net_name = net_name.replace("net", "Net")
@@ -81,12 +99,13 @@ class KDE:
                 fig_title = f"{self.PRUNE_TYPE_TITLE[pruning_type]}, "
             except KeyError:
                 raise ValueError(f"Invalid pruning type: `{pruning_type}`")
-            sparsity = model_config.prune_sparsity_target * 100
+            sparsity = model_config.get("prune_sparsity_target") * 100
             fig_title += f"{sparsity:.1f}% sparse, "
             # TexStudio cannot accept filename with dot
             output_suffix += f"_{int(sparsity)}_{pruning_type}"
 
         fig_title += " ".join(_.title() for _ in net_name.split("_"))
+        fig_title = fig_title.replace("Lstm", "LSTM")
         # TexStudio will annoyingly highlight underscores in filenames
         output_suffix = output_suffix.replace("_", "-")
 
@@ -104,29 +123,18 @@ class KDE:
         print("")
 
     def plot_kde(self, data, output_fig_path, fig_title, fig_footnote=None):
-        sns.set()
-        # print(sns.axes_style())
-        sns.set_style(
-            "whitegrid", {
-                "axes.edgecolor": ".5",
-                "grid.color": ".87",
-                "grid.linestyle": "dotted",
-                # "lines.dash_capstyle": "round",
-            }
-        )
+        sns.set_context(self.CONTEXT)
         # colours = ("goldenrod", "sandybrown", "chocolate", "peru")
         # colours = ("c", "cadetblue", "lightseagreen", "skyblue")
-        fig, ax = plt.subplots(nrows=1, ncols=1, dpi=self.FIG_DPI, figsize=(8.5, 6.25))
-        ax = sns.distplot(
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * self.FIG_SCALE, 3. * self.FIG_SCALE))
+        ax = sns.kdeplot(
             data,
-            bins=50,
-            kde_kws={"gridsize": 200, "color": "darkcyan"},
+            fill=True, common_norm=False,  # palette="crest",
+            alpha=.5, linewidth=0,
             color="c",
             ax=ax,
         )
-        sns.despine()
-        # plt.legend(loc="upper left", bbox_to_anchor=(0.1, 1.), fontsize="small")
-        plt.title(fig_title)
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
         if isinstance(fig_footnote, str):
             plt.figtext(
                 0.90, 0.025,
@@ -134,7 +142,9 @@ class KDE:
                 horizontalalignment="right",
                 fontsize="xx-small",
             )
-        plt.savefig(output_fig_path)
+        # Adjust margins and layout
+        plt.tight_layout(pad=1.5)
+        plt.savefig(output_fig_path, dpi=self.FIG_DPI)
         plt.clf()
         plt.close("all")
 
