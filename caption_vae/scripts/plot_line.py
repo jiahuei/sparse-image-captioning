@@ -104,7 +104,7 @@ def plot_performance(
     df2.index = df2.index.map(lambda x: f"{x * 100:.1f} %")
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(ylim=get_lim(df.loc[:, yaxis_name], min_threshold=min_threshold))
+    ax.set(ylim=get_lim(df2.loc[:, yaxis_name], min_threshold=min_threshold))
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax, palette=palette,
     )
@@ -296,31 +296,6 @@ def plot_overview(
         hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
         bbox_to_anchor=(0.5, -0.33),
     )
-    # # config B
-    # method_legend = ax.legend(
-    #     hdl[:size_idx], lbl[:size_idx], ncol=5, loc="upper center",
-    #     bbox_to_anchor=(0.5, 0.28)
-    # )
-    # size_legend = ax.legend(
-    #     hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
-    #     bbox_to_anchor=(0.5, 0.28)
-    # )
-    # # config C
-    # method_legend = ax.legend(
-    #     hdl[:size_idx], lbl[:size_idx], ncol=1, loc="lower left",
-    # )
-    # size_legend = ax.legend(
-    #     hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
-    #     bbox_to_anchor=(0.5, -0.3)
-    # )
-    # # config D
-    # method_legend = ax.legend(
-    #     hdl[:size_idx], lbl[:size_idx], ncol=1, loc="lower left",
-    # )
-    # size_legend = ax.legend(
-    #     hdl[size_idx::2], lbl[size_idx::2], ncol=1, loc="center", borderpad=1, labelspacing=1.5,
-    #     bbox_to_anchor=(1.2, 0.5)
-    # )
     ax.add_artist(method_legend)
 
     # Title
@@ -369,9 +344,11 @@ def main():
         fname = os.path.splitext(f)[0]
         plot_layerwise(df, palette, fname, f"{fname}.png", linewidth=0.8)
 
-    fname = "Pruning Image Captioning Models (MS-COCO)"
-    df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-    plot_overview(df, "icefire", fname, f"{fname}.png")
+    for f in tqdm(range(1)):
+        # Just for the progress bar
+        fname = "Pruning Image Captioning Models (MS-COCO)"
+        df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
+        plot_overview(df, "icefire", fname, f"{fname}.png")
 
 
 if __name__ == "__main__":
