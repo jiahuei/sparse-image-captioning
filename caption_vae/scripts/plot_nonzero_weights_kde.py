@@ -84,14 +84,14 @@ class KDE:
         np.save(os.path.join(model_dir, "nonzero_weights_flat.npy"), nonzero_weights)
 
         # Output Naming
-        net_name = model_config.get("caption_model")
+        net_name = model_config.get("caption_model", None)
         if net_name.endswith("_prune"):
             net_name = replace_from_right(net_name, "_prune", "", 1)
         # net_name = net_name.replace("net", "Net")
         output_suffix = net_name
         fig_title = ""
 
-        pruning_type = model_config.get("prune_type", None)
+        pruning_type = model_config.get("prune_type", "")
         if pruning_type:
             if pruning_type == prune.MASK_FREEZE:
                 return None
@@ -99,7 +99,7 @@ class KDE:
                 fig_title = f"{self.PRUNE_TYPE_TITLE[pruning_type]}, "
             except KeyError:
                 raise ValueError(f"Invalid pruning type: `{pruning_type}`")
-            sparsity = model_config.get("prune_sparsity_target") * 100
+            sparsity = model_config.get("prune_sparsity_target", 0) * 100
             fig_title += f"{sparsity:.1f}% sparse, "
             # TexStudio cannot accept filename with dot
             output_suffix += f"_{int(sparsity)}_{pruning_type}"

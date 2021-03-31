@@ -5,6 +5,7 @@ Created on 25 Mar 2021 19:34:40
 
 """
 import os
+import math
 import seaborn as sns
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -30,21 +31,19 @@ sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealp
 # print(plt.rcParams)
 
 
-def get_ylim(df, score_key, margin=0.05, min_threshold=0.8):
-    max_score = df.loc[:, score_key].max()
-    min_score = df.loc[:, score_key]
-    min_score = min_score[min_score > max_score * min_threshold].min()
-    # snip_min_score = df.loc[df["Prune method"] == "SNIP", score_key].min()
-    # other_min_score = df.loc[df["Prune method"] != "SNIP", score_key]
-    # other_min_score = other_min_score[other_min_score > 0].min()
-    ylim = (min_score, max_score)
-    # if min_score / max_score >= 0.75:
-    #     ylim = (min_score, max_score)
-    # else:
-    #     ylim = (max_score * 0.75, max_score)
-    margin = (max_score - min_score) * margin
-    ylim = (ylim[0] - margin * 2, ylim[1] + margin)
-    return ylim
+def get_lim(series, margin=(0.10, 0.05), min_threshold=None):
+    max_score = series.max()
+    if isinstance(min_threshold, (float, int)):
+        series = series[series > max_score * min_threshold]
+    min_score = series.min()
+    score_range = max_score - min_score
+    lim = (min_score - score_range * margin[0], max_score + score_range * margin[1])
+    return lim
+
+
+def get_midpoint(series):
+    mid = (series.max() - series.min()) / 2 + series.min()
+    return mid
 
 
 def set_style(ax, linestyle=None, marker=None):
@@ -105,7 +104,7 @@ def plot_performance(
     df2.index = df2.index.map(lambda x: f"{x * 100:.1f} %")
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(ylim=get_ylim(df2, yaxis_name, min_threshold=min_threshold))
+    ax.set(ylim=get_lim(df.loc[:, yaxis_name], min_threshold=min_threshold))
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax, palette=palette,
     )
@@ -188,10 +187,8 @@ def plot_layerwise(
     xaxis_name = "Layer"
     yaxis_name = "Sparsity"
     df2 = df.stack().reset_index(level=1).rename(columns={"level_1": series_name, 0: yaxis_name})
-    # df2.index = df2.index.map(_simplify_inception_layer_name)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    # ax.set(ylim=get_ylim(df2, yaxis_name, min_threshold=min_threshold))
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax,
         palette=palette, linewidth=linewidth,
@@ -216,6 +213,116 @@ def plot_layerwise(
         ax.set_xticks(xticks)
         rotation = 90 if "inception" in fig_title.lower() else 0
         ax.set_xticklabels(xticklabels, rotation=rotation, fontsize="x-small")
+    # Title
+    ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    # Adjust margins and layout
+    plt.tight_layout(pad=1.5)
+    plt.savefig(output_path, dpi=output_dpi)  # , plt.show()
+    plt.clf()
+    plt.close("all")
+
+
+def plot_overview(
+        df, palette,
+        fig_title, output_path,
+        output_dpi=600,
+        context="paper", fig_scale=1.5,
+):
+    # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
+    sns.set_context(context)
+
+    # Main chart
+    series_name = "Method"
+    size_name = "Size (MB)"
+    xaxis_name = "NNZ (M)"
+    yaxis_name = "CIDEr"
+    sizes = (20, 600)
+    df2 = df
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    ax.set(
+        xlim=get_lim(df2.index, margin=(0.1, 0.1)),
+        ylim=get_lim(df2.loc[:, yaxis_name], margin=(0.2, 0.2))
+    )
+    # Bubble plot
+    ax = sns.scatterplot(
+        data=df2, x=xaxis_name, y=yaxis_name, size=size_name, hue=series_name,
+        palette=palette, linewidth=0, sizes=sizes, alpha=0.65, ax=ax, legend="full"
+    )
+    # Line
+    ax = sns.lineplot(
+        data=df2, x=xaxis_name, y=yaxis_name, hue=series_name,
+        linewidth=0.8, linestyle=":", alpha=0.3,
+        ax=ax, palette=palette, legend=None,
+    )
+
+    # Annotate
+    for i in range(0, len(df2)):
+        y_offset = math.sqrt(df2[size_name].iloc[i] / math.pi)
+        if "99.1" in df2["Annotation"].iloc[i]:
+            y_offset = -y_offset - 6
+        # Size in MB
+        ax.annotate(
+            f"{df2[size_name].iloc[i]} MB",
+            (df2.index[i], df2[yaxis_name].iloc[i] + y_offset / 6),
+            fontsize="x-small", va="bottom", ha="center"
+        )
+    annot = "99.1% sparse"
+    ax.annotate(
+        annot, (8, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name] - 1)),
+        fontsize="small", va="bottom", ha="center", color="#676767"
+    )
+    annot = "95% sparse"
+    ax.annotate(
+        annot, (10, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name])),
+        fontsize="small", va="bottom", ha="center", color="#676767"
+    )
+    annot = "Dense"
+    ax.annotate(
+        annot, (46, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name])),
+        fontsize="small", va="bottom", ha="center", color="#676767"
+    )
+
+    # ax = set_style(ax, line_styles)
+    hdl, lbl = ax.get_legend_handles_labels()
+    size_idx = lbl.index(size_name)
+    # https://stackoverflow.com/a/53438726
+    # config A
+    method_legend = ax.legend(
+        hdl[:size_idx], lbl[:size_idx], ncol=5, loc="upper center",
+        bbox_to_anchor=(0.5, -0.3),
+    )
+    size_legend = ax.legend(
+        hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
+        bbox_to_anchor=(0.5, -0.33),
+    )
+    # # config B
+    # method_legend = ax.legend(
+    #     hdl[:size_idx], lbl[:size_idx], ncol=5, loc="upper center",
+    #     bbox_to_anchor=(0.5, 0.28)
+    # )
+    # size_legend = ax.legend(
+    #     hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
+    #     bbox_to_anchor=(0.5, 0.28)
+    # )
+    # # config C
+    # method_legend = ax.legend(
+    #     hdl[:size_idx], lbl[:size_idx], ncol=1, loc="lower left",
+    # )
+    # size_legend = ax.legend(
+    #     hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
+    #     bbox_to_anchor=(0.5, -0.3)
+    # )
+    # # config D
+    # method_legend = ax.legend(
+    #     hdl[:size_idx], lbl[:size_idx], ncol=1, loc="lower left",
+    # )
+    # size_legend = ax.legend(
+    #     hdl[size_idx::2], lbl[size_idx::2], ncol=1, loc="center", borderpad=1, labelspacing=1.5,
+    #     bbox_to_anchor=(1.2, 0.5)
+    # )
+    ax.add_artist(method_legend)
+
     # Title
     ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
     # Adjust margins and layout
@@ -261,6 +368,10 @@ def main():
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
         plot_layerwise(df, palette, fname, f"{fname}.png", linewidth=0.8)
+
+    fname = "Pruning Image Captioning Models (MS-COCO)"
+    df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
+    plot_overview(df, "icefire", fname, f"{fname}.png")
 
 
 if __name__ == "__main__":
