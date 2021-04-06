@@ -4,7 +4,14 @@ Created on 09 Nov 2020 22:25:38
 @author: jiahuei
 
 cd caption_vae
-python -m scripts.plot_nonzero_weights_kde --log_dir x --id x
+python -m scripts.plot_nonzero_weights_kde --log_dir x --id y
+
+/home/jiahuei/Documents/1_TF_files/prune/mscoco_v3
+word_w256_LSTM_r512_h1_ind_xu_REG_1.0e+02_init_5.0_L1_wg_60.0_ann_sps_0.975_dec_prune_cnnFT/run_01_sparse
+
+/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1
+UpDownLSTM__supermask__0.991__wg_120.0
+RTrans__supermask__0.991__wg_120.0
 """
 import os
 import logging
@@ -29,7 +36,35 @@ flare3 = sns.color_palette("flare", n_colors=3)
 blue3 = sns.cubehelix_palette(3, start=.5, rot=-.5)
 cranberry3 = sns.dark_palette("#b2124d", n_colors=3, reverse=True)[:3]
 coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
-sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealpha": 0.7})
+
+# sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealpha": 0.7})
+sns.set_theme(
+    style="whitegrid",
+    rc={
+        "axes.edgecolor": ".3", "grid.color": "0.9",  # "axes.grid.axis": "y",
+        "legend.loc": "lower left", "legend.framealpha": "0.6"
+    }
+)
+
+
+def is_white_style():
+    return plt.rcParams["axes.facecolor"] == "white"
+
+
+def despine_white(fig):
+    # Despine whitegrid
+    if is_white_style():
+        sns.despine(fig=fig, top=False, right=False, left=False, bottom=False, offset=None, trim=False)
+
+
+def process_output_path(output_path):
+    output_name, output_ext = os.path.splitext(output_path)
+    if is_white_style():
+        output_name += " (w)"
+    else:
+        output_name += " (d)"
+    output_path = output_name + output_ext
+    return output_path
 
 
 class KDE:
@@ -94,6 +129,7 @@ class KDE:
         pruning_type = model_config.get("prune_type", "")
         if pruning_type:
             if pruning_type == prune.MASK_FREEZE:
+                logger.warning(f"Mask type = {prune.MASK_FREEZE} not supported")
                 return None
             try:
                 fig_title = f"{self.PRUNE_TYPE_TITLE[pruning_type]}, "
@@ -115,8 +151,8 @@ class KDE:
             self.plot_kde(
                 data=mstats.winsorize(nonzero_weights, limits=clip_pct),
                 # TexStudio will annoyingly highlight underscores in filenames
-                output_fig_path=os.path.join(model_dir, f"KDE-{i}-{output_suffix}.png"),
-                fig_title=f"Distribution of Non-zero Weights\n{fig_title}",
+                output_fig_path=process_output_path(os.path.join(model_dir, f"KDE-{i}-{output_suffix}.png")),
+                fig_title="",
                 fig_footnote=f"* {clip_pct * 100:.1f}% winsorization",
             )
             logger.info(f"Saved graph: clip percent = {clip_pct} (as float between 0. and 1.)")
@@ -134,7 +170,8 @@ class KDE:
             color="c",
             ax=ax,
         )
-        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+        if fig_title:
+            ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
         if isinstance(fig_footnote, str):
             plt.figtext(
                 0.90, 0.025,
@@ -142,9 +179,11 @@ class KDE:
                 horizontalalignment="right",
                 fontsize="xx-small",
             )
+        despine_white(fig)
         # Adjust margins and layout
         plt.tight_layout(pad=1.5)
         plt.savefig(output_fig_path, dpi=self.FIG_DPI)
+        print(f"Saved figure: `{output_fig_path}`")
         plt.clf()
         plt.close("all")
 

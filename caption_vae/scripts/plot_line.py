@@ -25,7 +25,14 @@ coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
 #     *sns.dark_palette("#a6814c", n_colors=4, reverse=True),
 # ])
 
-sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealpha": 0.7})
+# sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealpha": "0.6"})
+sns.set_theme(
+    style="whitegrid",
+    rc={
+        "axes.edgecolor": ".3", "grid.color": "0.9",  # "axes.grid.axis": "y",
+        "legend.loc": "lower left", "legend.framealpha": "0.6"
+    }
+)
 
 
 # print(plt.rcParams)
@@ -53,7 +60,9 @@ def set_style(ax, linestyle=None, marker=None):
         linestyle = [None] * len(marker)
     if marker is None:
         marker = [None] * len(linestyle)
-    for line, leg_line, ls, m in zip(ax.lines, ax.legend().get_lines(), linestyle, marker):
+
+    legend_hdl, legend_lbl = ax.get_legend_handles_labels()
+    for line, leg_line, ls, m in zip(ax.lines, legend_hdl, linestyle, marker):
         if ls is not None:
             line.set_linestyle(ls)
             leg_line.set_linestyle(ls)
@@ -63,9 +72,29 @@ def set_style(ax, linestyle=None, marker=None):
     return ax
 
 
+def is_white_style():
+    return plt.rcParams["axes.facecolor"] == "white"
+
+
+def despine_white(fig):
+    # Despine whitegrid
+    if is_white_style():
+        sns.despine(fig=fig, top=False, right=False, left=False, bottom=False, offset=None, trim=False)
+
+
+def process_output_path(output_path):
+    output_name, output_ext = os.path.splitext(output_path)
+    if is_white_style():
+        output_name += " (w)"
+    else:
+        output_name += " (d)"
+    output_path = output_name + output_ext
+    return output_path
+
+
 def plot_performance(
         df, palette,
-        score_name, fig_title, output_path,
+        score_name, output_path, fig_title="",
         output_dpi=600, min_threshold=0.8,
         context="paper", fig_scale=1.5,
 ):
@@ -108,28 +137,33 @@ def plot_performance(
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax, palette=palette,
     )
+    # Lines and legends
     ax = set_style(ax, line_styles, marker_styles)
+    legend_xoffset = 0.15 if "soft-" in output_path.lower() and "SNIP" in methods else 0
+    ax.legend(loc=plt.rcParams["legend.loc"], bbox_to_anchor=(legend_xoffset, 0))
     # NNZ axis
     df2 = df.set_index("NNZ")[methods]
     df2 = df2.stack().reset_index(level=1).rename(columns={"level_1": series_name, 0: yaxis_name})
-    with sns.axes_style("darkgrid", rc={"axes.grid": False}):
+    with sns.axes_style(None, rc={"axes.grid": False}):
         # print(sns.axes_style())
         ax2 = ax.twiny()
         sns.lineplot(
             data=df2, x="NNZ", y=yaxis_name, hue=series_name, ax=ax2, legend=None, visible=False
         )
     # Title
-    ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
     # Adjust margins and layout
     plt.tight_layout(pad=1.5)
-    plt.savefig(output_path, dpi=output_dpi)  # , plt.show()
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
 
 
 def plot_progression(
         df, palette,
-        fig_title, output_path,
+        output_path, fig_title="",
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
@@ -158,17 +192,19 @@ def plot_progression(
     )
     ax = set_style(ax, line_styles)
     # Title
-    ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
     # Adjust margins and layout
     plt.tight_layout(pad=1.5)
-    plt.savefig(output_path, dpi=output_dpi)  # , plt.show()
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
 
 
 def plot_layerwise(
         df, palette,
-        fig_title, output_path,
+        output_path, fig_title="",
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
@@ -195,7 +231,7 @@ def plot_layerwise(
     )
     ax = set_style(ax, line_styles)
     # Group Inception layers
-    if "lstm" in fig_title.lower():
+    if "lstm" in output_path.lower():
         xticklabels = [
             "Embedding", "Query", "Key", "Value", "QK", "Initial state", "LSTM", "Output"
         ]
@@ -211,20 +247,22 @@ def plot_layerwise(
                 xticklabels.append(ly)
             layers.add(ly)
         ax.set_xticks(xticks)
-        rotation = 90 if "inception" in fig_title.lower() else 0
+        rotation = 90 if "inception" in output_path.lower() else 0
         ax.set_xticklabels(xticklabels, rotation=rotation, fontsize="x-small")
     # Title
-    ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
     # Adjust margins and layout
     plt.tight_layout(pad=1.5)
-    plt.savefig(output_path, dpi=output_dpi)  # , plt.show()
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
 
 
 def plot_overview(
         df, palette,
-        fig_title, output_path,
+        output_path, fig_title="",
         output_dpi=600,
         context="paper", fig_scale=1.5,
 ):
@@ -233,8 +271,8 @@ def plot_overview(
 
     # Main chart
     series_name = "Method"
-    size_name = "Size (MB)"
-    xaxis_name = "NNZ (M)"
+    size_name = "Decoder Size (MB)"
+    xaxis_name = "Decoder NNZ (M)"
     yaxis_name = "CIDEr"
     sizes = (20, 600)
     df2 = df
@@ -247,40 +285,37 @@ def plot_overview(
     # Bubble plot
     ax = sns.scatterplot(
         data=df2, x=xaxis_name, y=yaxis_name, size=size_name, hue=series_name,
-        palette=palette, linewidth=0, sizes=sizes, alpha=0.65, ax=ax, legend="full"
+        palette=palette, linewidth=0, sizes=sizes, alpha=1, ax=ax, legend="full"
     )
     # Line
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name,
-        linewidth=0.8, linestyle=":", alpha=0.3,
+        linewidth=0.8, linestyle=":", alpha=0.9,
         ax=ax, palette=palette, legend=None,
     )
 
     # Annotate
     for i in range(0, len(df2)):
+        x_offset = 0
         y_offset = math.sqrt(df2[size_name].iloc[i] / math.pi)
         if "99.1" in df2["Annotation"].iloc[i]:
+            x_offset = -1.5
             y_offset = -y_offset - 6
+        elif "95" in df2["Annotation"].iloc[i]:
+            x_offset = 1.5
         # Size in MB
         ax.annotate(
             f"{df2[size_name].iloc[i]} MB",
-            (df2.index[i], df2[yaxis_name].iloc[i] + y_offset / 6),
+            (df2.index[i] + x_offset, df2[yaxis_name].iloc[i] + y_offset / 6),
             fontsize="x-small", va="bottom", ha="center"
         )
-    annot = "99.1% sparse"
     ax.annotate(
-        annot, (8, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name] - 1)),
-        fontsize="small", va="bottom", ha="center", color="#676767"
+        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (20, 126),  # (10, 116),
+        fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
     )
-    annot = "95% sparse"
     ax.annotate(
-        annot, (10, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name])),
-        fontsize="small", va="bottom", ha="center", color="#676767"
-    )
-    annot = "Dense"
-    ax.annotate(
-        annot, (46, get_midpoint(df2.loc[df2["Annotation"] == annot, yaxis_name])),
-        fontsize="small", va="bottom", ha="center", color="#676767"
+        "Dense (original)", (46, 121.5),
+        fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
     )
 
     # ax = set_style(ax, line_styles)
@@ -299,10 +334,12 @@ def plot_overview(
     ax.add_artist(method_legend)
 
     # Title
-    ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
     # Adjust margins and layout
     plt.tight_layout(pad=1.5)
-    plt.savefig(output_path, dpi=output_dpi)  # , plt.show()
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
 
@@ -314,24 +351,24 @@ def main():
         fname_low = f.lower()
         if "inception" in fname_low:
             # This must be first condition
-            palette = [gray3[1], *cranberry3, *mako3, mako3[1], mako3[2]]
+            palette = ["#9b59b6", *cranberry3, *mako3, mako3[1], mako3[2]]
             min_threshold = 0.5
         elif "soft-attention" in fname_low or "ort" in fname_low:
-            palette = [gray3[1], cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
+            palette = ["#9b59b6", cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
         elif "up-down" in fname_low:
-            palette = [gray3[1], cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
+            palette = ["#9b59b6", cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
         else:
             raise ValueError(f"Invalid file: {f}")
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
         title, metric = fname.split(" --- ")
-        plot_performance(df, palette, metric, title, f"{fname}.png", min_threshold=min_threshold)
+        plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
 
     d = os.path.join("plot_data", "progression")
     for f in tqdm(sorted(os.listdir(d))):
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
-        plot_progression(df, "deep", fname, f"{fname}.png", linewidth=0.8)
+        plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
 
     d = os.path.join("plot_data", "layerwise")
     for f in tqdm(sorted(os.listdir(d))):
@@ -342,13 +379,13 @@ def main():
             palette = [cranberry3[0], mako3[2], mako3[0]]
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
-        plot_layerwise(df, palette, fname, f"{fname}.png", linewidth=0.8)
+        plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
 
     for f in tqdm(range(1)):
         # Just for the progress bar
         fname = "Pruning Image Captioning Models (MS-COCO)"
         df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-        plot_overview(df, "icefire", fname, f"{fname}.png")
+        plot_overview(df, "icefire", f"{fname}.png")
 
 
 if __name__ == "__main__":
