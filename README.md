@@ -43,7 +43,7 @@
 * sentencepiece >= 0.1.91
 * torchvision >= 0.7.0
 
-See the rest in `./docker/requirements.txt`
+See the rest in `./requirements.txt` and `./requirements_step2.txt`
 
 
 ## Setup
