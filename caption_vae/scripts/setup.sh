@@ -155,7 +155,7 @@ if [ -f "${BU_DIR}/bu_data/${FILE}" ]; then
     echo "Found ${FILE}."
 else
     echo "Downloading adaptive bottom-up features: ${FILE}"
-    wget "https://imagecaption.blob.core.windows.net/imagecaption/${FILE}"
+    wget "https://storage.googleapis.com/up-down-attention/${FILE}"
 fi
 
 FILE="test2014.zip"
@@ -163,7 +163,7 @@ if [ -f "${BU_DIR}/bu_data/${FILE}" ]; then
     echo "Found ${FILE}."
 else
     echo "Downloading adaptive bottom-up features: ${FILE}"
-    wget "https://imagecaption.blob.core.windows.net/imagecaption/${FILE}"
+    wget "https://storage.googleapis.com/up-down-attention/${FILE}"
 fi
 
 FILE="karpathy_train_resnet101_faster_rcnn_genome.tsv.0"
