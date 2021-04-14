@@ -36,8 +36,10 @@ RUN ln -s /usr/bin/python3 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
 ### Python Packages ###
+COPY requirements_base.txt requirements_base.txt
 COPY requirements.txt requirements.txt
 #COPY requirements_extra.txt requirements_extra.txt
+RUN pip install --upgrade -r requirements_base.txt
 RUN pip install --upgrade -r requirements.txt
 #RUN pip install --upgrade -r requirements.txt -r requirements_extra.txt
 
