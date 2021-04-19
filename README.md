@@ -36,6 +36,13 @@
     * _(to be added)_ Flickr8k, Flickr30k, InstaPIC-1.1M
 
 
+## Pre-trained Sparse Models
+
+The checkpoints are [available at this repo](https://github.com/jiahuei/sparse-captioning-checkpoints).
+
+Soft-attention models implemented in TensorFlow 1.9 are available at [this repo](https://github.com/jiahuei/tf-sparse-captioning).
+
+
 ## Main Requirements
 
 * python == 3.7, 3.8
@@ -109,11 +116,6 @@ python /master/src/caption_vae/eval_model.py \
     --beam_size_test 2 \
     --id RTrans__supermask__0.9875__wg_80.0
 ```
-
-
-## Pre-trained Sparse Models
-
-The checkpoints are [available at this repo](https://drive.google.com/drive/folders/1PN-oBoHLjdAkY9k1GePbkmQNMn9uR3e-?usp=sharing).
 
 
 ## MS-COCO Online Evaluation
