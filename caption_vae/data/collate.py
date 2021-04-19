@@ -111,7 +111,7 @@ class UpDownCollate:
 
     @staticmethod
     def _get_att_feats(path):
-        data = np.load(path)['feat']
+        data = np.load(path)
         data = data.reshape(-1, data.shape[-1]).astype("float32")
         # data = np.random.normal(size=(36, 2048)).astype("float32")
         return data
@@ -131,7 +131,7 @@ class UpDownCollate:
         image_paths, image_ids, captions, all_captions, all_gts = zip(*batch)
 
         att_feats = [
-            self._cache_data(os.path.join(config.input_att_dir, f"{imgid}.npz"), self._get_att_feats)
+            self._cache_data(os.path.join(config.input_att_dir, f"{imgid}.npy"), self._get_att_feats)
             for imgid in image_ids
         ]
 
