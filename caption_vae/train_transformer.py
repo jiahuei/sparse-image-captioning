@@ -11,6 +11,7 @@ from utils import losses, optim
 from utils.config import Config
 from utils.misc import configure_logging
 from utils.model_utils import set_seed, map_to_cuda
+from utils.file import dump_json
 from utils.lightning import LightningModule
 
 
@@ -36,7 +37,16 @@ class CaptioningModel(LightningModule):
             loss_fn = losses.LanguageModelCriterion()
         scst_loss_fn = losses.RewardCriterion()
 
-        print(f"Model trainable params: {sum(_.nelement() for _ in model.parameters() if _.requires_grad):,d}")
+        trainable_params = sum(_.nelement() for _ in model.parameters() if _.requires_grad)
+        # noinspection PyDictCreation
+        model_params = {"breakdown": {n: p.nelement() for n, p in model.named_parameters()}}
+        model_params["total"] = sum(model_params["breakdown"].values())
+        model_params["trainable params"] = trainable_params
+        dump_json(
+            os.path.join(config.log_dir, "model_params.json"), model_params,
+            indent=2, sort_keys=True, ensure_ascii=False
+        )
+        print(f"Model trainable params: {trainable_params:,d}")
         optimizer = self.optimizer = optim.get_optim(model.parameters(), config)
 
         # Maybe load model

@@ -11,6 +11,7 @@ from utils import losses, optim
 from utils.config import Config
 from utils.misc import configure_logging, replace_from_right
 from utils.model_utils import set_seed, map_to_cuda, densify_state_dict
+from utils.file import dump_json
 from utils.lightning import LightningModule
 from pruning import prune
 
@@ -44,6 +45,23 @@ class CaptioningModel(LightningModule):
         else:
             loss_fn = losses.LanguageModelCriterion()
         scst_loss_fn = losses.RewardCriterion()
+
+        # noinspection PyDictCreation
+        model_params = {"breakdown": {n: p.nelement() for n, p in model.all_weights(named=True)}}
+        model_params["total"] = sum(model_params["breakdown"].values())
+        model_params["trainable params"] = model.total_weight_params
+        dump_json(
+            os.path.join(config.log_dir, "model_params.json"), model_params,
+            indent=2, sort_keys=True, ensure_ascii=False
+        )
+        # noinspection PyDictCreation
+        mask_params = {"breakdown": {n: p.nelement() for n, p in model.all_pruning_masks(named=True)}}
+        mask_params["total"] = sum(mask_params["breakdown"].values())
+        mask_params["trainable params"] = model.total_mask_params
+        dump_json(
+            os.path.join(config.log_dir, "mask_params.json"), mask_params,
+            indent=2, sort_keys=True, ensure_ascii=False
+        )
 
         optim_params = [{"params": list(model.all_weights(named=False))}]
         print(f"Model trainable params (excluding pruning masks): {model.total_weight_params:,d}")
