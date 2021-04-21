@@ -6,6 +6,7 @@ Created on Thu Jun 22 14:48:09 2017
 """
 import os
 import logging
+from datetime import datetime
 from packaging import version
 from typing import Union, Type, TypeVar, Dict
 from argparse import ArgumentParser, Namespace
@@ -48,6 +49,7 @@ class Config:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+        self.datetime = str(datetime.now())
 
     def __setattr__(self, key, value):
         self_dict = vars(self)
