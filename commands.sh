@@ -192,6 +192,17 @@ python /master/src/caption_vae/train_transformer.py \
     --id ${MODEL_ID}__baseline \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
+python /master/src/caption_vae/train_transformer.py \
+    --caption_model ${MODEL_TYPE} \
+    --dataset_dir ${DATASET_DIR} \
+    --log_dir ${LOG_DIR} \
+    --lr_scheduler ${SCHEDULER} \
+    --tokenizer radix \
+    --radix_base 768 \
+    --max_seq_length 26 \
+    --id Radix_b768_${MODEL_ID}__baseline \
+    --cache_min_free_ram ${CACHE_FREE_RAM}
+
 # Fine-tune
 BASELINE="${LOG_DIR}/${MODEL_ID}__baseline/model_best.pth"
 EPOCHS=10

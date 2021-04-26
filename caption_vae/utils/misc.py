@@ -12,6 +12,7 @@ import functools
 import time
 import itertools
 from typing import Union
+from ast import literal_eval
 
 logger = logging.getLogger(__name__)
 
@@ -121,14 +122,14 @@ def replace_from_right(string: str, old: str, new: str, count: int = -1):
 
 def str_to_none(input_string: str):
     assert isinstance(input_string, str)
-    if input_string.lower() == "none":
+    if input_string.lower() in ("", "null", "none"):
         return None
     else:
         return input_string
 
 
 def csv_to_int_list(input_string: str):
-    if input_string is None or input_string == "":
+    if not str_to_none(input_string):
         return None
     assert isinstance(input_string, str)
     try:
@@ -138,7 +139,7 @@ def csv_to_int_list(input_string: str):
 
 
 def csv_to_float_list(input_string: str):
-    if input_string is None or input_string == "":
+    if not str_to_none(input_string):
         return None
     assert isinstance(input_string, str)
     try:
@@ -148,7 +149,7 @@ def csv_to_float_list(input_string: str):
 
 
 def csv_to_str_list(input_string: str):
-    if input_string is None or input_string == "":
+    if not str_to_none(input_string):
         return None
     else:
         assert isinstance(input_string, str)
@@ -159,12 +160,23 @@ def csv_to_str_list(input_string: str):
 
 
 def str_to_bool(input_string: str):
-    if input_string.lower() in ("true", "1"):
+    if input_string.lower() in ("true", "t", "1"):
         return True
-    elif input_string.lower() in ("false", "0"):
+    elif input_string.lower() in ("false", "f", "0"):
         return False
     else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
+        raise argparse.ArgumentTypeError(
+            'Boolean value expected: ("true", "t", "1") or ("false", "f", "0")'
+        )
+
+
+def str_to_sequence(input_string: str):
+    if not str_to_none(input_string):
+        return None
+    res = literal_eval(input_string)
+    if not isinstance(res, (tuple, list)):
+        raise ValueError(f"`{input_string}` cannot be converted into a sequence type (tuple / list).")
+    return res
 
 
 class ChoiceList:

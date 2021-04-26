@@ -85,6 +85,14 @@ def dump_json(path, data, utf8=True, lf_newline=True, **json_kwargs):
     return path
 
 
+def dumps_json(path, string, utf8=True, lf_newline=True):
+    encoding = "utf8" if utf8 else None
+    newline = "\n" if lf_newline else None
+    with open(path, "w", encoding=encoding, newline=newline) as f:
+        f.write(string)
+    return path
+
+
 def tqdm_hook(t):
     """Wraps tqdm instance.
     Don't forget to close() or __exit__()
@@ -316,3 +324,12 @@ def _extract_archive(file_path, path=".", archive_format="auto"):
                     raise
             return True
     return False
+
+
+def zip_dir(target_dir, save_dir):
+    out = os.path.join(save_dir, os.path.basename(target_dir) + ".zip")
+    logger.info(f"Zipping `{target_dir}` into `{out}`")
+    files = [os.path.join(root, f) for root, dirs, files in os.walk(target_dir) for f in files]
+    with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for f in files:
+            zf.write(f, f.replace(os.path.dirname(target_dir), ""))
