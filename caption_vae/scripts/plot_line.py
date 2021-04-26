@@ -413,47 +413,47 @@ def plot_comic_overview(
 
 
 def main():
-    # d = os.path.join("plot_data", "performance")
-    # for f in tqdm(sorted(os.listdir(d))):
-    #     min_threshold = 0.8
-    #     fname_low = f.lower()
-    #     if "inception" in fname_low:
-    #         # This must be first condition
-    #         palette = ["#9b59b6", *cranberry3, *mako3, mako3[1], mako3[2]]
-    #         min_threshold = 0.5
-    #     elif "soft-attention" in fname_low or "ort" in fname_low:
-    #         palette = ["#9b59b6", cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
-    #     elif "up-down" in fname_low:
-    #         palette = ["#9b59b6", cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
-    #     else:
-    #         raise ValueError(f"Invalid file: {f}")
-    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-    #     fname = os.path.splitext(f)[0]
-    #     title, metric = fname.split(" --- ")
-    #     plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
-    #
-    # d = os.path.join("plot_data", "progression")
-    # for f in tqdm(sorted(os.listdir(d))):
-    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-    #     fname = os.path.splitext(f)[0]
-    #     plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
-    #
-    # d = os.path.join("plot_data", "layerwise")
-    # for f in tqdm(sorted(os.listdir(d))):
-    #     fname_low = f.lower()
-    #     if "mobilenet" in fname_low:
-    #         palette = [cranberry3[0], cranberry3[1]]
-    #     else:
-    #         palette = [cranberry3[0], mako3[2], mako3[0]]
-    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-    #     fname = os.path.splitext(f)[0]
-    #     plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
-    #
-    # for f in tqdm(range(1)):
-    #     # Just for the progress bar
-    #     fname = "Pruning Image Captioning Models (MS-COCO)"
-    #     df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-    #     plot_overview(df, "icefire", f"{fname}.png")
+    d = os.path.join("plot_data", "performance")
+    for f in tqdm(sorted(os.listdir(d))):
+        min_threshold = 0.8
+        fname_low = f.lower()
+        if "inception" in fname_low:
+            # This must be first condition
+            palette = ["#9b59b6", *cranberry3, *mako3, mako3[1], mako3[2]]
+            min_threshold = 0.5
+        elif "soft-attention" in fname_low or "ort" in fname_low:
+            palette = ["#9b59b6", cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
+        elif "up-down" in fname_low:
+            palette = ["#9b59b6", cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
+        else:
+            raise ValueError(f"Invalid file: {f}")
+        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+        fname = os.path.splitext(f)[0]
+        title, metric = fname.split(" --- ")
+        plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
+
+    d = os.path.join("plot_data", "progression")
+    for f in tqdm(sorted(os.listdir(d))):
+        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+        fname = os.path.splitext(f)[0]
+        plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
+
+    d = os.path.join("plot_data", "layerwise")
+    for f in tqdm(sorted(os.listdir(d))):
+        fname_low = f.lower()
+        if "mobilenet" in fname_low:
+            palette = [cranberry3[0], cranberry3[1]]
+        else:
+            palette = [cranberry3[0], mako3[2], mako3[0]]
+        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+        fname = os.path.splitext(f)[0]
+        plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
+
+    for f in tqdm(range(1)):
+        # Just for the progress bar
+        fname = "Pruning Image Captioning Models (MS-COCO)"
+        df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
+        plot_overview(df, "icefire", f"{fname}.png")
 
     for f in tqdm(range(1)):
         # Just for the progress bar
