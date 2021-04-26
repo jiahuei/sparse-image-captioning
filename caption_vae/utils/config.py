@@ -11,7 +11,7 @@ from datetime import datetime
 from packaging import version
 from typing import Union, Type, TypeVar, Dict
 from copy import deepcopy
-from utils.file import read_json, dumps_json
+from utils.file import read_json, dumps_file
 from version import __version__
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class Config:
         if exist_ok is False and os.path.isfile(output_fp):
             raise FileExistsError(f"Found existing config file at `{output_fp}`")
 
-        dumps_json(output_fp, self.json())
+        dumps_file(output_fp, self.json())
         logger.info(f"{self.__class__.__name__}: Saved as `{output_fp}`")
         return output_fp
 

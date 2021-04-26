@@ -85,7 +85,7 @@ def dump_json(path, data, utf8=True, lf_newline=True, **json_kwargs):
     return path
 
 
-def dumps_json(path, string, utf8=True, lf_newline=True):
+def dumps_file(path, string, utf8=True, lf_newline=True):
     encoding = "utf8" if utf8 else None
     newline = "\n" if lf_newline else None
     with open(path, "w", encoding=encoding, newline=newline) as f:
