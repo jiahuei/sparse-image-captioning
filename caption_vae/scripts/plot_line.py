@@ -310,6 +310,14 @@ def plot_overview(
             fontsize="x-small", va="bottom", ha="center"
         )
     ax.annotate(
+        "8.7 MB (fp16)", (-0.9, 118),
+        fontsize="x-small", va="bottom", ha="center"
+    )
+    ax.annotate(
+        "14.5 MB (fp16)", (-0.9, 122),
+        fontsize="x-small", va="bottom", ha="center"
+    )
+    ax.annotate(
         "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (20, 126),  # (10, 116),
         fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
     )
@@ -344,48 +352,114 @@ def plot_overview(
     plt.close("all")
 
 
+def plot_comic_overview(
+        df, palette,
+        output_path, fig_title="",
+        output_dpi=600,
+        context="paper", fig_scale=1.5,
+):
+    # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
+    sns.set_context(context)
+
+    # Main chart
+    series_name = "Method"
+    xaxis_name = "Vocab size"
+    yaxis_name = "CIDEr"
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    ax.set(
+        xlim=get_lim(df.index, margin=(0.1, 0.1)),
+        ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2))
+    )
+    # Bubble plot
+    palette = sns.color_palette(palette, n_colors=len(df[series_name]))
+    palette[pd.Index(df[series_name]).get_loc("Baseline")] = mako3[0]
+    ax = sns.scatterplot(
+        data=df, x=xaxis_name, y=yaxis_name, hue=series_name,
+        palette=palette, linewidth=0, s=100, alpha=1, ax=ax, legend="full"
+    )
+    # Line
+    df2 = df[df["COMIC"] == "Yes"]
+    ax = sns.lineplot(
+        data=df2, x=xaxis_name, y=yaxis_name, hue="COMIC",
+        linewidth=1.0, linestyle=":", alpha=0.9,
+        ax=ax, palette=cranberry3[:1], legend=None,
+    )
+    for m in ("COMIC-256 (proposed)", "COMIC-768 (proposed)"):
+        _df = df2[df2[series_name] == m]
+        vsize = _df.index.values[0]
+        ax.annotate(
+            f"Vocab size = {int(vsize):d}", (vsize + 50, _df[yaxis_name] + 1.6),
+            fontsize="small", va="bottom", ha="center"
+        )
+    ax.annotate(
+        "Proposed", (1800, 98),
+        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
+    )
+    ax.annotate(
+        "Baseline & SOTA", (8000, 98),
+        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
+    )
+
+    # Title
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
+    # Adjust margins and layout
+    plt.tight_layout(pad=1.5)
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
+    plt.clf()
+    plt.close("all")
+
+
 def main():
-    d = os.path.join("plot_data", "performance")
-    for f in tqdm(sorted(os.listdir(d))):
-        min_threshold = 0.8
-        fname_low = f.lower()
-        if "inception" in fname_low:
-            # This must be first condition
-            palette = ["#9b59b6", *cranberry3, *mako3, mako3[1], mako3[2]]
-            min_threshold = 0.5
-        elif "soft-attention" in fname_low or "ort" in fname_low:
-            palette = ["#9b59b6", cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
-        elif "up-down" in fname_low:
-            palette = ["#9b59b6", cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
-        else:
-            raise ValueError(f"Invalid file: {f}")
-        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-        fname = os.path.splitext(f)[0]
-        title, metric = fname.split(" --- ")
-        plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
-
-    d = os.path.join("plot_data", "progression")
-    for f in tqdm(sorted(os.listdir(d))):
-        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-        fname = os.path.splitext(f)[0]
-        plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
-
-    d = os.path.join("plot_data", "layerwise")
-    for f in tqdm(sorted(os.listdir(d))):
-        fname_low = f.lower()
-        if "mobilenet" in fname_low:
-            palette = [cranberry3[0], cranberry3[1]]
-        else:
-            palette = [cranberry3[0], mako3[2], mako3[0]]
-        df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
-        fname = os.path.splitext(f)[0]
-        plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
+    # d = os.path.join("plot_data", "performance")
+    # for f in tqdm(sorted(os.listdir(d))):
+    #     min_threshold = 0.8
+    #     fname_low = f.lower()
+    #     if "inception" in fname_low:
+    #         # This must be first condition
+    #         palette = ["#9b59b6", *cranberry3, *mako3, mako3[1], mako3[2]]
+    #         min_threshold = 0.5
+    #     elif "soft-attention" in fname_low or "ort" in fname_low:
+    #         palette = ["#9b59b6", cranberry3[0], flare3[0], mako3[2], *mako3, "#9b59b6"]
+    #     elif "up-down" in fname_low:
+    #         palette = ["#9b59b6", cranberry3[0], *flare3, mako3[2], *mako3, "#9b59b6"]
+    #     else:
+    #         raise ValueError(f"Invalid file: {f}")
+    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+    #     fname = os.path.splitext(f)[0]
+    #     title, metric = fname.split(" --- ")
+    #     plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
+    #
+    # d = os.path.join("plot_data", "progression")
+    # for f in tqdm(sorted(os.listdir(d))):
+    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+    #     fname = os.path.splitext(f)[0]
+    #     plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
+    #
+    # d = os.path.join("plot_data", "layerwise")
+    # for f in tqdm(sorted(os.listdir(d))):
+    #     fname_low = f.lower()
+    #     if "mobilenet" in fname_low:
+    #         palette = [cranberry3[0], cranberry3[1]]
+    #     else:
+    #         palette = [cranberry3[0], mako3[2], mako3[0]]
+    #     df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
+    #     fname = os.path.splitext(f)[0]
+    #     plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
+    #
+    # for f in tqdm(range(1)):
+    #     # Just for the progress bar
+    #     fname = "Pruning Image Captioning Models (MS-COCO)"
+    #     df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
+    #     plot_overview(df, "icefire", f"{fname}.png")
 
     for f in tqdm(range(1)):
         # Just for the progress bar
-        fname = "Pruning Image Captioning Models (MS-COCO)"
+        fname = "COMIC (MS-COCO) (fine-tune)"
         df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-        plot_overview(df, "icefire", f"{fname}.png")
+        plot_comic_overview(df, "icefire", f"{fname}.png")
 
 
 if __name__ == "__main__":
