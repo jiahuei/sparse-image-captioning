@@ -9,6 +9,8 @@ python caption_vae/scripts/collect_scores.py
 import os
 import logging
 import json
+import pandas as pd
+from io import StringIO
 from tqdm import tqdm
 from itertools import chain
 from collections import defaultdict
@@ -17,30 +19,58 @@ from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 
 class Score:
+    DELIMITER = ","
+    value: pd.DataFrame
+
     def __init__(self, data, header="Experiment"):
-        self.type_check(header, data)
-        self.header = header
-        self.data = data
+        self.value = self._make_df(header, data)
 
     def add_data(self, header, data):
-        self.type_check(header, data)
-        self.header = f"{self.header},{header}"
-        self.data = f"{self.data},{data}"
+        self.value = pd.concat([self.value, self._make_df(header, data)], axis=1)
 
-    def __str__(self):
-        return self.data
+    def add_test_csv(self, csv_fp):
+        self.value = pd.concat([self.value, self._pd_read_csv(csv_fp)], axis=1)
 
-    def __repr__(self):
-        return self.header + " --- " + self.data
+    def add_validation_csv(self, csv_fp, best_ckpt=None):
+        if best_ckpt is None:
+            raise ValueError("Invalid checkpoint.")
+        df = self._pd_read_csv(csv_fp)
+        self.value = pd.concat([self.value, df[df["Step"] == best_ckpt].reset_index(drop=True)], axis=1)
 
     @staticmethod
-    def type_check(header, data):
-        assert isinstance(header, str), f"Expected header of type str, saw {type(header)}"
-        assert isinstance(data, str), f"Expected data of type str, saw {type(data)}"
+    def _pd_read_csv(csv_fp):
+        return pd.read_csv(csv_fp, dtype=str, delimiter=",")
+
+    def _make_df(self, header, data):
+        return self._pd_read_csv(StringIO(f"{header}\n{data}"))
+
+    def __repr__(self):
+        return self.value.to_string()
+
+    def __str__(self):
+        # noinspection PyTypeChecker
+        return ",".join(self.value.to_numpy(str).flatten().tolist())
+
+    @property
+    def header(self):
+        return ",".join(self.value.columns.to_list())
+
+    @property
+    def best_checkpoint(self):
+        try:
+            return self.value["Step"].to_numpy()[0]
+        except TypeError as e:
+            raise ValueError(
+                "More than 1 test checkpoint set. Please reload data."
+            ) from e
+        except KeyError as e:
+            raise ValueError(
+                "Best checkpoint not set. Please load data from test score CSV first."
+            ) from e
 
 
 class ScoreCollector:
-    def __init__(self, config, check_train_captions=True):
+    def __init__(self, config, check_train_captions=False):
         self.config = config
         train_caption_files = list(filter(
             lambda x: x.endswith("train_captions.txt"), self.list_files(self.config.log_dir)
@@ -69,37 +99,55 @@ class ScoreCollector:
     def is_test_dir(path):
         return "test_" in os.path.basename(path) and os.path.isdir(path)
 
+    @staticmethod
+    def is_val_dir(path):
+        return "val_" in os.path.basename(path) and os.path.isdir(path)
+
     def collect_scores(self):
         all_scores = defaultdict(list)
-        for i, exp in enumerate(self.experiments):
-            exp_name = os.path.basename(exp)
+        for i, exp_dir in enumerate(self.experiments):
+            exp_name = os.path.basename(exp_dir)
             logger.info(f"{self.__class__.__name__}: Reading directory: `{exp_name}`")
-            subdirs = list(filter(self.is_test_dir, self.list_dir(exp)))
-            if len(subdirs) == 0:
+            # Load test data
+            test_dirs = list(filter(self.is_test_dir, self.list_dir(exp_dir)))
+            if len(test_dirs) == 0:
                 all_scores["no_test"].append(Score(exp_name))
                 continue
-            for test_dir in subdirs:
-                if not os.path.isfile(os.path.join(exp, "config.json")):
-                    logger.warning(f"{self.__class__.__name__}: No config JSON file found at:\n`{exp}`")
+            best_checkpoint = None
+            for test_dir in test_dirs:
+                if not os.path.isfile(os.path.join(exp_dir, "config.json")):
+                    logger.warning(f"{self.__class__.__name__}: No config JSON file found at:\n`{exp_dir}`")
                     continue
                 score = Score(exp_name)
                 # Collect scores
                 try:
-                    score.add_data(*self.read_file(os.path.join(test_dir, "scores.csv")))
+                    score.add_test_csv(os.path.join(test_dir, "scores.csv"))
                 except TypeError as e:
                     # https://stackoverflow.com/a/46091127
                     raise TypeError(f"Invalid score format in `{test_dir}`") from e
                 score.add_data(*self.compute_caption_stats(test_dir))
                 score.add_data("Test dir", os.path.basename(test_dir))
+                self._load_model_params(exp_dir, score)
                 # Maybe collect sparsities, prioritise file in test_dir
                 try:
-                    score.add_data(*self.read_file(os.path.join(test_dir, "sparsities.csv")))
+                    score.add_test_csv(os.path.join(test_dir, "sparsities.csv"))
                 except FileNotFoundError:
                     try:
-                        score.add_data(*self.read_file(os.path.join(exp, "sparsities.csv")))
+                        score.add_test_csv(os.path.join(exp_dir, "sparsities.csv"))
                     except FileNotFoundError:
                         pass
+                best_checkpoint = score.best_checkpoint
                 all_scores[os.path.basename(test_dir)].append(score)
+            # Load validation data
+            if best_checkpoint is None:
+                continue
+            val_dirs = list(filter(self.is_val_dir, self.list_dir(exp_dir)))
+            for val_dir in val_dirs:
+                score = Score(exp_name)
+                score.add_validation_csv(os.path.join(val_dir, "scores.csv"), best_checkpoint)
+                score.add_data("Val dir", os.path.basename(val_dir))
+                self._load_model_params(exp_dir, score)
+                all_scores[os.path.basename(val_dir)].append(score)
 
         # Filter / sort
         out_file = os.path.join(self.config.log_dir, "compiled_test_scores.csv")
@@ -109,11 +157,11 @@ class ScoreCollector:
             existing_data = {}
 
         out_str = ""
-        for test_dir, scores in sorted(all_scores.items()):
+        for score_dir, scores in sorted(all_scores.items()):
             scores = list(filter(lambda x: str(x) not in existing_data, scores))
             if len(scores) == 0:
                 continue
-            out_str += f"\n>>> {test_dir}\n"
+            out_str += f"\n>>> {score_dir}\n"
             header_set = set(_.header for _ in scores)
             for header in sorted(header_set):
                 out_str += f"\n{header}\n"
@@ -130,6 +178,14 @@ class ScoreCollector:
             with open(out_file, "a") as f:
                 f.write(out_str)
         logger.info(f"{self.__class__.__name__}: Done.")
+
+    def _load_model_params(self, exp_dir, score):
+        # Load model params if available
+        try:
+            model_params = self.read_json(os.path.join(exp_dir, "model_params.json"))
+            score.add_data("Params", model_params["total"])
+        except FileNotFoundError:
+            pass
 
     def compute_caption_stats(self, test_dir):
         # Load vocab size from config
@@ -247,6 +303,11 @@ class ScoreCollector:
             help="str: Logging level.",
         )
         parser.add_argument(
+            "--skip_check_train_file",
+            action="store_true",
+            help="bool: If True, skip tokenizer train file check.",
+        )
+        parser.add_argument(
             "--check_compiled_scores",
             action="store_true",
             help="bool: If True, check compiled metric scores against original CSV files.",
@@ -256,10 +317,10 @@ class ScoreCollector:
 
 
 if __name__ == "__main__":
-    config = ScoreCollector.parse_opt()
-    logging.basicConfig(level=config.logging_level)
+    c = ScoreCollector.parse_opt()
+    logging.basicConfig(level=c.logging_level)
     logger = logging.getLogger(__name__)
-    collector = ScoreCollector(config)
+    collector = ScoreCollector(c, check_train_captions=not c.skip_check_train_file)
     collector.collect_scores()
-    if config.check_compiled_scores:
+    if c.check_compiled_scores:
         collector.check_compiled_scores()
