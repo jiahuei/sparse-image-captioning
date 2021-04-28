@@ -41,8 +41,8 @@ class Score:
 
     def shift(self, shift: int = 2, new_precision: int = 1):
         """
-        Returns a new Score instance with metric scores shifted to `new_precision`,
-        ie all scores will have `new_precision` decimal places.
+        Returns a new Score instance with metric scores shifted by `shift` amount,
+        with `new_precision` decimal places.
 
         Args:
             shift: int, shift the digits by the amount specified.
