@@ -39,17 +39,24 @@ class Score:
         df = self._pd_read_csv(csv_fp)
         self.value = pd.concat([self.value, df[df["Step"] == best_ckpt].reset_index(drop=True)], axis=1)
 
-    def shift(self, new_precision: int):
+    def shift(self, new_precision: int, precision_check: bool = True):
         """
         Returns a new Score instance with metric scores shifted to `new_precision`,
         ie all scores will have `new_precision` decimal places.
 
         Args:
             new_precision: int, number of decimal places.
+            precision_check: bool, check for precision consistency if True.
         Return:
             A new Score instance.
         """
         try:
+            if precision_check:
+                precision = set(
+                    Decimal(_).as_tuple().exponent
+                    for _ in self.value[self.METRICS].to_numpy(str).flatten()
+                )
+                assert len(precision) == 1, "Scores have inconsistent precision."
             self.value[self.METRICS] = self.value[self.METRICS].applymap(
                 lambda x: str(Decimal(Decimal(x).as_tuple()._replace(exponent=-new_precision)))
             )
