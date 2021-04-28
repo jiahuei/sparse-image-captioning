@@ -39,26 +39,21 @@ class Score:
         df = self._pd_read_csv(csv_fp)
         self.value = pd.concat([self.value, df[df["Step"] == best_ckpt].reset_index(drop=True)], axis=1)
 
-    def shift(self, new_precision: int, precision_check: bool = True):
+    def shift(self, shift: int = 2, new_precision: int = 1):
         """
         Returns a new Score instance with metric scores shifted to `new_precision`,
         ie all scores will have `new_precision` decimal places.
 
         Args:
+            shift: int, shift the digits by the amount specified.
             new_precision: int, number of decimal places.
-            precision_check: bool, check for precision consistency if True.
         Return:
             A new Score instance.
         """
         try:
-            if precision_check:
-                precision = set(
-                    Decimal(_).as_tuple().exponent
-                    for _ in self.value[self.METRICS].to_numpy(str).flatten()
-                )
-                assert len(precision) == 1, f"Scores have inconsistent precision: {str(self)}."
+            new_precision = Decimal(Decimal("1").as_tuple()._replace(exponent=-new_precision))
             self.value[self.METRICS] = self.value[self.METRICS].applymap(
-                lambda x: str(Decimal(Decimal(x).as_tuple()._replace(exponent=-new_precision)))
+                lambda x: str(Decimal(x).shift(shift).quantize(new_precision))
             )
         except KeyError:
             logger.info(
@@ -166,7 +161,7 @@ class ScoreCollector:
         self._write_output_csv(all_scores)
         # Scale score by 100
         self._write_output_csv(
-            {k: [_.shift(1) for _ in v] for k, v in all_scores.items()},
+            {k: [_.shift() for _ in v] for k, v in all_scores.items()},
             "compiled_scores_100x.csv"
         )
         logger.info(f"{self.__class__.__name__}: Done.")
