@@ -56,7 +56,7 @@ class Score:
                     Decimal(_).as_tuple().exponent
                     for _ in self.value[self.METRICS].to_numpy(str).flatten()
                 )
-                assert len(precision) == 1, "Scores have inconsistent precision."
+                assert len(precision) == 1, f"Scores have inconsistent precision: {str(self)}."
             self.value[self.METRICS] = self.value[self.METRICS].applymap(
                 lambda x: str(Decimal(Decimal(x).as_tuple()._replace(exponent=-new_precision)))
             )
