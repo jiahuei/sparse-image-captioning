@@ -15,11 +15,13 @@ from tqdm import tqdm
 from itertools import chain
 from collections import defaultdict
 from time import localtime, strftime
+from decimal import Decimal
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 
 class Score:
-    DELIMITER = ","
+    DELIMITER: str = ","
+    METRICS: list = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
     value: pd.DataFrame
 
     def __init__(self, data, header="Experiment"):
@@ -36,6 +38,26 @@ class Score:
             raise ValueError("Invalid checkpoint.")
         df = self._pd_read_csv(csv_fp)
         self.value = pd.concat([self.value, df[df["Step"] == best_ckpt].reset_index(drop=True)], axis=1)
+
+    def shift(self, new_precision: int):
+        """
+        Returns a new Score instance with metric scores shifted to `new_precision`,
+        ie all scores will have `new_precision` decimal places.
+
+        Args:
+            new_precision: int, number of decimal places.
+        Return:
+            A new Score instance.
+        """
+        try:
+            self.value[self.METRICS] = self.value[self.METRICS].applymap(
+                lambda x: str(Decimal(Decimal(x).as_tuple()._replace(exponent=-new_precision)))
+            )
+        except KeyError:
+            logger.info(
+                f"{self.__class__.__name__}: shift() skipped: No metric scores found for {str(self)}."
+            )
+        return self
 
     @staticmethod
     def _pd_read_csv(csv_fp):
@@ -87,22 +109,6 @@ class ScoreCollector:
         self.train_captions_set = set(self.read_file(train_caption_files[0]))
         self.experiments = list(filter(os.path.isdir, self.list_dir(self.config.log_dir)))
 
-    @staticmethod
-    def list_items_equal(lst):
-        """
-        Returns True if all items in list are equal. Returns False for empty list.
-        https://stackoverflow.com/a/3844832
-        """
-        return lst and lst.count(lst[0]) == len(lst)
-
-    @staticmethod
-    def is_test_dir(path):
-        return "test_" in os.path.basename(path) and os.path.isdir(path)
-
-    @staticmethod
-    def is_val_dir(path):
-        return "val_" in os.path.basename(path) and os.path.isdir(path)
-
     def collect_scores(self):
         all_scores = defaultdict(list)
         for i, exp_dir in enumerate(self.experiments):
@@ -149,12 +155,22 @@ class ScoreCollector:
                 self._load_model_params(exp_dir, score)
                 all_scores[os.path.basename(val_dir)].append(score)
 
+        # Write to CSV
+        self._write_output_csv(all_scores)
+        # Scale score by 100
+        self._write_output_csv(
+            {k: [_.shift(1) for _ in v] for k, v in all_scores.items()},
+            "compiled_scores_100x.csv"
+        )
+        logger.info(f"{self.__class__.__name__}: Done.")
+
+    def _write_output_csv(self, all_scores: dict, filename="compiled_scores.csv"):
         # Filter / sort
-        out_file = os.path.join(self.config.log_dir, "compiled_test_scores.csv")
+        out_file = os.path.join(self.config.log_dir, filename)
         try:
             existing_data = set(self.read_file(out_file))
         except FileNotFoundError:
-            existing_data = {}
+            existing_data = set()
 
         out_str = ""
         for score_dir, scores in sorted(all_scores.items()):
@@ -177,7 +193,22 @@ class ScoreCollector:
             out_str = f"\n--------\nCompiled: {current_time_str}\n--------\n{out_str}"
             with open(out_file, "a") as f:
                 f.write(out_str)
-        logger.info(f"{self.__class__.__name__}: Done.")
+
+    @staticmethod
+    def list_items_equal(lst):
+        """
+        Returns True if all items in list are equal. Returns False for empty list.
+        https://stackoverflow.com/a/3844832
+        """
+        return lst and lst.count(lst[0]) == len(lst)
+
+    @staticmethod
+    def is_test_dir(path):
+        return "test_" in os.path.basename(path) and os.path.isdir(path)
+
+    @staticmethod
+    def is_val_dir(path):
+        return "val_" in os.path.basename(path) and os.path.isdir(path)
 
     def _load_model_params(self, exp_dir, score):
         # Load model params if available
@@ -303,12 +334,12 @@ class ScoreCollector:
             help="str: Logging level.",
         )
         parser.add_argument(
-            "--skip_check_train_file",
+            "--skip_check_train_file", "-s",
             action="store_true",
             help="bool: If True, skip tokenizer train file check.",
         )
         parser.add_argument(
-            "--check_compiled_scores",
+            "--check_compiled_scores", "-c",
             action="store_true",
             help="bool: If True, check compiled metric scores against original CSV files.",
         )
