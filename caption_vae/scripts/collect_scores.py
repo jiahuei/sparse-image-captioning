@@ -3,9 +3,10 @@
 Created on 19 Oct 2020 23:57:58
 @author: jiahuei
 
-
-python caption_vae/scripts/collect_scores.py
+cd caption_vae
+python -m scripts.collect_scores
 """
+from __future__ import annotations
 import os
 import logging
 import json
@@ -13,19 +14,24 @@ import pandas as pd
 from io import StringIO
 from tqdm import tqdm
 from itertools import chain
+from functools import reduce
 from collections import defaultdict
+from copy import deepcopy
 from time import localtime, strftime
 from decimal import Decimal
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
+from utils.config import Config
 
 
 class Score:
     DELIMITER: str = ","
     METRICS: list = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
     value: pd.DataFrame
+    model_name: str
 
-    def __init__(self, data, header="Experiment"):
+    def __init__(self, model_name, data, header="Experiment"):
         self.value = self._make_df(header, data)
+        self.model_name = model_name
 
     def add_data(self, header, data):
         self.value = pd.concat([self.value, self._make_df(header, data)], axis=1)
@@ -50,16 +56,22 @@ class Score:
         Return:
             A new Score instance.
         """
+        score = deepcopy(self)
         try:
             new_precision = Decimal(Decimal("1").as_tuple()._replace(exponent=-new_precision))
-            self.value[self.METRICS] = self.value[self.METRICS].applymap(
+            score.value[score.METRICS] = score.value[score.METRICS].applymap(
                 lambda x: str(Decimal(x).shift(shift).quantize(new_precision))
             )
         except KeyError:
             logger.info(
                 f"{self.__class__.__name__}: shift() skipped: No metric scores found for {str(self)}."
             )
-        return self
+        return score
+
+    def merge(self, score: "Score"):
+        new_score = deepcopy(self)
+        new_score.value = pd.merge(new_score.value, score.value, how="outer")
+        return new_score
 
     @staticmethod
     def _pd_read_csv(csv_fp):
@@ -73,7 +85,7 @@ class Score:
 
     def __str__(self):
         # noinspection PyTypeChecker
-        return ",".join(self.value.to_numpy(str).flatten().tolist())
+        return "\n".join(",".join(_) for _ in self.value.fillna("").to_numpy(str).tolist())
 
     @property
     def header(self):
@@ -113,27 +125,31 @@ class ScoreCollector:
 
     def collect_scores(self):
         all_scores = defaultdict(list)
+        num_exp = len(self.experiments)
         for i, exp_dir in enumerate(self.experiments):
             exp_name = os.path.basename(exp_dir)
-            logger.info(f"{self.__class__.__name__}: Reading directory: `{exp_name}`")
+            logger.info(f"{self.__class__.__name__}: Reading directory ({i + 1}/{num_exp}): `{exp_name}`")
+            try:
+                model_config = self.read_json(os.path.join(exp_dir, "config.json"))
+                model_config = Config(**model_config).compat()
+            except FileNotFoundError:
+                logger.warning(f"{self.__class__.__name__}: No config JSON file found at:\n`{exp_dir}`")
+                continue
             # Load test data
             test_dirs = list(filter(self.is_test_dir, self.list_dir(exp_dir)))
             if len(test_dirs) == 0:
-                all_scores["no_test"].append(Score(exp_name))
+                all_scores["no_test"].append(Score(model_config.caption_model, exp_name))
                 continue
             best_checkpoint = None
             for test_dir in test_dirs:
-                if not os.path.isfile(os.path.join(exp_dir, "config.json")):
-                    logger.warning(f"{self.__class__.__name__}: No config JSON file found at:\n`{exp_dir}`")
-                    continue
-                score = Score(exp_name)
+                score = Score(model_config.caption_model, exp_name)
                 # Collect scores
                 try:
                     score.add_test_csv(os.path.join(test_dir, "scores.csv"))
                 except TypeError as e:
                     # https://stackoverflow.com/a/46091127
                     raise TypeError(f"Invalid score format in `{test_dir}`") from e
-                score.add_data(*self.compute_caption_stats(test_dir))
+                score.add_data(*self.compute_caption_stats(test_dir, model_config))
                 score.add_data("Test dir", os.path.basename(test_dir))
                 self._load_model_params(exp_dir, score)
                 # Maybe collect sparsities, prioritise file in test_dir
@@ -151,7 +167,7 @@ class ScoreCollector:
                 continue
             val_dirs = list(filter(self.is_val_dir, self.list_dir(exp_dir)))
             for val_dir in val_dirs:
-                score = Score(exp_name)
+                score = Score(model_config.caption_model, exp_name)
                 score.add_validation_csv(os.path.join(val_dir, "scores.csv"), best_checkpoint)
                 score.add_data("Val dir", os.path.basename(val_dir))
                 self._load_model_params(exp_dir, score)
@@ -166,7 +182,7 @@ class ScoreCollector:
         )
         logger.info(f"{self.__class__.__name__}: Done.")
 
-    def _write_output_csv(self, all_scores: dict, filename="compiled_scores.csv"):
+    def _write_output_csv(self, all_scores: dict[str, list[Score]], filename="compiled_scores.csv"):
         # Filter / sort
         out_file = os.path.join(self.config.log_dir, filename)
         try:
@@ -180,10 +196,23 @@ class ScoreCollector:
             if len(scores) == 0:
                 continue
             out_str += f"\n>>> {score_dir}\n"
-            header_set = set(_.header for _ in scores)
-            for header in sorted(header_set):
-                out_str += f"\n{header}\n"
-                out_str += "\n".join(map(str, filter(lambda x: x.header == header, scores)))
+            model_set = set(_.model_name for _ in scores)
+            for model in sorted(model_set):
+                # Merge DataFrames
+                sc = reduce(lambda x, y: x.merge(y), filter(lambda x: x.model_name == model, scores))
+                # Compute ORT param groups
+                if model == "relation_transformer" and "Params" in sc.header:
+                    df = sc.value
+                    cols = df.columns.to_list()
+                    att_cols = list(filter(lambda x: "_attn." in x, cols))
+                    emb_cols = list(filter(lambda x: ".generator" in x or ".tgt_embed" in x, cols))
+                    df["Attention params"] = df[att_cols].fillna(0).astype(int).sum(axis=1)
+                    df["Embedding params"] = df[emb_cols].fillna(0).astype(int).sum(axis=1)
+                    cols.insert(cols.index("Params") + 1, "Attention params")
+                    cols.insert(cols.index("Params") + 1, "Embedding params")
+                    sc.value = df[cols]
+                out_str += f"\n{sc.header}\n"
+                out_str += str(sc)
                 out_str += "\n"
             out_str += "\n"
 
@@ -217,13 +246,14 @@ class ScoreCollector:
         try:
             model_params = self.read_json(os.path.join(exp_dir, "model_params.json"))
             score.add_data("Params", model_params["total"])
+            for k, v in model_params["breakdown"].items():
+                score.add_data(k, v)
         except FileNotFoundError:
             pass
 
-    def compute_caption_stats(self, test_dir):
+    def compute_caption_stats(self, test_dir, model_config):
         # Load vocab size from config
-        exp_config = self.read_json(os.path.join(os.path.dirname(test_dir), "config.json"))
-        vocab_size = exp_config["vocab_size"]
+        vocab_size = model_config.vocab_size
 
         # Find caption file
         caption_file = list(filter(
