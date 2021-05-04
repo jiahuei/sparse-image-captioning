@@ -72,9 +72,16 @@ class EncoderDecoder(nn.Module):
 class Encoder(nn.Module):
     """Core encoder is a stack of N layers"""
 
-    def __init__(self, layer, N):
+    def __init__(self, layer, N, share_layer=None):
         super().__init__()
-        self.layers = clones(layer, N)
+        if share_layer:
+            if not isinstance(share_layer, (tuple, list)):
+                raise TypeError(f"`share_layer` must be a tuple or list, saw {type(share_layer)}")
+            layers = [deepcopy(layer) for _ in range(len(set(share_layer)))]
+            layers = [layers[i] for i in share_layer]
+        else:
+            layers = [deepcopy(layer) for _ in range(N)]
+        self.layers = nn.ModuleList(layers)
         self.norm = LayerNorm(layer.size)
 
     def forward(self, x, box, mask):
@@ -108,7 +115,7 @@ class BoxMultiHeadedAttention(nn.Module):
     Following the paper "Relation Networks for Object Detection" in https://arxiv.org/pdf/1711.11575.pdf
     """
 
-    def __init__(self, h, d_model, trigonometric_embedding=True, dropout=0.1):
+    def __init__(self, h, d_model, trigonometric_embedding=True, dropout=0.1, share_att=None):
         """Take in model size and number of heads."""
         super().__init__()
 
@@ -125,8 +132,10 @@ class BoxMultiHeadedAttention(nn.Module):
         geo_feature_dim = self.dim_g
 
         # matrices W_q, W_k, W_v, and one last projection layer
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.WGs = clones(nn.Linear(geo_feature_dim, 1, bias=True), 8)
+        assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
+        self.share_att = share_att
+        self.linears = clones(nn.Linear(d_model, d_model), 3 if share_att else 4)
+        self.WGs = clones(nn.Linear(geo_feature_dim, 1, bias=True), self.h)
 
         # self.attn = None
         self.dropout = nn.Dropout(p=dropout)
@@ -146,10 +155,21 @@ class BoxMultiHeadedAttention(nn.Module):
         flatten_relative_geometry_embeddings = relative_geometry_embeddings.view(-1, self.dim_g)
 
         # 1) Do all the linear projections in batch from d_model => h x d_k
-        query, key, value = [
-            l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
-            for l, x in zip(self.linears, (input_query, input_key, input_value))
-        ]
+        if self.share_att == "kv":
+            att_inputs = (input_query, input_key)
+        elif self.share_att == "qk":
+            att_inputs = (input_query, input_value)
+        else:
+            att_inputs = (input_query, input_key, input_value)
+        att_outputs = (self._project_qkv(l, x) for l, x in zip(self.linears, att_inputs))
+        if self.share_att == "kv":
+            query, key = att_outputs
+            value = key
+        elif self.share_att == "qk":
+            query, value = att_outputs
+            key = self._project_qkv(self.linears[0], input_key)
+        else:
+            query, key, value = att_outputs
         box_size_per_head = list(relative_geometry_embeddings.shape[:3])
         box_size_per_head.insert(1, 1)
         relative_geometry_weights_per_head = [
@@ -166,10 +186,10 @@ class BoxMultiHeadedAttention(nn.Module):
         # 3) "Concat" using a view and apply a final linear.
         x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
 
-        # # Legacy
-        # x = input_value + x
-
         return self.linears[-1](x)
+
+    def _project_qkv(self, layer, x):
+        return layer(x).view(x.size(0), -1, self.h, self.d_k).transpose(1, 2)
 
     @staticmethod
     def BoxRelationalEmbedding(f_g, dim_g=64, wave_len=1000, trigonometric_embedding=True):
@@ -278,23 +298,29 @@ class RelationTransformerModel(CachedTransformerBase):
 
     def __init__(self, config):
         super().__init__(config)
-        self.box_trigonometric_embedding = True
-        self.make_model()
+        self.box_trigonometric_embedding = not config.no_box_trigonometric_embedding
+        self.make_model(h=self.num_heads)
 
     def make_model(self, h=8, dropout=0.1):
         """Helper: Construct a model from hyperparameters."""
-        bbox_attn = BoxMultiHeadedAttention(h, self.d_model, self.box_trigonometric_embedding)
-        attn = CachedMultiHeadedAttention(h, self.d_model)
+        bbox_attn = BoxMultiHeadedAttention(
+            h, self.d_model, self.box_trigonometric_embedding, share_att=self.share_att_encoder
+        )
+        attn = CachedMultiHeadedAttention(h, self.d_model, share_att=self.share_att_decoder)
         self_attn = deepcopy(attn)
         self_attn.self_attention = True
         ff = PositionwiseFeedForward(self.d_model, self.dim_feedforward, dropout)
         position = PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
-            Encoder(EncoderLayer(
-                self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
+            Encoder(
+                EncoderLayer(
+                    self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout
+                ), self.num_layers, share_layer=self.share_layer_encoder
             ),
-            Decoder(DecoderLayer(
-                self.d_model, self_attn, attn, deepcopy(ff), dropout), self.num_layers
+            Decoder(
+                DecoderLayer(
+                    self.d_model, self_attn, attn, deepcopy(ff), dropout
+                ), self.num_layers, share_layer=self.share_layer_decoder
             ),
             lambda x: x,  # nn.Sequential(Embeddings(self.d_model, src_vocab), deepcopy(position)),
             nn.Sequential(Embeddings(self.d_model, self.vocab_size), deepcopy(position)),
@@ -394,8 +420,9 @@ class RelationTransformerModel(CachedTransformerBase):
         CachedTransformerBase.add_argparse_args(parser)
         # Relation args
         parser.add_argument(
-            "--box_trigonometric_embedding", type=str_to_bool,
-            default=True
+            "--no_box_trigonometric_embedding",
+            action="store_true",
+            help="bool: If `True`, do not use trigonometric embedding.",
         )
         # fmt: on
         # return parser

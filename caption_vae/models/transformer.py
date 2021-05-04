@@ -20,6 +20,7 @@ from models import register_model
 from models.caption_model import CaptionModel
 from data.collate import UpDownCollate
 from utils.model_utils import repeat_tensors, clones
+from utils.misc import str_to_sequence, str_to_none
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +129,16 @@ class Encoder(nn.Module):
     Core encoder is a stack of N layers
     """
 
-    def __init__(self, layer, N):
+    def __init__(self, layer, N, share_layer=None):
         super().__init__()
-        self.layers = clones(layer, N)
+        if share_layer:
+            if not isinstance(share_layer, (tuple, list)):
+                raise TypeError(f"`share_layer` must be a tuple or list, saw {type(share_layer)}")
+            layers = [deepcopy(layer) for _ in range(len(set(share_layer)))]
+            layers = [layers[i] for i in share_layer]
+        else:
+            layers = [deepcopy(layer) for _ in range(N)]
+        self.layers = nn.ModuleList(layers)
         self.norm = LayerNorm(layer.size)
 
     def forward(self, x, mask):
@@ -163,9 +171,16 @@ class EncoderLayer(nn.Module):
 class Decoder(nn.Module):
     """Generic N layer decoder with masking."""
 
-    def __init__(self, layer, N):
+    def __init__(self, layer, N, share_layer=None):
         super().__init__()
-        self.layers = clones(layer, N)
+        if share_layer:
+            if not isinstance(share_layer, (tuple, list)):
+                raise TypeError(f"`share_layer` must be a tuple or list, saw {type(share_layer)}")
+            layers = [deepcopy(layer) for _ in range(len(set(share_layer)))]
+            layers = [layers[i] for i in share_layer]
+        else:
+            layers = [deepcopy(layer) for _ in range(N)]
+        self.layers = nn.ModuleList(layers)
         self.norm = LayerNorm(layer.size)
 
     def forward(self, x, memory, src_mask, tgt_mask):
@@ -196,15 +211,17 @@ class DecoderLayer(nn.Module):
 
 # noinspection PyAbstractClass
 class MultiHeadedAttention(nn.Module):
-    def __init__(self, h, d_model, dropout=0.1, self_attention=False):
+    def __init__(self, h, d_model, dropout=0.1, self_attention=False, share_att=None):
         """Take in model size and number of heads."""
         super().__init__()
         assert d_model % h == 0
         # We assume d_v always equals d_k
         self.d_k = d_model // h
         self.h = h
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
         self.self_attention = self_attention
+        assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
+        self.share_att = share_att
+        self.linears = clones(nn.Linear(d_model, d_model), 3 if share_att else 4)
         self.dropout = nn.Dropout(p=dropout)
         self.cache = [None, None]
         self.cache_size = 2
@@ -237,8 +254,12 @@ class MultiHeadedAttention(nn.Module):
         if not self.self_attention and isinstance(self.cache[0], Tensor):
             key, value = self.cache
         else:
-            key = self._project_qkv(self.linears[1], key)
-            value = self._project_qkv(self.linears[2], value)
+            if self.share_att == "qk":
+                key = self._project_qkv(self.linears[0], key)
+                value = self._project_qkv(self.linears[1], value)
+            else:
+                key = self._project_qkv(self.linears[1], key)
+                value = key if self.share_att else self._project_qkv(self.linears[2], value)
 
         if self.self_attention and isinstance(self.cache[0], Tensor):
             # Concat with previous keys and values
@@ -400,9 +421,14 @@ class CachedTransformerBase(CaptionModel):
     def __init__(self, config):
         super().__init__()
         self.config = config
+        self.share_att_encoder = config.share_att_encoder
+        self.share_att_decoder = config.share_att_decoder
+        self.share_layer_encoder = config.share_layer_encoder
+        self.share_layer_decoder = config.share_layer_decoder
         self.d_model = config.d_model  # default: 512
         self.dim_feedforward = config.dim_feedforward  # default: 2048
         self.num_layers = config.num_layers  # default: 6
+        self.num_heads = config.num_heads  # default: 8
         self.drop_prob_src = config.drop_prob_src
         self.seq_length = config.max_seq_length
         self.att_feat_size = config.att_feat_size
@@ -556,12 +582,40 @@ class CachedTransformerBase(CaptionModel):
             help="int: Number of transformer layers."
         )
         parser.add_argument(
+            "--num_heads", type=int, default=8,
+            help="int: Number of transformer attention heads."
+        )
+        parser.add_argument(
             "--drop_prob_src", type=float, default=0.5,
             help="float: Dropout rate applied to source embedding at the Encoder."
         )
         parser.add_argument(
             "--att_feat_size", type=int, default=2048,
             help="int: Number of channels of CNN features (ResNet = 2048, VGG = 512)."
+        )
+        parser.add_argument(
+            "--share_att_encoder", type=str_to_none, default=None,
+            help="str: One of `kv`, `qk`. Defaults to None (no weight sharing)."
+        )
+        parser.add_argument(
+            "--share_att_decoder", type=str_to_none, default=None,
+            help="str: One of `kv`, `qk`. Defaults to None (no weight sharing)."
+        )
+        parser.add_argument(
+            "--share_layer_encoder", type=str_to_sequence, default=None,
+            help=(
+                "str: Layer sharing scheme. "
+                "For example: (0, 1, 1, 0) specifies 4 layers with weight sharing for L0-L3, L1-L2. "
+                "Defaults to None (no weight sharing)."
+            )
+        )
+        parser.add_argument(
+            "--share_layer_decoder", type=str_to_sequence, default=None,
+            help=(
+                "str: Layer sharing scheme. "
+                "For example: (0, 1, 1, 0) specifies 4 layers with weight sharing for L0-L3, L1-L2. "
+                "Defaults to None (no weight sharing)."
+            )
         )
         # fmt: on
 
@@ -576,7 +630,6 @@ class Transformer(CachedTransformerBase):
         self.make_model()
 
     def make_model(self):
-        nhead = 8
         dropout = 0.1
 
         ff = PositionwiseFeedForward(self.d_model, self.dim_feedforward, dropout)
@@ -588,17 +641,20 @@ class Transformer(CachedTransformerBase):
                 nn.Dropout(self.drop_prob_src)
             ),
             encoder=Encoder(
-                EncoderLayer(self.d_model, MHA(nhead, self.d_model), deepcopy(ff), dropout),
-                self.num_layers
+                EncoderLayer(
+                    self.d_model,
+                    MHA(self.num_heads, self.d_model, share_att=self.share_att_encoder),
+                    deepcopy(ff), dropout
+                ), self.num_layers, share_layer=self.share_layer_encoder
             ),
             tgt_embed=nn.Sequential(InputEmbedding(self.d_model, self.vocab_size), deepcopy(position)),
             decoder=Decoder(
                 DecoderLayer(
                     self.d_model,
-                    CMHA(nhead, self.d_model, self_attention=True), CMHA(nhead, self.d_model),
+                    CMHA(self.num_heads, self.d_model, self_attention=True, share_att=self.share_att_decoder),
+                    CMHA(self.num_heads, self.d_model, share_att=self.share_att_decoder),
                     deepcopy(ff), dropout
-                ),
-                self.num_layers
+                ), self.num_layers, share_layer=self.share_layer_decoder
             ),
             generator=OutputEmbedding(self.d_model, self.vocab_size),
             autoregressive=True,
