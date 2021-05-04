@@ -9,7 +9,6 @@ import json
 import logging
 from datetime import datetime
 from packaging import version
-from typing import Union, Type, TypeVar, Dict
 from copy import deepcopy
 from utils.file import read_json, dumps_file
 from version import __version__
@@ -21,20 +20,20 @@ class Config:
     """ Configuration object."""
 
     @classmethod
-    def load_config_json(cls, config_filepath):
+    def load_config_json(cls, config_filepath, verbose=True):
         config = cls(**read_json(config_filepath)).compat()
-        logger.info(f"{cls.__name__}: Loaded from `{config_filepath}`.")
+        if verbose:
+            logger.info(f"{cls.__name__}: Loaded from `{config_filepath}`.")
         return config
 
     def __init__(self, x: str = None, **kwargs):
+        self.datetime = str(datetime.now())
         if x is not None:
             if not isinstance(x, str):
                 raise TypeError(f"Positional argument must be a string, saw {type(x)}")
             kwargs.update(json.loads(x))
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.version = __version__
-        self.datetime = str(datetime.now())
 
     def __setattr__(self, key, value):
         self_dict = vars(self)
@@ -49,7 +48,9 @@ class Config:
         return self.json()
 
     def dict(self):
-        return {k: vars(v) if isinstance(v, Config) else v for k, v in vars(self).items()}
+        d = {k: vars(v) if isinstance(v, Config) else v for k, v in vars(self).items()}
+        d["version"] = __version__
+        return d
 
     def json(self, **kwargs):
         kwargs["indent"] = kwargs.get("indent", 2)
@@ -90,12 +91,12 @@ class Config:
     # noinspection PyAttributeOutsideInit
     def compat(self):
         loaded_version = version.parse(self.get("version", "0.1.0"))
-        if loaded_version == version.parse(self.version):
+        if loaded_version == version.parse(__version__):
             return self
 
         logger.warning(
-            f"{self.__name__}: Version mismatch: "
-            f"Current is `{self.version}`, loaded config is `{loaded_version}`"
+            f"{self.__class__.__name__}: Version mismatch: "
+            f"Current is `{__version__}`, loaded config is `{loaded_version}`"
         )
 
         if loaded_version < version.parse("0.5.0"):
@@ -103,6 +104,8 @@ class Config:
             self.share_layer_encoder = self.share_layer_decoder = None
             if "relation_transformer" in self.caption_model:
                 self.no_box_trigonometric_embedding = not self.box_trigonometric_embedding
+            if "transformer" in self.caption_model:
+                self.num_heads = self.get("num_heads", 8)
 
         if loaded_version < version.parse("0.3.0"):
             self.vocab_size += 1
@@ -119,7 +122,7 @@ class Config:
             if "scst_mode" in vars(self):
                 scst = self.scst_mode
                 del self.scst_mode
-            elif "scst_beam_search" in self:
+            elif "scst_beam_search" in vars(self):
                 scst = "beam_search" if self.scst_beam_search else "greedy_baseline"
                 del self.scst_beam_search
             else:
@@ -141,7 +144,7 @@ class Config:
 
         if loaded_version == version.parse("0.0.0"):
             raise ValueError(
-                f"{self.__name__}: Compatibility error, "
+                f"{self.__class__.__name__}: Compatibility error, "
                 f"unable to convert config from version `{loaded_version}`."
             )
         return self
