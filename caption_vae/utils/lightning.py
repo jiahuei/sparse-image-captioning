@@ -10,7 +10,7 @@ import logging
 import json
 import torch
 import numpy as np
-# import pytorch_lightning as pl
+from time import perf_counter
 from tqdm import tqdm
 from argparse import ArgumentParser, _ArgumentGroup
 from typing import Dict, Callable, Union
@@ -267,6 +267,7 @@ class LightningModule:
         model.eval()
         config.beam_size = config.get(f"beam_size_{split}", 1)
 
+        t0 = perf_counter()
         image_paths = []
         predictions = []
         for batch_idx, data in enumerate(tqdm(loader, desc="Evaluating model")):
@@ -276,7 +277,7 @@ class LightningModule:
 
             predictions += [self.tokenizer.decode(_[0]) for _ in seq]
             image_paths += data["image_paths"]
-
+        print(f"Speed: {len(image_paths) / (perf_counter() - t0):.2f} img/sec")
         # Switch back to training mode
         model.train()
 

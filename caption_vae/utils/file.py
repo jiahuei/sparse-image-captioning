@@ -26,8 +26,6 @@ import six
 import requests
 import json
 import logging
-
-from itertools import chain
 from PIL import Image
 from io import BytesIO
 from tqdm import tqdm
@@ -53,9 +51,7 @@ def list_dir(path):
 
 
 def list_files(path):
-    files = chain.from_iterable(
-        (os.path.join(root, f) for f in files) for root, subdirs, files in os.walk(path)
-    )
+    files = [os.path.join(root, f) for root, dirs, files in os.walk(path) for f in files]
     return files
 
 
@@ -329,7 +325,6 @@ def _extract_archive(file_path, path=".", archive_format="auto"):
 def zip_dir(target_dir, save_dir):
     out = os.path.join(save_dir, os.path.basename(target_dir) + ".zip")
     logger.info(f"Zipping `{target_dir}` into `{out}`")
-    files = [os.path.join(root, f) for root, dirs, files in os.walk(target_dir) for f in files]
     with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for f in files:
+        for f in list_files(target_dir):
             zf.write(f, f.replace(os.path.dirname(target_dir), ""))
