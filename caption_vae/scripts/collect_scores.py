@@ -13,13 +13,13 @@ import json
 import pandas as pd
 from io import StringIO
 from tqdm import tqdm
-from itertools import chain
 from functools import reduce
 from collections import defaultdict
 from copy import deepcopy
 from time import localtime, strftime
 from decimal import Decimal
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
+from utils.file import list_files
 from utils.config import Config
 
 
@@ -109,7 +109,7 @@ class ScoreCollector:
     def __init__(self, config, check_train_captions=False):
         self.config = config
         train_caption_files = list(filter(
-            lambda x: x.endswith("train_captions.txt"), self.list_files(self.config.log_dir)
+            lambda x: x.endswith("train_captions.txt"), list_files(self.config.log_dir)
         ))
         if check_train_captions:
             train_captions = [
@@ -130,8 +130,7 @@ class ScoreCollector:
             exp_name = os.path.basename(exp_dir)
             logger.info(f"{self.__class__.__name__}: Reading directory ({i + 1}/{num_exp}): `{exp_name}`")
             try:
-                model_config = self.read_json(os.path.join(exp_dir, "config.json"))
-                model_config = Config(**model_config).compat()
+                model_config = Config.load_config_json(os.path.join(exp_dir, "config.json"), verbose=False)
             except FileNotFoundError:
                 logger.warning(f"{self.__class__.__name__}: No config JSON file found at:\n`{exp_dir}`")
                 continue
@@ -327,13 +326,6 @@ class ScoreCollector:
     @staticmethod
     def list_dir(path):
         return sorted(os.path.join(path, _) for _ in os.listdir(path))
-
-    @staticmethod
-    def list_files(path):
-        files = chain.from_iterable(
-            (os.path.join(root, f) for f in files) for root, subdirs, files in os.walk(path)
-        )
-        return files
 
     @staticmethod
     def read_file(path):
