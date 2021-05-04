@@ -385,7 +385,7 @@ def plot_comic_overview(
         linewidth=1.0, linestyle=":", alpha=0.9,
         ax=ax, palette=cranberry3[:1], legend=None,
     )
-    for m in ("COMIC-256 (proposed)", "COMIC-768 (proposed)"):
+    for m in filter(lambda x: "proposed" in x, df[series_name]):
         _df = df2[df2[series_name] == m]
         vsize = _df.index.values[0]
         ax.annotate(
@@ -398,6 +398,66 @@ def plot_comic_overview(
     )
     ax.annotate(
         "Baseline & SOTA", (8000, 98),
+        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
+    )
+
+    # Title
+    if fig_title:
+        ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
+    despine_white(fig)
+    # Adjust margins and layout
+    plt.tight_layout(pad=1.5)
+    plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
+    plt.clf()
+    plt.close("all")
+
+
+def plot_acort_overview(
+        df, palette,
+        output_path, fig_title="",
+        output_dpi=600,
+        context="paper", fig_scale=1.3,
+):
+    # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
+    sns.set_context(context)
+
+    # Main chart
+    series_name = "Method"
+    xaxis_name = "Params (M)"
+    yaxis_name = "CIDEr"
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    ax.set(
+        xlim=get_lim(df.index, margin=(0.1, 0.1)),
+        ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2))
+    )
+    # Bubble plot
+    palette = sns.color_palette(palette, n_colors=len(df[series_name]))
+    palette[pd.Index(df[series_name]).get_loc("Baseline")] = mako3[0]
+    ax = sns.scatterplot(
+        data=df, x=xaxis_name, y=yaxis_name, hue=series_name,
+        palette=palette, linewidth=0, s=100, alpha=1, ax=ax, legend="full"
+    )
+    # Line
+    df2 = df[df["ACORT"] == "Yes"]
+    ax = sns.lineplot(
+        data=df2, x=xaxis_name, y=yaxis_name, hue="ACORT",
+        linewidth=1.0, linestyle=":", alpha=0.9,
+        ax=ax, palette=cranberry3[:1], legend=None,
+    )
+    for m in df[series_name]:
+        _df = df[df[series_name] == m]
+        size = _df.index.values[0]
+        ax.annotate(
+            f"{size} M", (size + 1, _df[yaxis_name] + 1),
+            fontsize="small", va="bottom", ha="center"
+        )
+    ax.annotate(
+        "Proposed", (15, 123),
+        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
+    )
+    ax.annotate(
+        "Baseline & SOTA", (40, 120.5),
         fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
     )
 
@@ -459,7 +519,13 @@ def main():
         # Just for the progress bar
         fname = "COMIC (MS-COCO) (fine-tune)"
         df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-        plot_comic_overview(df, "icefire", f"{fname}.png")
+        plot_comic_overview(df, "icefire_r", f"{fname}.png")
+
+    for f in tqdm(range(1)):
+        # Just for the progress bar
+        fname = "ACORT (MS-COCO)"
+        df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
+        plot_acort_overview(df, "icefire_r", f"{fname}.png")
 
 
 if __name__ == "__main__":

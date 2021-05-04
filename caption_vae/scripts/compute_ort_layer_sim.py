@@ -16,7 +16,7 @@ sns.set_theme(style="darkgrid", rc={"legend.loc": "lower left", "legend.framealp
 def compute_sim(x):
     x = np.expand_dims(x, axis=1)
     y = x.transpose([1, 0, 2])
-    z = np.sqrt(np.sum((x - y) ** 2, axis=-1))
+    z = np.sqrt(np.mean((x - y) ** 2, axis=-1))
     return z
 
 
@@ -27,7 +27,9 @@ def main(
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
-    sns.set_context(context)
+    sns.set_context(context, font_scale=3.0)
+    # palette = sns.color_palette("Blues_r", as_cmap=True)
+    palette = sns.diverging_palette(220, 20, as_cmap=True)
     common_kwargs = dict(
         cmap=palette, annot=annot, annot_kws={"fontsize": 18}, fmt=".1f",
         cbar=True, xticklabels=True, yticklabels=True
@@ -72,11 +74,11 @@ def main(
     )
 
     for name, mat in tqdm(matrices.items()):
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(3. * fig_scale, 3. * fig_scale))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(3.75 * fig_scale, 3. * fig_scale))
         ax = sns.heatmap(mat, vmin=np.unique(mat)[1], ax=ax, **common_kwargs)
         # Adjust margins and layout
         plt.tight_layout(pad=0)
-        fname = name
+        fname = f"layer-sim {name} (br)"
         if annot:
             fname += "_annot"
         plt.savefig(f"{os.path.join(output_dir, fname)}.png", dpi=output_dpi)  # , plt.show()
