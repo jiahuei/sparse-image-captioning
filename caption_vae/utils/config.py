@@ -91,15 +91,11 @@ class Config:
     # noinspection PyAttributeOutsideInit
     def compat(self):
         loaded_version = version.parse(self.get("version", "0.1.0"))
+        self.check_loaded_version(self.get("version", "0.1.0"))
         if loaded_version == version.parse(__version__):
             return self
 
-        logger.warning(
-            f"{self.__class__.__name__}: Version mismatch: "
-            f"Current is `{__version__}`, loaded config is `{loaded_version}`"
-        )
-
-        if loaded_version < version.parse("0.5.0"):
+        if loaded_version < version.parse("0.6.0"):
             self.share_att_encoder = self.share_att_decoder = None
             self.share_layer_encoder = self.share_layer_decoder = None
             if "relation_transformer" in self.caption_model:
@@ -148,3 +144,42 @@ class Config:
                 f"unable to convert config from version `{loaded_version}`."
             )
         return self
+
+    def check_loaded_version(self, loaded_version):
+        def _warn(expected_ver):
+            if loaded_version not in expected_ver:
+                logger.warning(
+                    f"{self.__class__.__name__}: Version mismatch: "
+                    f"Expected `{expected_ver}`, loaded config is `{loaded_version}`"
+                )
+
+        try:
+            _ = self.scst_baseline
+            _ = self.scst_sample
+        except AttributeError:
+            _warn(["0.1.0"])
+            return
+
+        try:
+            if "transformer" in self.caption_model:
+                _ = self.d_model
+                _ = self.dim_feedforward
+                _ = self.drop_prob_src
+        except AttributeError:
+            _warn(["0.2.0"])
+            return
+
+        try:
+            _ = self.share_att_encoder
+            _ = self.share_att_decoder
+            _ = self.share_layer_encoder
+            _ = self.share_layer_decoder
+            if "relation_transformer" in self.caption_model:
+                _ = self.no_box_trigonometric_embedding
+            if "transformer" in self.caption_model:
+                _ = self.num_heads
+        except AttributeError:
+            _warn(["0.3.0", "0.4.0", "0.5.0"])
+            return
+
+        return
