@@ -93,10 +93,6 @@ def main(args):
             for k, v in state_dict.items()
         }
         torch.save(state_dict, ckpt_path.replace(".pth", "_float16.pth"))
-        state_dict = {
-            k: v.to(torch.float32) if isinstance(v, torch.Tensor) else v
-            for k, v in state_dict.items()
-        }
     state_dict = densify_state_dict(state_dict)
     logger.info(f"Model weights loaded from `{ckpt_path}`")
 

@@ -110,8 +110,9 @@ def count_nonzero(tensor):
 def densify_state_dict(state_dict):
     # noinspection PyUnresolvedReferences
     state_dict = {
-        k: v.to_dense()
-        if isinstance(v, (torch.sparse.FloatTensor, torch.cuda.sparse.FloatTensor)) else v
+        k: v.to_dense() if isinstance(
+            v, (torch.sparse.FloatTensor, torch.cuda.sparse.FloatTensor, torch.cuda.sparse.HalfTensor)
+        ) else v
         for k, v in state_dict.items()
     }
     return state_dict
