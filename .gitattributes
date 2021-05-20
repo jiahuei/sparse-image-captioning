@@ -23,6 +23,7 @@
 *.npz binary
 *.pkl binary
 *.pth binary
+*.jar binary
 *.psd binary
 *.png binary
 *.jpg binary
