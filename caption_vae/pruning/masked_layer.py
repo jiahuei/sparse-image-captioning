@@ -204,3 +204,37 @@ class MaskedLSTMCell(MaskMixin, nn.LSTMCell):
             self.get_masked_weight("weight_ih"), self.get_masked_weight("weight_hh"),
             self.bias_ih, self.bias_hh,
         )
+
+
+# noinspection PyAbstractClass
+class MaskedLSTMCellCheckpoint(MaskMixin, nn.LSTMCell):
+    r"""
+    A masked long short-term memory (LSTM) cell.
+        self.weight_ih = Parameter(torch.Tensor(num_chunks * hidden_size, input_size))
+        self.weight_hh = Parameter(torch.Tensor(num_chunks * hidden_size, hidden_size))
+    """
+
+    def __init__(
+            self, input_size: int, hidden_size: int,
+            mask_type: str, mask_init_value: float,
+            bypass_sigmoid_grad: bool = False,
+            **kwargs
+    ) -> None:
+        super().__init__(input_size, hidden_size, **kwargs)
+        self.setup_masks(("weight_ih", "weight_hh"), mask_type, mask_init_value, bypass_sigmoid_grad)
+
+    def _lstm(self, input, hx0, hx1):
+        return torch._VF.lstm_cell(
+            input, (hx0, hx1),
+            self.get_masked_weight("weight_ih"), self.get_masked_weight("weight_hh"),
+            self.bias_ih, self.bias_hh,
+        )
+
+    def forward(self, input: Tensor, hx: Optional[Tuple[Tensor, Tensor]] = None) -> Tuple[Tensor, Tensor]:
+        self.check_forward_input(input)
+        if hx is None:
+            zeros = torch.zeros(input.size(0), self.hidden_size, dtype=input.dtype, device=input.device)
+            hx = (zeros, zeros)
+        self.check_forward_hidden(input, hx[0], '[0]')
+        self.check_forward_hidden(input, hx[1], '[1]')
+        return torch.utils.checkpoint.checkpoint(self._lstm, input, *hx, )
