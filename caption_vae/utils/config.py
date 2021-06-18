@@ -170,14 +170,14 @@ class Config:
             return
 
         try:
-            _ = self.share_att_encoder
-            _ = self.share_att_decoder
-            _ = self.share_layer_encoder
-            _ = self.share_layer_decoder
             if "relation_transformer" in self.caption_model:
                 _ = self.no_box_trigonometric_embedding
             if "transformer" in self.caption_model:
                 _ = self.num_heads
+                _ = self.share_att_encoder
+                _ = self.share_att_decoder
+                _ = self.share_layer_encoder
+                _ = self.share_layer_decoder
         except AttributeError:
             _warn(["0.3.0", "0.4.0", "0.5.0"])
             return
