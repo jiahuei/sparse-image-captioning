@@ -5,6 +5,7 @@
 * Captioning models built using PyTorch
     * [Up-Down LSTM](http://openaccess.thecvf.com/content_cvpr_2018/html/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.html)
     * [Object Relation Transformer](https://papers.nips.cc/paper/9293-image-captioning-transforming-objects-into-words.pdf)
+    * A Compact Object Relation Transformer (ACORT)
 * Unstructured weight pruning
     * Supermask (end-to-end pruning)
     * Gradual magnitude pruning
@@ -36,7 +37,7 @@
     * _(to be added)_ Flickr8k, Flickr30k, InstaPIC-1.1M
 
 
-## Pre-trained Sparse Models
+## Pre-trained Sparse and ACORT Models
 
 The checkpoints are [available at this repo](https://github.com/jiahuei/sparse-captioning-checkpoints).
 
