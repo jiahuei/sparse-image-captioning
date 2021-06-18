@@ -38,18 +38,24 @@ class Generator(rtrans.Generator):
 
 # noinspection PyAbstractClass
 class CachedMultiHeadedAttention(rtrans.CachedMultiHeadedAttention):
-    def __init__(self, mask_type, mask_init_value, h, d_model, dropout=0.1 / 3, self_attention=False):
+    def __init__(
+            self, mask_type, mask_init_value, h, d_model,
+            dropout=0.1 / 3, self_attention=False, share_att=None
+    ):
         """Take in model size and number of heads."""
         nn.Module.__init__(self)
         assert d_model % h == 0
         # We assume d_v always equals d_k
         self.d_k = d_model // h
         self.h = h
-        self.linears = clones(MaskedLinear(d_model, d_model, mask_type, mask_init_value), 4)
-        # self.attn = None
         self.self_attention = self_attention
+        assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
+        self.share_att = share_att
+        self.linears = clones(
+            MaskedLinear(d_model, d_model, mask_type, mask_init_value),
+            3 if share_att else 4
+        )
         self.dropout = nn.Dropout(p=dropout)
-        self.incremental_decoding = False
         self.cache = [None, None]
         self.cache_size = 2
 
@@ -61,7 +67,11 @@ class BoxMultiHeadedAttention(rtrans.BoxMultiHeadedAttention):
     Following the paper "Relation Networks for Object Detection" in https://arxiv.org/pdf/1711.11575.pdf
     """
 
-    def __init__(self, mask_type, mask_init_value, h, d_model, trigonometric_embedding=True, dropout=0.1 / 3):
+    def __init__(
+            self, mask_type, mask_init_value, h, d_model,
+            trigonometric_embedding=True, dropout=0.1 / 3,
+            share_att=None
+    ):
         """Take in model size and number of heads."""
         nn.Module.__init__(self)
 
@@ -78,8 +88,16 @@ class BoxMultiHeadedAttention(rtrans.BoxMultiHeadedAttention):
         geo_feature_dim = self.dim_g
 
         # matrices W_q, W_k, W_v, and one last projection layer
-        self.linears = clones(MaskedLinear(d_model, d_model, mask_type, mask_init_value), 4)
-        self.WGs = clones(MaskedLinear(geo_feature_dim, 1, mask_type, mask_init_value, bias=True), 8)
+        assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
+        self.share_att = share_att
+        self.linears = clones(
+            MaskedLinear(d_model, d_model, mask_type, mask_init_value),
+            3 if share_att else 4
+        )
+        self.WGs = clones(
+            MaskedLinear(geo_feature_dim, 1, mask_type, mask_init_value, bias=True),
+            self.h
+        )
 
         # self.attn = None
         self.dropout = nn.Dropout(p=dropout)
