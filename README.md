@@ -136,6 +136,11 @@ To perform online server evaluation:
 3. Zip the files and [submit](https://competitions.codalab.org/competitions/3221#participate).
 
 
+## Visualisation
+
+You can explore and visualise generated captions [using this Streamlit app](https://github.com/jiahuei/MSCOCO-caption-explorer).
+
+
 ## Acknowledgements
 
 * SCST, Up-Down: [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
