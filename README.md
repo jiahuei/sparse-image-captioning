@@ -66,7 +66,7 @@ For convenience, setup is done using Docker.
 
 ## Usage
 
-Refer to `commands.sh` for more examples.
+Refer to `commands_pruning.sh` and `commands_acort.sh` for more examples.
 
 These paths below assume a Docker setup following `docker_run.sh`.
 
