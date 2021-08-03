@@ -43,6 +43,34 @@ python /master/src/caption_vae/train_transformer.py \
     --id ${MODEL_ID}__baseline \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
+# Fine-tune
+BASELINE="${LOG_DIR}/${MODEL_ID}__baseline/model_best.pth"
+EPOCHS=10
+SCST_NUM_SAMPLES=15
+SCST_SAMPLE="random"
+SCST_BASELINE="sample"
+
+python /master/src/caption_vae/train_transformer.py \
+    --caption_model ${MODEL_TYPE} \
+    --dataset_dir ${DATASET_DIR} \
+    --log_dir ${LOG_DIR} \
+    --start_from ${BASELINE} \
+    --lr_scheduler step \
+    --learning_rate 5e-5 \
+    --learning_rate_decay_start -1 \
+    --batch_size 5 \
+    --max_epochs ${EPOCHS} \
+    --drop_prob_lm 0.1 \
+    --losses_log_every 75 \
+    --scst_start_epoch 0 \
+    --scst_num_samples ${SCST_NUM_SAMPLES} \
+    --scst_sample ${SCST_SAMPLE} \
+    --scst_baseline ${SCST_BASELINE} \
+    --scst_bleu_weight 0,0,0,1 \
+    --id ${MODEL_ID}__baseline__SCST_${SCST_SAMPLE}_${SCST_BASELINE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
+    --cache_min_free_ram ${CACHE_FREE_RAM}
+
+
 # Pruning
 MODEL_TYPE="up_down_lstm_prune"
 MODEL_ID="UpDownLSTM"
