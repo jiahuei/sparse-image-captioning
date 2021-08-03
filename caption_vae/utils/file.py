@@ -32,18 +32,14 @@ from tqdm import tqdm
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlretrieve
+from utils.misc import humanise_number
 
 logger = logging.getLogger(__name__)
 
 
 def file_size(path, suffix="B"):
     num = os.path.getsize(path)
-    # https://stackoverflow.com/a/1094933
-    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
-        if abs(num) < 1024.0:
-            return f"{num:3.1f} {unit}{suffix}"
-        num /= 1024.0
-    return f"{num:.1f} Yi{suffix}"
+    return humanise_number(num)
 
 
 def list_dir(path):

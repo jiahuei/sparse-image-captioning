@@ -68,6 +68,15 @@ def configure_logging(
     return logger_obj
 
 
+def humanise_number(size: Union[float, int], suffix: str = "B"):
+    # https://stackoverflow.com/a/1094933
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if abs(size) < 1000.0:
+            return f"{size:3.1f} {unit}{suffix}"
+        size /= 1000.0
+    return f"{size:.1f} Y{suffix}"
+
+
 def get_memory_info():
     """
     Get node total memory and memory usage

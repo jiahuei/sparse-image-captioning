@@ -76,6 +76,10 @@ def main(
     for name, mat in tqdm(matrices.items()):
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(3.75 * fig_scale, 3. * fig_scale))
         ax = sns.heatmap(mat, vmin=np.unique(mat)[1], ax=ax, **common_kwargs)
+        # https://stackoverflow.com/a/51760629
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position("top")
+        ax.tick_params(length=0)
         # Adjust margins and layout
         plt.tight_layout(pad=0)
         fname = f"layer-sim {name} (br)"

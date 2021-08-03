@@ -18,10 +18,10 @@ python src/caption_vae/scripts/collect_scores.py --check_compiled_scores
 #    --eval_dir_suffix  \
 #    --load_as_float16  \
 #    --mscoco_online_test  \
-#    --model_file model_best.pth \
 python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
+    --model_file model_best.pth \
     --id ACORT__base
 
 
