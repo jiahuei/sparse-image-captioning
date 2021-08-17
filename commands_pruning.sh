@@ -19,6 +19,7 @@ python src/caption_vae/scripts/collect_scores.py --check_compiled_scores
 #    --load_as_float16  \
 #    --mscoco_online_test  \
 #    --model_file model_best.pth \
+#    --beam_size_val 5 \
 python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
@@ -218,17 +219,6 @@ python /master/src/caption_vae/train_transformer.py \
     --log_dir ${LOG_DIR} \
     --lr_scheduler ${SCHEDULER} \
     --id ${MODEL_ID}__baseline \
-    --cache_min_free_ram ${CACHE_FREE_RAM}
-
-python /master/src/caption_vae/train_transformer.py \
-    --caption_model ${MODEL_TYPE} \
-    --dataset_dir ${DATASET_DIR} \
-    --log_dir ${LOG_DIR} \
-    --lr_scheduler ${SCHEDULER} \
-    --tokenizer radix \
-    --radix_base 768 \
-    --max_seq_length 26 \
-    --id Radix_b768_${MODEL_ID}__baseline \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # Fine-tune

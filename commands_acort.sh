@@ -18,6 +18,7 @@ python src/caption_vae/scripts/collect_scores.py --check_compiled_scores
 #    --eval_dir_suffix  \
 #    --load_as_float16  \
 #    --mscoco_online_test  \
+#    --beam_size_val 5 \
 python /master/src/caption_vae/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
@@ -151,3 +152,193 @@ python /master/src/caption_vae/train_transformer.py \
     --dim_feedforward 1024 \
     --id ${MODEL_ID}__SCST_${SCST_SAMPLE}_${SCST_BASELINE}_s${SCST_NUM_SAMPLES}_e${EPOCHS}_C1B0001 \
     --cache_min_free_ram ${CACHE_FREE_RAM}
+
+
+######################
+# Speed Tests
+######################
+
+MODEL_TYPE="relation_transformer"
+MODEL_ID="ACORT"
+SCHEDULER="noam"
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir ${LOG_DIR} \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id Radix_b768_RTrans__baseline__ls_2layer_both__tied_kv_both
+    sleep 5m
+done
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir ${LOG_DIR} \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id Radix_b768_RTrans__baseline__ls_2layer_both_r1__tied_kv_both
+    sleep 5m
+done
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir ${LOG_DIR} \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id Radix_b768_RTrans__baseline__ls_2layer_both__tied_kv_both_4M
+    sleep 5m
+done
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir /home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/ \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id RTrans__baseline
+    sleep 5m
+done
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir ${LOG_DIR} \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id RTrans__baseline__slim_17M
+    sleep 5m
+done
+
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/eval_model.py \
+        --log_dir ${LOG_DIR} \
+        --batch_size_eval 1 \
+        --beam_size_test 2 \
+        --model_file model_best.pth \
+        --eval_dir_suffix "_b1_speedtest_run${x}" \
+        --id RTrans__baseline__slim_4M
+    sleep 5m
+done
+
+
+MODEL_TYPE="relation_transformer"
+MODEL_ID="ACORT"
+SCHEDULER="noam"
+
+# -base
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --tokenizer radix \
+        --radix_base 768 \
+        --max_seq_length 26 \
+        --share_att_encoder kv \
+        --share_att_decoder kv \
+        --share_layer_encoder "(0, 0, 0, 1, 1, 1)" \
+        --share_layer_decoder "(0, 0, 0, 1, 1, 1)" \
+        --d_model 512 \
+        --dim_feedforward 2048 \
+        --id ${MODEL_ID}__base__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
+# -base-AL
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --tokenizer radix \
+        --radix_base 768 \
+        --max_seq_length 26 \
+        --share_att_encoder kv \
+        --share_att_decoder kv \
+        --share_layer_encoder "(0, 0, 0, 0, 0, 0)" \
+        --share_layer_decoder "(0, 0, 0, 0, 0, 0)" \
+        --d_model 512 \
+        --dim_feedforward 2048 \
+        --id ${MODEL_ID}__base-AL__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
+# -small
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --tokenizer radix \
+        --radix_base 768 \
+        --max_seq_length 26 \
+        --share_att_encoder kv \
+        --share_att_decoder kv \
+        --share_layer_encoder "(0, 0, 0, 1, 1, 1)" \
+        --share_layer_decoder "(0, 0, 0, 1, 1, 1)" \
+        --d_model 256 \
+        --dim_feedforward 1024 \
+        --id ${MODEL_ID}__small__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
+
+MODEL_TYPE="relation_transformer"
+MODEL_ID="ORT"
+SCHEDULER="noam"
+
+# -base
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --id ${MODEL_ID}__base__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
+# -small
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --d_model 256 \
+        --dim_feedforward 1024 \
+        --id ${MODEL_ID}__small__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
+
+# -xsmall
+for x in 1 2 3 4 5; do
+    python /master/src/caption_vae/train_transformer.py \
+        --caption_model ${MODEL_TYPE} \
+        --dataset_dir ${DATASET_DIR} \
+        --log_dir ${LOG_DIR} \
+        --lr_scheduler ${SCHEDULER} \
+        --d_model 104 \
+        --dim_feedforward 416 \
+        --id ${MODEL_ID}__xsmall__speedtest_run${x} \
+        --cache_min_free_ram ${CACHE_FREE_RAM}
+    sleep 5m
+done
+
