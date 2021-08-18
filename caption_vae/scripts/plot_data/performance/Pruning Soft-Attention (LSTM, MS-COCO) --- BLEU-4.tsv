@@ -1,0 +1,5 @@
+Sparsity	NNZ	Baseline	Proposed	Lottery ticket (class-blind)	Gradual pruning	Hard pruning (class-blind)	Hard pruning (class-distribution)	Hard pruning (class-uniform)	SNIP
+0.800	2.4 M	31.1	31.4	30.1	31.1	31.1	30.8	30.8	28.9
+0.900	1.2 M	31.1	30.8	29.5	30.4	30.3	30.1	30.2	17.7
+0.950	0.6 M	31.1	30.6	27.6	30.1	29.0	27.6	27.9	11.3
+0.975	0.3 M	31.1	29.6	25.0	28.3	25.6	25.0	25.4	7.9

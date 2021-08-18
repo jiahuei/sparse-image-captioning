@@ -1,0 +1,8 @@
+Decoder NNZ (M)	Decoder Size (MB)	CIDEr	Method	Type	Annotation
+0.5	9.7	120.1	Up-Down	Sparse	99.1% sparse
+0.5	20.8	124.3	Object Relation Transformer	Sparse	99.1% sparse
+2.7	53.3	124.9	Up-Down	Sparse	95% sparse
+2.9	66.2	129.4	Object Relation Transformer	Sparse	95% sparse
+53.1	212.6	125.9	Up-Down	Dense	Dense
+55.4	232.2	130.3	Object Relation Transformer	Dense	Dense
+46.3	185.3	114.0	Att2all	Dense	Dense

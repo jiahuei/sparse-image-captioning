@@ -1,6 +1,5 @@
 # Internal references
 _ref_/
-plot_data/
 caption_vae/scripts/*.png
 caption_vae/experiments
 caption_vae/mem_watch.txt

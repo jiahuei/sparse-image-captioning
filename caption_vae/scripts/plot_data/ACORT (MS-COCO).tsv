@@ -1,0 +1,7 @@
+Params (M)	CIDEr	Method	ACORT
+15.0	127.8	ACORT-base (proposed)	Yes
+4.2	126.9	ACORT-small (proposed)	Yes
+55.4	130.3	Baseline	Yes
+46.3	123.2	SubICap-1k	No
+53.2	120.1	UD	No
+46.3	114.0	Att2all	No

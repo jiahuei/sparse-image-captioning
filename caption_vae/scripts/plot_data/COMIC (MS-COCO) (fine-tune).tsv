@@ -1,0 +1,7 @@
+Vocab size	CIDEr	Method	COMIC
+258.0	99.6	COMIC-256 (proposed)	Yes
+770	100.7	COMIC-768 (proposed)	Yes
+9961.0	101.3	Baseline	Yes
+9535.0	107.3	Skeleton-Key	No
+8791.0	94.0	ACVT	No
+9520.0	88.6	Review Net	No

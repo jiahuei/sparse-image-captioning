@@ -1,0 +1,5 @@
+Sparsity	NNZ	Baseline	Proposed (A)	Proposed (B)	Proposed (C)	Gradual (A)	Gradual (B)	Gradual (C)	Hard-blind (B)	Hard-blind (C)
+0.800	3.4 M	100.6	100.6	98.6	99.0	95.3	98.5	97.2	97.2	98.0
+0.900	1.7 M	100.6	99.4	96.3	97.3	85.8	91.2	92.3	86.7	93.5
+0.950	0.8 M	100.6	95.1	92.0	91.0	74.4	78.4	83.5	64.1	80.9
+0.975	0.4 M	100.6	85.8	83.5	85.2	58.7	63.7	69.9	37.0	64.9
