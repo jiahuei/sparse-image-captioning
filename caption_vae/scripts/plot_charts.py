@@ -3,6 +3,7 @@ r"""
 Created on 25 Mar 2021 19:34:40
 @author: jiahuei
 
+Font sizes: 'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'
 """
 import os
 import math
@@ -10,6 +11,15 @@ import seaborn as sns
 import pandas as pd
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+
+# https://stackoverflow.com/a/39566040
+FONT_XTINY = 9.5
+FONT_TINY = 10
+FONT_XSMALL = 11
+FONT_SMALL = 12
+FONT_MEDIUM = 14
+FONT_LARGE = 16
+FONT_XLARGE = 18
 
 # https://chrisalbon.com/python/data_visualization/seaborn_color_palettes/
 gray3 = sns.color_palette("gray_r", n_colors=3)
@@ -92,13 +102,19 @@ def process_output_path(output_path):
     return output_path
 
 
-def plot_performance(
+def plot_smp_performance(
         df, palette,
         score_name, output_path, fig_title="",
         output_dpi=600, min_threshold=0.8,
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
+    plt.rc("font", size=FONT_XSMALL)
+    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
+    plt.rc("xtick", labelsize=FONT_XSMALL)
+    plt.rc("ytick", labelsize=FONT_XSMALL)
+    plt.rc("legend", fontsize=FONT_XTINY)
+
     methods = [_ for _ in df.columns.tolist() if _.lower() != "nnz"]
     line_styles = []
     for m in methods:
@@ -161,13 +177,19 @@ def plot_performance(
     plt.close("all")
 
 
-def plot_progression(
+def plot_smp_progression(
         df, palette,
         output_path, fig_title="",
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
+    plt.rc("font", size=FONT_XSMALL)
+    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
+    plt.rc("xtick", labelsize=FONT_XSMALL)
+    plt.rc("ytick", labelsize=FONT_XSMALL)
+    plt.rc("legend", fontsize=FONT_XTINY)
+
     layers = df.columns.tolist()
     line_styles = []
     for m in layers:
@@ -191,6 +213,8 @@ def plot_progression(
         palette=palette, linewidth=linewidth,
     )
     ax = set_style(ax, line_styles)
+    if yaxis_name == "Sparsity":
+        ax.legend(loc="lower right", title=series_name)
     # Title
     if fig_title:
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
@@ -202,13 +226,19 @@ def plot_progression(
     plt.close("all")
 
 
-def plot_layerwise(
+def plot_smp_layerwise(
         df, palette,
         output_path, fig_title="",
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
+    plt.rc("font", size=FONT_XSMALL)
+    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
+    plt.rc("xtick", labelsize=FONT_XSMALL)
+    plt.rc("ytick", labelsize=FONT_XSMALL)
+    plt.rc("legend", fontsize=FONT_XTINY)
+
     layers = df.columns.tolist()
     line_styles = []
     for m in layers:
@@ -235,7 +265,10 @@ def plot_layerwise(
         xticklabels = [
             "Embedding", "Query", "Key", "Value", "QK", "Initial state", "LSTM", "Output"
         ]
-        ax.set_xticklabels(xticklabels, fontsize="x-small")
+        # prevent UserWarning: FixedFormatter should only be used together with FixedLocator
+        # https://stackoverflow.com/a/68794383
+        ax.set_xticks(range(len(xticklabels)))
+        ax.set_xticklabels(xticklabels, fontsize="small")
     else:
         xticks = []
         xticklabels = []
@@ -248,7 +281,10 @@ def plot_layerwise(
             layers.add(ly)
         ax.set_xticks(xticks)
         rotation = 90 if "inception" in output_path.lower() else 0
-        ax.set_xticklabels(xticklabels, rotation=rotation, fontsize="x-small")
+        fontsize = "x-small" if "inception" in output_path.lower() else "small"
+        ax.set_xticklabels(xticklabels, rotation=rotation, fontsize=fontsize)
+    if "inception" in output_path.lower():
+        ax.legend(loc="lower right", title=series_name)
     # Title
     if fig_title:
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
@@ -260,7 +296,7 @@ def plot_layerwise(
     plt.close("all")
 
 
-def plot_overview(
+def plot_smp_overview(
         df, palette,
         output_path, fig_title="",
         output_dpi=600,
@@ -268,6 +304,10 @@ def plot_overview(
 ):
     # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
     sns.set_context(context)
+    plt.rc("font", size=FONT_SMALL)
+    plt.rc("axes", labelsize=FONT_SMALL, titlesize=FONT_MEDIUM)
+    plt.rc("xtick", labelsize=FONT_SMALL)
+    plt.rc("ytick", labelsize=FONT_SMALL)
 
     # Main chart
     series_name = "Method"
@@ -300,9 +340,9 @@ def plot_overview(
         y_offset = math.sqrt(df2[size_name].iloc[i] / math.pi)
         if "99.1" in df2["Annotation"].iloc[i]:
             x_offset = -1.5
-            y_offset = -y_offset - 6
+            y_offset = -y_offset - 6.5
         elif "95" in df2["Annotation"].iloc[i]:
-            x_offset = 1.5
+            x_offset = 2
         # Size in MB
         ax.annotate(
             f"{df2[size_name].iloc[i]} MB",
@@ -310,19 +350,19 @@ def plot_overview(
             fontsize="x-small", va="bottom", ha="center"
         )
     ax.annotate(
-        "8.7 MB (fp16)", (-0.9, 118),
+        "8.7 MB (fp16)", (0.5, 117.5),
         fontsize="x-small", va="bottom", ha="center"
     )
     ax.annotate(
-        "14.5 MB (fp16)", (-0.9, 122),
+        "14.5 MB (fp16)", (0.5, 121.5),
         fontsize="x-small", va="bottom", ha="center"
     )
     ax.annotate(
-        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (20, 126),  # (10, 116),
+        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (25, 126),  # (10, 116),
         fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
     )
     ax.annotate(
-        "Dense (original)", (46, 121.5),
+        "Dense (original)", (48, 121.5),
         fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
     )
 
@@ -490,13 +530,13 @@ def main():
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
         title, metric = fname.split(" --- ")
-        plot_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
+        plot_smp_performance(df, palette, metric, f"{fname}.png", min_threshold=min_threshold)
 
     d = os.path.join("plot_data", "progression")
     for f in tqdm(sorted(os.listdir(d))):
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
-        plot_progression(df, "deep", f"{fname}.png", linewidth=0.8)
+        plot_smp_progression(df, "deep", f"{fname}.png", linewidth=0.8)
 
     d = os.path.join("plot_data", "layerwise")
     for f in tqdm(sorted(os.listdir(d))):
@@ -507,13 +547,13 @@ def main():
             palette = [cranberry3[0], mako3[2], mako3[0]]
         df = pd.read_csv(os.path.join(d, f), sep="\t", header=0, index_col=0)
         fname = os.path.splitext(f)[0]
-        plot_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
+        plot_smp_layerwise(df, palette, f"{fname}.png", linewidth=0.8)
 
     for f in tqdm(range(1)):
         # Just for the progress bar
         fname = "Pruning Image Captioning Models (MS-COCO)"
         df = pd.read_csv(os.path.join("plot_data", f"{fname}.tsv"), sep="\t", header=0, index_col=0)
-        plot_overview(df, "icefire", f"{fname}.png")
+        plot_smp_overview(df, "icefire", f"{fname}.png")
 
     for f in tqdm(range(1)):
         # Just for the progress bar
