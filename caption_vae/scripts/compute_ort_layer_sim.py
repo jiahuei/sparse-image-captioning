@@ -22,14 +22,13 @@ def compute_sim(x):
 
 def main(
         output_dir,
-        palette=sns.diverging_palette(20, 220, as_cmap=True),
+        palette=sns.color_palette("light:#5A9", as_cmap=True),
+        # palette=sns.diverging_palette(220, 20, as_cmap=True),
         annot=False,
         output_dpi=600, linewidth=2.,
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context, font_scale=3.0)
-    # palette = sns.color_palette("flare", as_cmap=True)
-    palette = sns.diverging_palette(220, 20, as_cmap=True)
     common_kwargs = dict(
         cmap=palette, annot=annot, annot_kws={"fontsize": 18}, fmt=".1f",
         cbar=True, xticklabels=True, yticklabels=True, square=True,
@@ -77,7 +76,7 @@ def main(
         ax.tick_params(length=0)
         # Adjust margins and layout
         plt.tight_layout(pad=0)
-        fname = f"layer-sim {name} (br)"
+        fname = f"layer-sim norm-last {name} (light:#5A9)"
         if annot:
             fname += "_annot"
         plt.savefig(f"{os.path.join(output_dir, fname)}.png", dpi=output_dpi)  # , plt.show()
