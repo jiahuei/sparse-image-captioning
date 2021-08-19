@@ -20,6 +20,7 @@ import numpy as np
 import seaborn as sns
 from scipy.stats import mstats
 from matplotlib import pyplot as plt
+from matplotlib import ticker
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from pruning import prune
 from utils.model_utils import densify_state_dict
@@ -85,6 +86,17 @@ class KDE:
         prune.MAG_DIST: "Hard-distribution",
         prune.SNIP: "SNIP",
     }
+
+    # https://stackoverflow.com/a/39566040
+    FONT_XTINY = 10.5
+    FONT_TINY = 11
+    FONT_XSMALL = 12
+    FONT_SMALL = 13
+    FONT_MEDIUM = 15
+    FONT_LARGE = 17
+    FONT_XLARGE = 19
+
+    TWO_DECIMAL_FMT = ticker.StrMethodFormatter("{x:.2f}")
 
     def __init__(self):
         self.config = self.parse_opt()
@@ -160,6 +172,12 @@ class KDE:
 
     def plot_kde(self, data, output_fig_path, fig_title, fig_footnote=None):
         sns.set_context(self.CONTEXT)
+        plt.rc("font", size=self.FONT_SMALL)
+        plt.rc("axes", labelsize=self.FONT_SMALL, titlesize=self.FONT_MEDIUM)
+        plt.rc("xtick", labelsize=self.FONT_SMALL)
+        plt.rc("ytick", labelsize=self.FONT_SMALL)
+        plt.rc("legend", fontsize=self.FONT_TINY)
+
         # colours = ("goldenrod", "sandybrown", "chocolate", "peru")
         # colours = ("c", "cadetblue", "lightseagreen", "skyblue")
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * self.FIG_SCALE, 3. * self.FIG_SCALE))
@@ -170,19 +188,27 @@ class KDE:
             color="c",
             ax=ax,
         )
+        ax.xaxis.set_major_formatter(self.TWO_DECIMAL_FMT)
+        ax.yaxis.set_major_formatter(self.TWO_DECIMAL_FMT)
         if fig_title:
             ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
         if isinstance(fig_footnote, str):
-            plt.figtext(
+            ft = plt.figtext(
                 0.90, 0.025,
                 fig_footnote,
                 horizontalalignment="right",
                 fontsize="xx-small",
             )
+            bbox_extra_artists = [ft]
+        else:
+            bbox_extra_artists = None
         despine_white(fig)
         # Adjust margins and layout
-        plt.tight_layout(pad=1.5)
-        plt.savefig(output_fig_path, dpi=self.FIG_DPI)
+        # https://stackoverflow.com/a/56727331
+        plt.savefig(
+            output_fig_path, dpi=self.FIG_DPI,
+            bbox_extra_artists=bbox_extra_artists, bbox_inches="tight"
+        )
         print(f"Saved figure: `{output_fig_path}`")
         plt.clf()
         plt.close("all")
