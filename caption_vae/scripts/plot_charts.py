@@ -9,17 +9,21 @@ import os
 import math
 import seaborn as sns
 import pandas as pd
+from typing import Tuple
 from matplotlib import pyplot as plt
+from matplotlib import ticker
 from tqdm import tqdm
 
 # https://stackoverflow.com/a/39566040
-FONT_XTINY = 9.5
-FONT_TINY = 10
-FONT_XSMALL = 11
-FONT_SMALL = 12
-FONT_MEDIUM = 14
-FONT_LARGE = 16
-FONT_XLARGE = 18
+FONT_XTINY = 10.5
+FONT_TINY = 11
+FONT_XSMALL = 12
+FONT_SMALL = 13
+FONT_MEDIUM = 15
+FONT_LARGE = 17
+FONT_XLARGE = 19
+
+SINGLE_DECIMAL_FMT = ticker.StrMethodFormatter("{x:.1f}")
 
 # https://chrisalbon.com/python/data_visualization/seaborn_color_palettes/
 gray3 = sns.color_palette("gray_r", n_colors=3)
@@ -48,7 +52,7 @@ sns.set_theme(
 # print(plt.rcParams)
 
 
-def get_lim(series, margin=(0.10, 0.05), min_threshold=None):
+def get_lim(series, margin=(0.10, 0.05), min_threshold=None) -> Tuple[float, float]:
     max_score = series.max()
     if isinstance(min_threshold, (float, int)):
         series = series[series > max_score * min_threshold]
@@ -92,7 +96,7 @@ def despine_white(fig):
         sns.despine(fig=fig, top=False, right=False, left=False, bottom=False, offset=None, trim=False)
 
 
-def process_output_path(output_path):
+def process_output_path(output_path: str) -> str:
     output_name, output_ext = os.path.splitext(output_path)
     if is_white_style():
         output_name += " (w)"
@@ -149,10 +153,16 @@ def plot_smp_performance(
     df2.index = df2.index.map(lambda x: f"{x * 100:.1f} %")
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(ylim=get_lim(df2.loc[:, yaxis_name], min_threshold=min_threshold))
+    # y-axis limit
+    if "up-down" in output_path.lower():
+        ylim = get_lim(df2.loc[:, yaxis_name], margin=(0.31, 0.05), min_threshold=min_threshold)
+    else:
+        ylim = get_lim(df2.loc[:, yaxis_name], min_threshold=min_threshold)
+    ax.set(ylim=ylim)
     ax = sns.lineplot(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax, palette=palette,
     )
+    ax.yaxis.set_major_formatter(SINGLE_DECIMAL_FMT)
     # Lines and legends
     ax = set_style(ax, line_styles, marker_styles)
     legend_xoffset = 0.15 if "soft-" in output_path.lower() and "SNIP" in methods else 0
@@ -212,6 +222,7 @@ def plot_smp_progression(
         data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax,
         palette=palette, linewidth=linewidth,
     )
+    ax.yaxis.set_major_formatter(SINGLE_DECIMAL_FMT)
     ax = set_style(ax, line_styles)
     if yaxis_name == "Sparsity":
         ax.legend(loc="lower right", title=series_name)
@@ -342,7 +353,7 @@ def plot_smp_overview(
             x_offset = -1.5
             y_offset = -y_offset - 6.5
         elif "95" in df2["Annotation"].iloc[i]:
-            x_offset = 2
+            x_offset = 2.5
         # Size in MB
         ax.annotate(
             f"{df2[size_name].iloc[i]} MB",
@@ -350,16 +361,16 @@ def plot_smp_overview(
             fontsize="x-small", va="bottom", ha="center"
         )
     ax.annotate(
-        "8.7 MB (fp16)", (0.5, 117.5),
+        "8.7 MB (fp16)", (1, 117.5),
         fontsize="x-small", va="bottom", ha="center"
     )
     ax.annotate(
-        "14.5 MB (fp16)", (0.5, 121.5),
+        "14.5 MB (fp16)", (1, 121.5),
         fontsize="x-small", va="bottom", ha="center"
     )
     ax.annotate(
-        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (25, 126),  # (10, 116),
-        fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
+        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (25.5, 126),  # (10, 116),
+        fontsize="small", linespacing=1.3, va="bottom", ha="center", color=cranberry3[1]
     )
     ax.annotate(
         "Dense (original)", (48, 121.5),
