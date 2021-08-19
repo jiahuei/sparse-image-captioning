@@ -19,9 +19,9 @@ FONT_XTINY = 10.5
 FONT_TINY = 11
 FONT_XSMALL = 12
 FONT_SMALL = 13
-FONT_MEDIUM = 15
-FONT_LARGE = 17
-FONT_XLARGE = 19
+FONT_MEDIUM = 14
+FONT_LARGE = 16
+FONT_XLARGE = 18
 
 SINGLE_DECIMAL_FMT = ticker.StrMethodFormatter("{x:.1f}")
 
@@ -113,10 +113,10 @@ def plot_smp_performance(
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
-    plt.rc("font", size=FONT_XSMALL)
-    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
-    plt.rc("xtick", labelsize=FONT_XSMALL)
-    plt.rc("ytick", labelsize=FONT_XSMALL)
+    plt.rc("font", size=FONT_LARGE)
+    plt.rc("axes", labelsize=FONT_LARGE, titlesize=FONT_LARGE)
+    plt.rc("xtick", labelsize=FONT_LARGE)
+    plt.rc("ytick", labelsize=FONT_LARGE)
     plt.rc("legend", fontsize=FONT_XTINY)
 
     methods = [_ for _ in df.columns.tolist() if _.lower() != "nnz"]
@@ -194,11 +194,11 @@ def plot_smp_progression(
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
-    plt.rc("font", size=FONT_XSMALL)
-    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
-    plt.rc("xtick", labelsize=FONT_XSMALL)
-    plt.rc("ytick", labelsize=FONT_XSMALL)
-    plt.rc("legend", fontsize=FONT_XTINY)
+    plt.rc("font", size=FONT_LARGE)
+    plt.rc("axes", labelsize=FONT_LARGE, titlesize=FONT_LARGE)
+    plt.rc("xtick", labelsize=FONT_LARGE)
+    plt.rc("ytick", labelsize=FONT_LARGE)
+    plt.rc("legend", fontsize=FONT_MEDIUM)
 
     layers = df.columns.tolist()
     line_styles = []
@@ -244,11 +244,11 @@ def plot_smp_layerwise(
         context="paper", fig_scale=1.5,
 ):
     sns.set_context(context)
-    plt.rc("font", size=FONT_XSMALL)
-    plt.rc("axes", labelsize=FONT_XSMALL, titlesize=FONT_MEDIUM)
-    plt.rc("xtick", labelsize=FONT_XSMALL)
-    plt.rc("ytick", labelsize=FONT_XSMALL)
-    plt.rc("legend", fontsize=FONT_XTINY)
+    plt.rc("font", size=FONT_SMALL)
+    plt.rc("axes", labelsize=FONT_SMALL, titlesize=FONT_MEDIUM)
+    plt.rc("xtick", labelsize=FONT_SMALL)
+    plt.rc("ytick", labelsize=FONT_SMALL)
+    plt.rc("legend", fontsize=FONT_TINY)
 
     layers = df.columns.tolist()
     line_styles = []

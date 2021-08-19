@@ -92,9 +92,9 @@ class KDE:
     FONT_TINY = 11
     FONT_XSMALL = 12
     FONT_SMALL = 13
-    FONT_MEDIUM = 15
-    FONT_LARGE = 17
-    FONT_XLARGE = 19
+    FONT_MEDIUM = 14
+    FONT_LARGE = 16
+    FONT_XLARGE = 18
 
     TWO_DECIMAL_FMT = ticker.StrMethodFormatter("{x:.2f}")
 
@@ -172,11 +172,11 @@ class KDE:
 
     def plot_kde(self, data, output_fig_path, fig_title, fig_footnote=None):
         sns.set_context(self.CONTEXT)
-        plt.rc("font", size=self.FONT_SMALL)
-        plt.rc("axes", labelsize=self.FONT_SMALL, titlesize=self.FONT_MEDIUM)
-        plt.rc("xtick", labelsize=self.FONT_SMALL)
-        plt.rc("ytick", labelsize=self.FONT_SMALL)
-        plt.rc("legend", fontsize=self.FONT_TINY)
+        plt.rc("font", size=self.FONT_LARGE)
+        plt.rc("axes", labelsize=self.FONT_LARGE, titlesize=self.FONT_LARGE)
+        plt.rc("xtick", labelsize=self.FONT_LARGE)
+        plt.rc("ytick", labelsize=self.FONT_LARGE)
+        plt.rc("legend", fontsize=self.FONT_MEDIUM)
 
         # colours = ("goldenrod", "sandybrown", "chocolate", "peru")
         # colours = ("c", "cadetblue", "lightseagreen", "skyblue")
@@ -194,7 +194,7 @@ class KDE:
             ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
         if isinstance(fig_footnote, str):
             ft = plt.figtext(
-                0.90, 0.025,
+                0.90, 0.0,
                 fig_footnote,
                 horizontalalignment="right",
                 fontsize="xx-small",
