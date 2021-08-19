@@ -181,7 +181,7 @@ def plot_smp_performance(
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
     despine_white(fig)
     # Adjust margins and layout
-    plt.tight_layout(pad=1.5)
+    plt.tight_layout(pad=0.5)
     plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
@@ -231,7 +231,7 @@ def plot_smp_progression(
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
     despine_white(fig)
     # Adjust margins and layout
-    plt.tight_layout(pad=1.5)
+    plt.tight_layout(pad=0.5)
     plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
@@ -301,7 +301,7 @@ def plot_smp_layerwise(
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
     despine_white(fig)
     # Adjust margins and layout
-    plt.tight_layout(pad=1.5)
+    plt.tight_layout(pad=0.5)
     plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
@@ -397,7 +397,7 @@ def plot_smp_overview(
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
     despine_white(fig)
     # Adjust margins and layout
-    plt.tight_layout(pad=1.5)
+    plt.tight_layout(pad=1.0)
     plt.savefig(process_output_path(output_path), dpi=output_dpi)  # , plt.show()
     plt.clf()
     plt.close("all")
