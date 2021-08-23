@@ -226,6 +226,8 @@ def plot_smp_progression(
     ax = set_style(ax, line_styles)
     if yaxis_name == "Sparsity":
         ax.legend(loc="lower right", title=series_name)
+    else:
+        ax.legend(loc="lower left", title="")
     # Title
     if fig_title:
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
