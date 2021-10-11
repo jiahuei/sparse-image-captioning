@@ -1,4 +1,19 @@
-# Sparse Image Captioning with Transformer
+# Learning to Prune Image Captioning Models
+
+[PDF](https://www.sciencedirect.com/science/article/pii/S003132032100546X) | [ArXiv](https://arxiv.org/abs/2110.03298)
+
+### Official pytorch implementation of the paper: "End-to-End Supermask Pruning: Learning to Prune Image Captioning Models"
+
+#### Published at Pattern Recognition, Elsevier
+
+Released on July 20, 2021
+
+# Description
+
+This work explores model pruning for image captioning task at the first time. Empirically, we show that 80% to 95% sparse networks can either match or even slightly outperform their dense counterparts. In order to promote Green Computer Vision, we release the pre-trained sparse models for UD and ORT that are capable of achieving CIDEr scores >120 on MS-COCO dataset; yet are only 8.7 MB (reduction of 96% compared to dense UD) and 14.5 MB (reduction of 94% compared to dense ORT) in model size.
+
+<p align="center"> <img src="pr2021.jpg" width="50%"> </p>
+
 
 ## Features
 
