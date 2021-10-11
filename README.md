@@ -12,7 +12,8 @@ Released on July 20, 2021
 
 This work explores model pruning for image captioning task at the first time. Empirically, we show that 80% to 95% sparse networks can either match or even slightly outperform their dense counterparts. In order to promote Green Computer Vision, we release the pre-trained sparse models for UD and ORT that are capable of achieving CIDEr scores >120 on MS-COCO dataset; yet are only 8.7 MB (reduction of 96% compared to dense UD) and 14.5 MB (reduction of 94% compared to dense ORT) in model size.
 
-<p align="center"> <img src="pr2021.jpg" width="50%"> </p>
+<p align="center"> <img src="pr2021.jpg" width="35%"> </p>
+<p align="center"> Figure 1: We show that our deep captioning networks with 80% to 95% sparse are capable to either match or even slightly outperform their dense counterparts.</p>
 
 
 ## Features
@@ -172,4 +173,27 @@ You can explore and visualise generated captions [using this Streamlit app](http
     * Install `numpy` and `cython` prior to installing `pycocotools`
     * Maybe try `pycocotools-fix` instead
 * This issue may lead to GitHub CI failing, if a different `numpy` version is reinstalled after `pycocotools` is built
+
+## Citation
+If you find this work useful for your research, please cite
+```
+@article{tan2021end,
+  title={End-to-End Supermask Pruning: Learning to Prune Image Captioning Models},
+  author={Tan, Jia Huei and Chan, Chee Seng and Chuah, Joon Huang},
+  journal={Pattern Recognition},
+  pages={108366},
+  year={2021},
+  publisher={Elsevier},
+  doi={10.1016/j.patcog.2021.108366}
+}
+```
+
+## Feedback
+Suggestions and opinions on this work (both positive and negative) are greatly welcomed. Please contact the authors by sending an email to
+`tan.jia.huei at gmail.com` or `cs.chan at um.edu.my`.
+
+## License and Copyright
+The project is open source under BSD-3 license (see the ``` LICENSE ``` file).
+
+&#169;2021 Universiti Malaya.
 
