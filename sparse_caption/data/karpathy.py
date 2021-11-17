@@ -16,7 +16,6 @@ from utils import (
     misc as misc_utils,
     file as file_utils,
 )
-# from tokenizer import PosTagger
 from data.collate import ListDataset
 from utils.config import Config
 

@@ -3,7 +3,7 @@
 Created on 19 Oct 2020 23:57:58
 @author: jiahuei
 
-cd caption_vae
+cd sparse_caption
 python -m scripts.collect_scores
 """
 from __future__ import annotations

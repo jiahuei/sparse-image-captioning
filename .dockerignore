@@ -6,7 +6,7 @@ train_0.sh
 train_1.sh
 
 # Ignore since we do not copy code into Docker image
-caption_vae/
+sparse_caption/
 
 # Object Relation Transformer
 # Ignore emacs backup files

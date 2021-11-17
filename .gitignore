@@ -1,10 +1,10 @@
 # Internal references
 _ref_/
-caption_vae/scripts/*.png
-caption_vae/experiments
-caption_vae/mem_watch.txt
-caption_vae/scripts/memory_watch.py
-caption_vae/scripts/scp_stuff.sh
+sparse_caption/scripts/*.png
+sparse_caption/experiments
+sparse_caption/mem_watch.txt
+sparse_caption/scripts/memory_watch.py
+sparse_caption/scripts/scp_stuff.sh
 docker_run_jh.sh
 train.sh
 train_0.sh

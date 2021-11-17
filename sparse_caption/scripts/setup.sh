@@ -8,20 +8,14 @@ DATASET_DIR="/master/datasets"
 
 MSCOCO_DIR="${DATASET_DIR}/mscoco"
 BU_DIR="${DATASET_DIR}/mscoco/bu"
-STANZA_CACHE_DIR="${DATASET_DIR}/stanza_resources"
 
 export MPLCONFIGDIR="/tmp/matplotlib"
-export STANZA_CACHE_DIR="${STANZA_CACHE_DIR}"
 export PYTHONPATH=${PYTHONPATH}:"${SCRIPT_ROOT}/.."
 
 
 if [ ! -d "${MSCOCO_DIR}" ]; then
     echo "Creating MS-COCO directory at ${MSCOCO_DIR}."
     mkdir ${MSCOCO_DIR}
-fi
-if [ ! -d "${STANZA_CACHE_DIR}" ]; then
-    echo "Creating Stanza cache directory at ${STANZA_CACHE_DIR}."
-    mkdir ${STANZA_CACHE_DIR}
 fi
 
 #############################################

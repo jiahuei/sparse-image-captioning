@@ -3,50 +3,49 @@ SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
 DATASET_DIR="/master/datasets/mscoco"
-TEST_DATASET_DIR="/master/src/caption_vae/test_data"
+TEST_DATASET_DIR="/master/src/sparse_caption/test_data"
 CACHE_FREE_RAM=0.3
 
 export MPLCONFIGDIR="/tmp/matplotlib"
-export STANZA_CACHE_DIR="${DATASET_DIR}/stanza_resources"
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export CUDA_VISIBLE_DEVICES="0"
 
 
 # `--id` is optional if `--log_dir` points to the experiment directory
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR}/RTrans__baseline \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --model_file model_best.pth
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --id RTrans__supermask__0.90__SCST_sample_baseline_s15_e10_C1B0001
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --id RTrans__supermask__0.991__wg_120.0
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --model_file model_best.pth \
     --id UpDownLSTM__baseline
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
     --model_file model_best.pth \
     --id UpDownLSTM__baseline__SCST_sample_baseline_s60_e10_C1B0001
 
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --eval_dir_suffix TESTING \
@@ -78,7 +77,7 @@ MODEL_ID="UpDownLSTM"
 SCHEDULER="cosine"
 
 
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset mscoco_testing \
     --dataset_dir ${TEST_DATASET_DIR} \
@@ -96,7 +95,7 @@ python /master/src/caption_vae/train_transformer.py \
 # Pruning
 MODEL_TYPE="up_down_lstm_prune"
 
-python /master/src/caption_vae/train_n_prune_transformer.py \
+python /master/src/sparse_caption/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset mscoco_testing \
     --dataset_dir ${TEST_DATASET_DIR} \
@@ -120,7 +119,7 @@ python /master/src/caption_vae/train_n_prune_transformer.py \
 # Fine-tune with mask frozen
 BASELINE="${LOG_DIR}/${MODEL_ID}__supermask__${PRUNE_SPARSITY_TARGET}__wg_120.0/model_best_bin_mask.pth"
 
-python /master/src/caption_vae/train_n_prune_transformer.py \
+python /master/src/sparse_caption/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -153,7 +152,7 @@ MODEL_TYPE="relation_transformer"
 MODEL_ID="RTrans"
 SCHEDULER="noam"
 
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset mscoco_testing \
     --dataset_dir ${TEST_DATASET_DIR} \
@@ -169,7 +168,7 @@ python /master/src/caption_vae/train_transformer.py \
 # Fine-tune
 BASELINE="${LOG_DIR}/${MODEL_ID}__baseline/model_best.pth"
 
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -194,7 +193,7 @@ python /master/src/caption_vae/train_transformer.py \
 # Pruning
 MODEL_TYPE="relation_transformer_prune"
 
-python /master/src/caption_vae/train_n_prune_transformer.py \
+python /master/src/sparse_caption/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset mscoco_testing \
     --dataset_dir ${TEST_DATASET_DIR} \

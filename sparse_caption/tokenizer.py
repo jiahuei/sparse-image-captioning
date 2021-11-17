@@ -20,7 +20,6 @@ Facebook Research:
 import os
 import logging
 import shutil
-import stanza
 import itertools
 from argparse import ArgumentParser, _ArgumentGroup
 from abc import ABC, abstractmethod
@@ -65,41 +64,6 @@ def get_tokenizer(name: str):
     except KeyError:
         _list = "\n".join(TOKENIZER_REGISTRY.keys())
         raise ValueError(f"Tokenizer specified `{name}` is invalid. Available options are: \n{_list}")
-
-
-class PosTagger:
-    UPOS = (
-        "ADJ", "ADP", "ADV", "AUX",
-        "CCONJ", "DET", "INTJ", "NOUN", "NUM",
-        "PART", "PRON", "PROPN", "PUNCT",
-        "SCONJ", "SYM", "VERB", "X"
-    )
-
-    def __init__(self, pretokenized: bool = True):
-        super().__init__()
-        try:
-            self.cache_dir = os.environ["STANZA_CACHE_DIR"]
-        except KeyError:
-            self.cache_dir = "/tmp/stanza_resources"
-        pipeline_kwargs = dict(
-            # English does not require Multi Word Expansion
-            lang="en",
-            dir=self.cache_dir,
-            processors="tokenize,pos",
-            tokenize_pretokenized=pretokenized,
-            pos_batch_size=50000,
-            # logging_level="DEBUG",
-        )
-        # noinspection PyBroadException
-        try:
-            self.tagger = stanza.Pipeline(**pipeline_kwargs)
-        except Exception:
-            stanza.download("en", dir=self.cache_dir)
-            self.tagger = stanza.Pipeline(**pipeline_kwargs)
-
-    def __call__(self, sentence: str):
-        assert isinstance(sentence, str), f"Only `str` is accepted as input to {self.__class__.__name__}"
-        return [[f"<{word.upos}>" for word in sents.words] for sents in self.tagger(sentence).sentences]
 
 
 class Token(NamedTuple):

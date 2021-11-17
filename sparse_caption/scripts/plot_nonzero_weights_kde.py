@@ -3,7 +3,7 @@
 Created on 09 Nov 2020 22:25:38
 @author: jiahuei
 
-cd caption_vae
+cd sparse_caption
 python -m scripts.plot_nonzero_weights_kde --log_dir x --id y
 
 /home/jiahuei/Documents/1_TF_files/prune/mscoco_v3

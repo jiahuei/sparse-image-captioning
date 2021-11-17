@@ -21,7 +21,7 @@ CURR_DIR = up_dir(os.path.realpath(__file__))
 BASE_DIR = up_dir(CURR_DIR)
 REPO_DIR = up_dir(BASE_DIR)
 assert os.path.isdir(
-    os.path.join(REPO_DIR, "caption_vae")
+    os.path.join(REPO_DIR, "sparse_caption")
 ), f"`REPO_DIR` should point to `caption-vae-transformer`, saw `{REPO_DIR}` instead."
 
 
@@ -42,7 +42,6 @@ def configure_logging(
         https://docs.python.org/3/library/logging.html#logrecord-attributes
     """
     logger_obj = logger_obj or logging.getLogger()  # either the given logger or the root logger
-    # logger_obj.removeHandler(stanza.log_handler)
     logger_obj.handlers.clear()
     logger_obj.setLevel(logging_level)
     # If the logger has handlers, we configure the first one. Otherwise we add a handler and configure it

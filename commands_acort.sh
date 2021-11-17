@@ -5,13 +5,12 @@ LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
 DATASET_DIR="/master/datasets/mscoco"
 CACHE_FREE_RAM=0.3
 
-export STANZA_CACHE_DIR="${DATASET_DIR}/stanza_resources"
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export CUDA_VISIBLE_DEVICES="1"
 
 
 ### Collect scores ###
-python src/caption_vae/scripts/collect_scores.py --check_compiled_scores
+python src/sparse_caption/scripts/collect_scores.py --check_compiled_scores
 
 
 ### Eval ###
@@ -19,7 +18,7 @@ python src/caption_vae/scripts/collect_scores.py --check_compiled_scores
 #    --load_as_float16  \
 #    --mscoco_online_test  \
 #    --beam_size_val 5 \
-python /master/src/caption_vae/eval_model.py \
+python /master/src/sparse_caption/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --model_file model_best.pth \
@@ -35,7 +34,7 @@ MODEL_ID="ACORT"
 SCHEDULER="noam"
 
 # -base
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -53,7 +52,7 @@ python /master/src/caption_vae/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -small
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -81,7 +80,7 @@ MODEL_ID="ORT"
 SCHEDULER="noam"
 
 # -base
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -90,7 +89,7 @@ python /master/src/caption_vae/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -small
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -101,7 +100,7 @@ python /master/src/caption_vae/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -xsmall
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -124,7 +123,7 @@ SCST_NUM_SAMPLES=15
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/caption_vae/train_transformer.py \
+python /master/src/sparse_caption/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -163,7 +162,7 @@ MODEL_ID="ACORT"
 SCHEDULER="noam"
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir ${LOG_DIR} \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -174,7 +173,7 @@ for x in 1 2 3 4 5; do
 done
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir ${LOG_DIR} \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -185,7 +184,7 @@ for x in 1 2 3 4 5; do
 done
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir ${LOG_DIR} \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -196,7 +195,7 @@ for x in 1 2 3 4 5; do
 done
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir /home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/ \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -207,7 +206,7 @@ for x in 1 2 3 4 5; do
 done
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir ${LOG_DIR} \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -218,7 +217,7 @@ for x in 1 2 3 4 5; do
 done
 
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/eval_model.py \
+    python /master/src/sparse_caption/eval_model.py \
         --log_dir ${LOG_DIR} \
         --batch_size_eval 1 \
         --beam_size_test 2 \
@@ -235,7 +234,7 @@ SCHEDULER="noam"
 
 # -base
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -256,7 +255,7 @@ done
 
 # -base-AL
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -277,7 +276,7 @@ done
 
 # -small
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -303,7 +302,7 @@ SCHEDULER="noam"
 
 # -base
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -315,7 +314,7 @@ done
 
 # -small
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -330,7 +329,7 @@ done
 
 # -xsmall
 for x in 1 2 3 4 5; do
-    python /master/src/caption_vae/train_transformer.py \
+    python /master/src/sparse_caption/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
