@@ -8,12 +8,13 @@ import os
 import json
 import logging
 from datetime import datetime
-from packaging import version
+from pkg_resources import packaging
 from copy import deepcopy
 from utils.file import read_json, dumps_file
 from version import __version__
 
 logger = logging.getLogger(__name__)
+version = packaging.version
 
 
 class Config:
