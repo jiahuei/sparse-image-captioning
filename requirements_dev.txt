@@ -1,5 +1,21 @@
-black>=19.10
-flake8>=3.9.2
-pytest>=6.2.5
-pytest-cov>=2.12.1
-mypy>=0.910
+pycocotools~=2.0.1
+torch~=1.6.0
+torchtext~=0.7.0
+torchvision~=0.7.0
+tensorboard~=2.3.0
+sentencepiece~=0.1.91
+tqdm~=4.48.2
+matplotlib~=3.3.4
+pandas~=1.1.1
+scipy~=1.4.1
+seaborn~=0.11.1
+Pillow~=8.1.2
+h5py~=2.10.0
+lmdb~=1.0.0
+
+# Dev libs
+black~=19.10
+flake8~=3.9.2
+pytest~=6.2.5
+pytest-cov~=2.12.1
+mypy~=0.910
