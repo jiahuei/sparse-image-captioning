@@ -79,7 +79,7 @@ For convenience, setup is done using Docker.
 
 1. Run `docker build -t jiahuei/pytorch:1.6.0-java8 -f Dockerfile .` to build the Docker image.
 2. Run `bash docker_run.sh` to launch a container. Edit paths in the script as needed.
-3. In the container, run `python /master/src/sparse_caption/scripts/setup.sh` to perform dataset pre-processing.
+3. In the container, run `python /master/src/scripts/dataset/setup.sh` to perform dataset pre-processing.
 4. Done
 
 
@@ -96,7 +96,7 @@ MODEL_TYPE="up_down_lstm"
 MODEL_ID="UpDownLSTM"
 SCHEDULER="cosine"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /master/src/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -111,7 +111,7 @@ MODEL_TYPE="up_down_lstm_prune"
 
 for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
     for PRUNE_WEIGHT in 40 80 120; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /master/src/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --log_dir ${LOG_DIR} \
@@ -131,7 +131,7 @@ done
 ### Inference
 To evaluate the models, simply run:
 ```shell script
-python /master/src/sparse_caption/eval_model.py \
+python /master/src/scripts/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --id RTrans__supermask__0.9875__wg_80.0
@@ -141,10 +141,10 @@ python /master/src/sparse_caption/eval_model.py \
 ## MS-COCO Online Evaluation
 
 To perform online server evaluation:
-1. Run `python /master/src/sparse_caption/eval_model.py` with `--mscoco_online_test` option.
+1. Run `python /master/src/scripts/eval_model.py` with `--mscoco_online_test` option.
     For example:
     ```shell script
-    python /master/src/sparse_caption/eval_model.py \
+    python /master/src/scripts/eval_model.py \
         --log_dir ${LOG_DIR} \
         --beam_size_test 5 \
         --mscoco_online_test \
