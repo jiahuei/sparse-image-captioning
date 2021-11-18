@@ -12,7 +12,7 @@ Released on July 20, 2021
 
 This work explores model pruning for image captioning task at the first time. Empirically, we show that 80% to 95% sparse networks can either match or even slightly outperform their dense counterparts. In order to promote Green Computer Vision, we release the pre-trained sparse models for UD and ORT that are capable of achieving CIDEr scores >120 on MS-COCO dataset; yet are only 8.7 MB (reduction of 96% compared to dense UD) and 14.5 MB (reduction of 94% compared to dense ORT) in model size.
 
-<p align="center"> <img src="pr2021.jpg" width="35%"> </p>
+<p align="center"> <img src="resources/pr2021.jpg" width="35%"> </p>
 <p align="center"> Figure 1: We show that our deep captioning networks with 80% to 95% sparse are capable to either match or even slightly outperform their dense counterparts.</p>
 
 
@@ -67,7 +67,10 @@ Soft-attention models implemented in TensorFlow 1.9 are available at [this repo]
 * sentencepiece >= 0.1.91
 * torchvision >= 0.7.0
 
-See the rest in `./requirements.txt` and `./requirements_step2.txt`
+See the rest in `requirements_base.txt` and `requirements.txt`
+
+On Windows, you might need to install "Microsoft C++ Build Tools" in order to build `pycocotools`, 
+by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 
 ## Setup
@@ -82,7 +85,7 @@ For convenience, setup is done using Docker.
 
 ## Usage
 
-Refer to `commands_pruning.sh` and `commands_acort.sh` for more examples.
+Refer to `resources/commands_pruning.sh` and `resources/commands_acort.sh` for more examples.
 
 These paths below assume a Docker setup following `docker_run.sh`.
 
@@ -148,7 +151,7 @@ To perform online server evaluation:
         --id ${ID}
     ```
 2. Rename the JSON files to `captions_test2014__results.json` and `captions_val2014__results.json`.
-    * `captions_val2014__results.json` will contain fake captions, just there to fulfill submission format
+    * `captions_val2014__results.json` will contain fake captions, just there to fulfil submission format
 3. Zip the files and [submit](https://competitions.codalab.org/competitions/3221#participate).
 
 
