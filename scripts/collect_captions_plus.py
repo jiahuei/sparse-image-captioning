@@ -4,17 +4,13 @@ Created on 08 Nov 2020 16:39:46
 @author: jiahuei
 """
 import os
-import json
-import pickle
-import math
 import pandas as pd
 import random
 import textwrap
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fmng
 from typing import Dict, List, Optional
-from PIL import Image, ImageEnhance, ImageOps, ImageFont, ImageDraw
+from PIL import Image, ImageEnhance, ImageFont, ImageDraw
 
 
 class Caption:

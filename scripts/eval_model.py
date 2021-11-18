@@ -6,10 +6,10 @@ Created on 26 Oct 2020 23:09:28
 import os
 import logging
 import torch
-from utils.config import Config
-from utils.misc import configure_logging, replace_from_right
-from utils.model_utils import densify_state_dict
-from utils.training import TrainingModule
+from sparse_caption.utils.config import Config
+from sparse_caption.utils.misc import configure_logging, replace_from_right
+from sparse_caption.utils.model_utils import densify_state_dict
+from sparse_caption.utils.training import TrainingModule
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 logger = logging.getLogger(__name__)
