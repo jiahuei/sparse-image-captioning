@@ -14,5 +14,5 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--line-length=120 --check --verbose --diff"
-          src: "./sparse_caption ./tests ./scripts"
+          src: "./sparse_caption ./tests"
           version: "21.10b0"
