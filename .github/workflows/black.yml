@@ -1,0 +1,18 @@
+name: Lint using Black
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+        with:
+          options: "--line-length=120 --check --verbose --diff"
+          src: "./sparse_caption ./tests ./scripts"
+          version: "21.10b0"
