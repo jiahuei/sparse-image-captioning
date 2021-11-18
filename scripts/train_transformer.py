@@ -17,7 +17,6 @@ from sparse_caption.utils.training import TrainingModule
 
 # noinspection PyAttributeOutsideInit
 class CaptioningModel(TrainingModule):
-
     def train(self):
         self.prepare()
         config = self.config
@@ -43,8 +42,11 @@ class CaptioningModel(TrainingModule):
         model_params["total"] = sum(model_params["breakdown"].values())
         model_params["trainable params"] = trainable_params
         dump_json(
-            os.path.join(config.log_dir, "model_params.json"), model_params,
-            indent=2, sort_keys=True, ensure_ascii=False
+            os.path.join(config.log_dir, "model_params.json"),
+            model_params,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
         )
         print(f"Model trainable params: {trainable_params:,d}")
         optimizer = self.optimizer = optim.get_optim(model.parameters(), config)
@@ -65,9 +67,7 @@ class CaptioningModel(TrainingModule):
                 optimizer.zero_grad()
 
                 if not sc_flag:
-                    loss = loss_fn(
-                        model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
-                    )
+                    loss = loss_fn(model(**data), data["seqs"][:, 1:], data["masks"][:, 1:])
                     reward = sc_sample = sc_greedy = None
                 else:
                     loss, reward, sc_sample, sc_greedy = self.compute_scst_loss(
@@ -84,10 +84,7 @@ class CaptioningModel(TrainingModule):
                 if self.global_step % 5 == 0:
                     num_ex = batch_size * 5 * (1 if sc_flag else config.seq_per_img)
                     t_taken, t_start = time() - t_start, time()
-                    eta = (
-                            (len(self.train_loader) * config.max_epochs - self.global_step)
-                            * (t_taken / 5) / 3600
-                    )
+                    eta = (len(self.train_loader) * config.max_epochs - self.global_step) * (t_taken / 5) / 3600
                     log_str = (
                         f"Epoch {epoch:3d} iter {self.global_step:9,d} "
                         f"({(batch_idx + 1) / len(self.train_loader) * 100:5.1f} %), "
@@ -98,8 +95,7 @@ class CaptioningModel(TrainingModule):
                         print(f"{log_str}, Loss = {train_loss:6.3f}")
                     else:
                         print(
-                            f"{log_str}, Avg reward = {reward.mean():6.3f}, "
-                            f"Avg baseline = {sc_greedy.mean():.2f}"
+                            f"{log_str}, Avg reward = {reward.mean():6.3f}, " f"Avg baseline = {sc_greedy.mean():.2f}"
                         )
 
                 # Write the training loss summary
@@ -114,10 +110,7 @@ class CaptioningModel(TrainingModule):
                         tb_writer.add_scalar("train/avg_baseline", sc_greedy.mean(), self.global_step)
 
                 # Evaluate on validation set, and save model
-                if (
-                        self.global_step % config.save_checkpoint_every == 0 or
-                        self.global_step == self.max_train_step
-                ):
+                if self.global_step % config.save_checkpoint_every == 0 or self.global_step == self.max_train_step:
                     predictions, scores, _ = self.eval_on_split(self.val_loader, split="val")
 
                     # Write validation result into summary

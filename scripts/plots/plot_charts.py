@@ -31,7 +31,7 @@ crest3 = sns.color_palette("crest_r", n_colors=3)
 summer3 = sns.color_palette("summer_r", n_colors=4)[1:]
 mako3 = sns.color_palette("mako_r", n_colors=3)
 flare3 = sns.color_palette("flare", n_colors=3)
-blue3 = sns.cubehelix_palette(3, start=.5, rot=-.5)
+blue3 = sns.cubehelix_palette(3, start=0.5, rot=-0.5)
 cranberry3 = sns.dark_palette("#b2124d", n_colors=3, reverse=True)[:3]
 coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
 # sns.palplot([
@@ -43,9 +43,11 @@ coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
 sns.set_theme(
     style="whitegrid",
     rc={
-        "axes.edgecolor": ".3", "grid.color": "0.9",  # "axes.grid.axis": "y",
-        "legend.loc": "lower left", "legend.framealpha": "0.6"
-    }
+        "axes.edgecolor": ".3",
+        "grid.color": "0.9",  # "axes.grid.axis": "y",
+        "legend.loc": "lower left",
+        "legend.framealpha": "0.6",
+    },
 )
 
 
@@ -107,10 +109,15 @@ def process_output_path(output_path: str) -> str:
 
 
 def plot_smp_performance(
-        df, palette,
-        score_name, output_path, fig_title="",
-        output_dpi=600, min_threshold=0.8,
-        context="paper", fig_scale=1.5,
+    df,
+    palette,
+    score_name,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    min_threshold=0.8,
+    context="paper",
+    fig_scale=1.5,
 ):
     sns.set_context(context)
     plt.rc("font", size=FONT_LARGE)
@@ -152,7 +159,7 @@ def plot_smp_performance(
     df2[series_name] = df2[series_name].map(lambda x: "Dense baseline" if x.lower() == "baseline" else x)
     df2.index = df2.index.map(lambda x: f"{x * 100:.1f} %")
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
     # y-axis limit
     if "up-down" in output_path.lower():
         ylim = get_lim(df2.loc[:, yaxis_name], margin=(0.31, 0.05), min_threshold=min_threshold)
@@ -160,7 +167,12 @@ def plot_smp_performance(
         ylim = get_lim(df2.loc[:, yaxis_name], min_threshold=min_threshold)
     ax.set(ylim=ylim)
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax, palette=palette,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        ax=ax,
+        palette=palette,
     )
     ax.yaxis.set_major_formatter(SINGLE_DECIMAL_FMT)
     # Lines and legends
@@ -173,9 +185,7 @@ def plot_smp_performance(
     with sns.axes_style(None, rc={"axes.grid": False}):
         # print(sns.axes_style())
         ax2 = ax.twiny()
-        sns.lineplot(
-            data=df2, x="NNZ", y=yaxis_name, hue=series_name, ax=ax2, legend=None, visible=False
-        )
+        sns.lineplot(data=df2, x="NNZ", y=yaxis_name, hue=series_name, ax=ax2, legend=None, visible=False)
     # Title
     if fig_title:
         ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
@@ -188,10 +198,14 @@ def plot_smp_performance(
 
 
 def plot_smp_progression(
-        df, palette,
-        output_path, fig_title="",
-        output_dpi=600, linewidth=2.,
-        context="paper", fig_scale=1.5,
+    df,
+    palette,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    linewidth=2.0,
+    context="paper",
+    fig_scale=1.5,
 ):
     sns.set_context(context)
     plt.rc("font", size=FONT_LARGE)
@@ -216,11 +230,16 @@ def plot_smp_progression(
     df2 = df.stack().reset_index(level=1).rename(columns={"level_1": series_name, 0: yaxis_name})
     # df2.index = df2.index.map(str)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
     # ax.set(ylim=get_ylim(df2, yaxis_name, min_threshold=min_threshold))
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax,
-        palette=palette, linewidth=linewidth,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        ax=ax,
+        palette=palette,
+        linewidth=linewidth,
     )
     ax.yaxis.set_major_formatter(SINGLE_DECIMAL_FMT)
     ax = set_style(ax, line_styles)
@@ -240,10 +259,14 @@ def plot_smp_progression(
 
 
 def plot_smp_layerwise(
-        df, palette,
-        output_path, fig_title="",
-        output_dpi=600, linewidth=2.,
-        context="paper", fig_scale=1.5,
+    df,
+    palette,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    linewidth=2.0,
+    context="paper",
+    fig_scale=1.5,
 ):
     sns.set_context(context)
     plt.rc("font", size=FONT_SMALL)
@@ -267,17 +290,20 @@ def plot_smp_layerwise(
     yaxis_name = "Sparsity"
     df2 = df.stack().reset_index(level=1).rename(columns={"level_1": series_name, 0: yaxis_name})
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue=series_name, ax=ax,
-        palette=palette, linewidth=linewidth,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        ax=ax,
+        palette=palette,
+        linewidth=linewidth,
     )
     ax = set_style(ax, line_styles)
     # Group Inception layers
     if "lstm" in output_path.lower():
-        xticklabels = [
-            "Embedding", "Query", "Key", "Value", "QK", "Initial state", "LSTM", "Output"
-        ]
+        xticklabels = ["Embedding", "Query", "Key", "Value", "QK", "Initial state", "LSTM", "Output"]
         # prevent UserWarning: FixedFormatter should only be used together with FixedLocator
         # https://stackoverflow.com/a/68794383
         ax.set_xticks(range(len(xticklabels)))
@@ -310,10 +336,13 @@ def plot_smp_layerwise(
 
 
 def plot_smp_overview(
-        df, palette,
-        output_path, fig_title="",
-        output_dpi=600,
-        context="paper", fig_scale=1.5,
+    df,
+    palette,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    context="paper",
+    fig_scale=1.5,
 ):
     # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
     sns.set_context(context)
@@ -330,21 +359,34 @@ def plot_smp_overview(
     sizes = (20, 600)
     df2 = df
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(
-        xlim=get_lim(df2.index, margin=(0.1, 0.1)),
-        ylim=get_lim(df2.loc[:, yaxis_name], margin=(0.2, 0.2))
-    )
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
+    ax.set(xlim=get_lim(df2.index, margin=(0.1, 0.1)), ylim=get_lim(df2.loc[:, yaxis_name], margin=(0.2, 0.2)))
     # Bubble plot
     ax = sns.scatterplot(
-        data=df2, x=xaxis_name, y=yaxis_name, size=size_name, hue=series_name,
-        palette=palette, linewidth=0, sizes=sizes, alpha=1, ax=ax, legend="full"
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        size=size_name,
+        hue=series_name,
+        palette=palette,
+        linewidth=0,
+        sizes=sizes,
+        alpha=1,
+        ax=ax,
+        legend="full",
     )
     # Line
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue=series_name,
-        linewidth=0.8, linestyle=":", alpha=0.9,
-        ax=ax, palette=palette, legend=None,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        linewidth=0.8,
+        linestyle=":",
+        alpha=0.9,
+        ax=ax,
+        palette=palette,
+        legend=None,
     )
 
     # Annotate
@@ -360,23 +402,29 @@ def plot_smp_overview(
         ax.annotate(
             f"{df2[size_name].iloc[i]} MB",
             (df2.index[i] + x_offset, df2[yaxis_name].iloc[i] + y_offset / 6),
-            fontsize="x-small", va="bottom", ha="center"
+            fontsize="x-small",
+            va="bottom",
+            ha="center",
         )
+    ax.annotate("8.7 MB (fp16)", (1, 117.5), fontsize="x-small", va="bottom", ha="center")
+    ax.annotate("14.5 MB (fp16)", (1, 121.5), fontsize="x-small", va="bottom", ha="center")
     ax.annotate(
-        "8.7 MB (fp16)", (1, 117.5),
-        fontsize="x-small", va="bottom", ha="center"
+        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning",
+        (25.5, 126),  # (10, 116),
+        fontsize="small",
+        linespacing=1.3,
+        va="bottom",
+        ha="center",
+        color=cranberry3[1],
     )
     ax.annotate(
-        "14.5 MB (fp16)", (1, 121.5),
-        fontsize="x-small", va="bottom", ha="center"
-    )
-    ax.annotate(
-        "Pruned to 95% and 99.1% sparsities\nusing proposed Supermask Pruning", (25.5, 126),  # (10, 116),
-        fontsize="small", linespacing=1.3, va="bottom", ha="center", color=cranberry3[1]
-    )
-    ax.annotate(
-        "Dense (original)", (48, 121.5),
-        fontsize="small", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
+        "Dense (original)",
+        (48, 121.5),
+        fontsize="small",
+        linespacing=1.5,
+        va="bottom",
+        ha="center",
+        color=cranberry3[2],
     )
 
     # ax = set_style(ax, line_styles)
@@ -385,11 +433,18 @@ def plot_smp_overview(
     # https://stackoverflow.com/a/53438726
     # config A
     method_legend = ax.legend(
-        hdl[:size_idx], lbl[:size_idx], ncol=5, loc="upper center",
+        hdl[:size_idx],
+        lbl[:size_idx],
+        ncol=5,
+        loc="upper center",
         bbox_to_anchor=(0.5, -0.3),
     )
     size_legend = ax.legend(
-        hdl[size_idx::2], lbl[size_idx::2], ncol=5, loc="lower center", borderpad=1,
+        hdl[size_idx::2],
+        lbl[size_idx::2],
+        ncol=5,
+        loc="lower center",
+        borderpad=1,
         bbox_to_anchor=(0.5, -0.33),
     )
     ax.add_artist(method_legend)
@@ -406,10 +461,13 @@ def plot_smp_overview(
 
 
 def plot_comic_overview(
-        df, palette,
-        output_path, fig_title="",
-        output_dpi=600,
-        context="paper", fig_scale=1.5,
+    df,
+    palette,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    context="paper",
+    fig_scale=1.5,
 ):
     # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
     sns.set_context(context)
@@ -419,39 +477,52 @@ def plot_comic_overview(
     xaxis_name = "Vocab size"
     yaxis_name = "CIDEr"
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(
-        xlim=get_lim(df.index, margin=(0.1, 0.1)),
-        ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2))
-    )
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
+    ax.set(xlim=get_lim(df.index, margin=(0.1, 0.1)), ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2)))
     # Bubble plot
     palette = sns.color_palette(palette, n_colors=len(df[series_name]))
     palette[pd.Index(df[series_name]).get_loc("Baseline")] = mako3[0]
     ax = sns.scatterplot(
-        data=df, x=xaxis_name, y=yaxis_name, hue=series_name,
-        palette=palette, linewidth=0, s=100, alpha=1, ax=ax, legend="full"
+        data=df,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        palette=palette,
+        linewidth=0,
+        s=100,
+        alpha=1,
+        ax=ax,
+        legend="full",
     )
     # Line
     df2 = df[df["COMIC"] == "Yes"]
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue="COMIC",
-        linewidth=1.0, linestyle=":", alpha=0.9,
-        ax=ax, palette=cranberry3[:1], legend=None,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue="COMIC",
+        linewidth=1.0,
+        linestyle=":",
+        alpha=0.9,
+        ax=ax,
+        palette=cranberry3[:1],
+        legend=None,
     )
     for m in filter(lambda x: "proposed" in x, df[series_name]):
         _df = df2[df2[series_name] == m]
         vsize = _df.index.values[0]
         ax.annotate(
-            f"Vocab size = {int(vsize):d}", (vsize + 50, _df[yaxis_name] + 1.6),
-            fontsize="small", va="bottom", ha="center"
+            f"Vocab size = {int(vsize):d}",
+            (vsize + 50, _df[yaxis_name] + 1.6),
+            fontsize="small",
+            va="bottom",
+            ha="center",
         )
     ax.annotate(
-        "Proposed", (1800, 98),
-        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
+        "Proposed", (1800, 98), fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
     )
     ax.annotate(
-        "Baseline & SOTA", (8000, 98),
-        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
+        "Baseline & SOTA", (8000, 98), fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
     )
 
     # Title
@@ -466,10 +537,13 @@ def plot_comic_overview(
 
 
 def plot_acort_overview(
-        df, palette,
-        output_path, fig_title="",
-        output_dpi=600,
-        context="paper", fig_scale=1.3,
+    df,
+    palette,
+    output_path,
+    fig_title="",
+    output_dpi=600,
+    context="paper",
+    fig_scale=1.3,
 ):
     # https://datavizpyr.com/how-to-make-bubble-plot-with-seaborn-scatterplot-in-python/
     sns.set_context(context)
@@ -479,39 +553,52 @@ def plot_acort_overview(
     xaxis_name = "Params (M)"
     yaxis_name = "CIDEr"
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * fig_scale, 3. * fig_scale))
-    ax.set(
-        xlim=get_lim(df.index, margin=(0.1, 0.1)),
-        ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2))
-    )
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * fig_scale, 3.0 * fig_scale))
+    ax.set(xlim=get_lim(df.index, margin=(0.1, 0.1)), ylim=get_lim(df.loc[:, yaxis_name], margin=(0.2, 0.2)))
     # Bubble plot
     palette = sns.color_palette(palette, n_colors=len(df[series_name]))
     palette[pd.Index(df[series_name]).get_loc("Baseline")] = mako3[0]
     ax = sns.scatterplot(
-        data=df, x=xaxis_name, y=yaxis_name, hue=series_name,
-        palette=palette, linewidth=0, s=100, alpha=1, ax=ax, legend="full"
+        data=df,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue=series_name,
+        palette=palette,
+        linewidth=0,
+        s=100,
+        alpha=1,
+        ax=ax,
+        legend="full",
     )
     # Line
     df2 = df[df["ACORT"] == "Yes"]
     ax = sns.lineplot(
-        data=df2, x=xaxis_name, y=yaxis_name, hue="ACORT",
-        linewidth=1.0, linestyle=":", alpha=0.9,
-        ax=ax, palette=cranberry3[:1], legend=None,
+        data=df2,
+        x=xaxis_name,
+        y=yaxis_name,
+        hue="ACORT",
+        linewidth=1.0,
+        linestyle=":",
+        alpha=0.9,
+        ax=ax,
+        palette=cranberry3[:1],
+        legend=None,
     )
     for m in df[series_name]:
         _df = df[df[series_name] == m]
         size = _df.index.values[0]
-        ax.annotate(
-            f"{size} M", (size + 1, _df[yaxis_name] + 1),
-            fontsize="small", va="bottom", ha="center"
-        )
+        ax.annotate(f"{size} M", (size + 1, _df[yaxis_name] + 1), fontsize="small", va="bottom", ha="center")
     ax.annotate(
-        "Proposed", (15, 123),
-        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
+        "Proposed", (15, 123), fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[1]
     )
     ax.annotate(
-        "Baseline & SOTA", (40, 120.5),
-        fontsize="medium", linespacing=1.5, va="bottom", ha="center", color=cranberry3[2]
+        "Baseline & SOTA",
+        (40, 120.5),
+        fontsize="medium",
+        linespacing=1.5,
+        va="bottom",
+        ha="center",
+        color=cranberry3[2],
     )
 
     # Title

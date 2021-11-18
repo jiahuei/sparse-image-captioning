@@ -31,8 +31,7 @@ class Caption:
         captions = self._read_json(key, caption_json)
         scores = self._read_json(key, score_json)
         assert len(captions) == len(scores), (
-            f"Each caption must be paired with its score. "
-            f"Saw {len(captions)} captions and {len(scores)} scores."
+            f"Each caption must be paired with its score. Saw {len(captions)} captions and {len(scores)} scores."
         )
         self.df = pd.concat([self.df, captions, scores], axis=1)
 
@@ -46,13 +45,15 @@ class Caption:
 
         model_mean = self._agg_scores(
             self.df.loc[:, filter(lambda x: x[0] != "baseline" and x[1] in metric, self.df.columns)],
-            agg_score, agg_model
+            agg_score,
+            agg_model,
         )
         if use_diff:
             assert "baseline" in self.df.columns
             baseline_mean = self._agg_scores(
                 self.df.loc[:, filter(lambda x: x[0] == "baseline" and x[1] in metric, self.df.columns)],
-                agg_score, agg_model
+                agg_score,
+                agg_model,
             )
             sort_by = model_mean - baseline_mean
         else:
@@ -97,23 +98,24 @@ class CaptionCollector:
         FONT = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", TEXT_SIZE)
     except OSError:
         font_list = [
-            f for f in fmng.findSystemFonts(fontpaths=None, fontext="ttf")
+            f
+            for f in fmng.findSystemFonts(fontpaths=None, fontext="ttf")
             if "arial" in os.path.basename(f).lower() or "mono" in os.path.basename(f).lower()
         ]
         FONT = ImageFont.truetype(font_list[0], TEXT_SIZE)
 
     def __init__(
-            self, image_dir: str,
-            baseline_results: Dict, model_results: List,
-            sort_metric: Optional[List] = None,
-            use_diff: Optional[bool] = True,
+        self,
+        image_dir: str,
+        baseline_results: Dict,
+        model_results: List,
+        sort_metric: Optional[List] = None,
+        use_diff: Optional[bool] = True,
     ):
         random.seed(self.SEED)
         self.image_dir = image_dir
         self.captions = Caption()
-        self.captions.add_data(
-            baseline_results["name"], baseline_results["caption"], baseline_results["score"]
-        )
+        self.captions.add_data(baseline_results["name"], baseline_results["caption"], baseline_results["score"])
         self.baseline_name = baseline_results["name"]
         self.model_name = []
         for res in model_results:
@@ -161,12 +163,14 @@ class CaptionCollector:
             draw.text(
                 (self.BORDER, int(self.BORDER * 0.5)),
                 "# {} / {}".format(jump_to_idx + cap_idx + 1, len(self.captions.data)),
-                font=self.FONT
+                font=self.FONT,
             )
 
             # Draw captions
-            base_cap = f"{self.baseline_name} ({row[self.baseline_name, view_metric]:.2f}): " \
-                       f"{row[self.baseline_name, 'caption']}"
+            base_cap = (
+                f"{self.baseline_name} ({row[self.baseline_name, view_metric]:.2f}): "
+                f"{row[self.baseline_name, 'caption']}"
+            )
             model_cap = [f"{_} ({row[_, view_metric]:.2f}): {row[_, 'caption']}" for _ in self.model_name]
             texts_wrp = []
             for t in [base_cap] + model_cap:
@@ -201,11 +205,13 @@ class CaptionCollector:
 
     def _save_results(self, caption_type, composite, img, row, view_metric, output_dir):
         img_id = row.name
-        base_out = f"{self.baseline_name} ({row[self.baseline_name, view_metric]:.2f}): " \
-                   f"{row[self.baseline_name, 'caption']}"
+        base_out = (
+            f"{self.baseline_name} ({row[self.baseline_name, view_metric]:.2f}): "
+            f"{row[self.baseline_name, 'caption']}"
+        )
         model_out = [f"{_} ({row[_, view_metric]:.2f}): {row[_, 'caption']}" for _ in self.model_name]
         # Save image
-        score = f"{row[self.model_name[-1], view_metric]:.3f}".replace('.', '-')
+        score = f"{row[self.model_name[-1], view_metric]:.3f}".replace(".", "-")
         type_short = {v: k for k, v in self.CATEGORIES.items()}
         if isinstance(img_id, str):
             img_out_name = f"{type_short[caption_type]}_{score}_{img_id}.jpg"
@@ -237,7 +243,7 @@ class CaptionCollector:
             "        \\end{basecap} \\\\",
         ]
         for n in self.model_name:
-            out_str += [modcap.format(row[n, 'caption'])]
+            out_str += [modcap.format(row[n, "caption"])]
         out_str += [
             "    \\end{tabular} &",
             "    ",
@@ -289,7 +295,7 @@ if __name__ == "__main__":
                 "name": "ORT_99_f16",
                 "caption": "/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__supermask__0.991__SCST_sample_baseline_s15_e10_C1B0001/val_beam_5_float16/caption_00226570.json",
                 "score": "/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__supermask__0.991__SCST_sample_baseline_s15_e10_C1B0001/val_beam_5_float16/score_00226570_detailed.json",
-            }
+            },
         ],
     )
     collector.display_captions(

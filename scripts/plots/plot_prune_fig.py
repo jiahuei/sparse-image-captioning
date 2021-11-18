@@ -26,9 +26,7 @@ def set_seed(seed: int):
 def get_pe(height=6, width=6):
     pe = np.zeros((height, width), dtype=np.float32)
     position = np.expand_dims(np.arange(0, height, dtype=np.float32), 1)
-    div_term = np.exp(
-        np.arange(0, width, 2, dtype=np.float32) * -(math.log(10) / width)
-    )
+    div_term = np.exp(np.arange(0, width, 2, dtype=np.float32) * -(math.log(10) / width))
     pe[:, 0::2] = np.sin(position * div_term)
     pe[:, 1::2] = np.cos(position * div_term)
     return pe
@@ -49,7 +47,7 @@ def get_mask(height=6, width=6):
 
 
 def sigmoid(x):
-    return 1. / (1. + np.exp(-x))
+    return 1.0 / (1.0 + np.exp(-x))
 
 
 def bernoulli_sample(probs: np.ndarray):
@@ -71,16 +69,23 @@ def test_bernoulli_sample():
 
 
 def main(
-        output_dir,
-        palette=sns.diverging_palette(20, 220, as_cmap=True),
-        annot=False,
-        output_dpi=600, linewidth=2.,
-        context="paper", fig_scale=1.5,
+    output_dir,
+    palette=sns.diverging_palette(20, 220, as_cmap=True),
+    annot=False,
+    output_dpi=600,
+    linewidth=2.0,
+    context="paper",
+    fig_scale=1.5,
 ):
     sns.set_context(context)
     common_kwargs = dict(
-        cmap=palette, annot=annot, annot_kws={"fontsize": 18}, fmt=".1f",
-        cbar=False, xticklabels=False, yticklabels=False
+        cmap=palette,
+        annot=annot,
+        annot_kws={"fontsize": 18},
+        fmt=".1f",
+        cbar=False,
+        xticklabels=False,
+        yticklabels=False,
     )
 
     mask = get_mask()
@@ -107,7 +112,7 @@ def main(
         else:
             vmin = -1
             vmax = 1
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(3. * fig_scale, 3. * fig_scale))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(3.0 * fig_scale, 3.0 * fig_scale))
         ax = sns.heatmap(mat, vmin=vmin, vmax=vmax, ax=ax, **common_kwargs)
         # Adjust margins and layout
         plt.tight_layout(pad=0)

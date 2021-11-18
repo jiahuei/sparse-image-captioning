@@ -31,7 +31,7 @@ import argparse
 def _pil_to_nparray(pim):
     image = pim.convert("RGB")
     imageArray = np.array(image)
-    return (imageArray)
+    return imageArray
 
 
 def get_numpy_image(url_or_filepath):
@@ -67,8 +67,7 @@ def get_bbox_relative_coords(params):
     with open(info_filepath, "rb") as infile:
         coco_dict = json.load(infile)
     coco_ids_to_paths = {
-        str(img["cocoid"]): os.path.join(img_dir, img["filepath"], img["filename"])
-        for img in coco_dict["images"]
+        str(img["cocoid"]): os.path.join(img_dir, img["filepath"], img["filename"]) for img in coco_dict["images"]
     }
 
     rel_box_dir = output_dir
@@ -97,20 +96,28 @@ def get_bbox_relative_coords(params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_json", type=str, default="/mydisk/Data/captioning_data/dataset_coco.json",
-        help="input json file to process into hdf5"
+        "--input_json",
+        type=str,
+        default="/mydisk/Data/captioning_data/dataset_coco.json",
+        help="input json file to process into hdf5",
     )
     parser.add_argument(
-        "--image_root", type=str, default="/mydisk/Data/captioning_data/coco",
-        help="In case the image paths have to be preprended with a root path to an image folder"
+        "--image_root",
+        type=str,
+        default="/mydisk/Data/captioning_data/coco",
+        help="In case the image paths have to be preprended with a root path to an image folder",
     )
     parser.add_argument(
-        "--input_box_dir", type=str, default="/mydisk/Data/captioning_data/cocobu_adaptive_box",
-        help="path to the directory containing the boxes of att feats"
+        "--input_box_dir",
+        type=str,
+        default="/mydisk/Data/captioning_data/cocobu_adaptive_box",
+        help="path to the directory containing the boxes of att feats",
     )
     parser.add_argument(
-        "--output_dir", type=str, default="/mydisk/Data/captioning_data/zcocobu_adaptive_box_relative",
-        help="directory containing the files with relative coordinates of the bboxes in --input_box_dir"
+        "--output_dir",
+        type=str,
+        default="/mydisk/Data/captioning_data/zcocobu_adaptive_box_relative",
+        help="directory containing the files with relative coordinates of the bboxes in --input_box_dir",
     )
 
     args = parser.parse_args()

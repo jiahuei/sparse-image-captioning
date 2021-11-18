@@ -63,9 +63,7 @@ class Score:
                 lambda x: str(Decimal(x).shift(shift).quantize(new_precision))
             )
         except KeyError:
-            logger.info(
-                f"{self.__class__.__name__}: shift() skipped: No metric scores found for {str(self)}."
-            )
+            logger.info(f"{self.__class__.__name__}: shift() skipped: No metric scores found for {str(self)}.")
         return score
 
     def merge(self, score: "Score"):
@@ -96,21 +94,15 @@ class Score:
         try:
             return self.value["Step"].to_numpy()[0]
         except TypeError as e:
-            raise ValueError(
-                "More than 1 test checkpoint set. Please reload data."
-            ) from e
+            raise ValueError("More than 1 test checkpoint set. Please reload data.") from e
         except KeyError as e:
-            raise ValueError(
-                "Best checkpoint not set. Please load data from test score CSV first."
-            ) from e
+            raise ValueError("Best checkpoint not set. Please load data from test score CSV first.") from e
 
 
 class ScoreCollector:
     def __init__(self, config, check_train_captions=False):
         self.config = config
-        train_caption_files = list(filter(
-            lambda x: x.endswith("train_captions.txt"), list_files(self.config.log_dir)
-        ))
+        train_caption_files = list(filter(lambda x: x.endswith("train_captions.txt"), list_files(self.config.log_dir)))
         if check_train_captions:
             train_captions = [
                 set(self.read_file(_))
@@ -175,10 +167,7 @@ class ScoreCollector:
         # Write to CSV
         self._write_output_csv(all_scores)
         # Scale score by 100
-        self._write_output_csv(
-            {k: [_.shift() for _ in v] for k, v in all_scores.items()},
-            "compiled_scores_100x.csv"
-        )
+        self._write_output_csv({k: [_.shift() for _ in v] for k, v in all_scores.items()}, "compiled_scores_100x.csv")
         logger.info(f"{self.__class__.__name__}: Done.")
 
     def _write_output_csv(self, all_scores: dict[str, list[Score]], filename="compiled_scores.csv"):
@@ -255,10 +244,11 @@ class ScoreCollector:
         vocab_size = model_config.vocab_size
 
         # Find caption file
-        caption_file = list(filter(
-            lambda x: os.path.basename(x).startswith("caption_") and x.endswith(".json"),
-            self.list_dir(test_dir)
-        ))
+        caption_file = list(
+            filter(
+                lambda x: os.path.basename(x).startswith("caption_") and x.endswith(".json"), self.list_dir(test_dir)
+            )
+        )
         if len(caption_file) == 1:
             pass
         elif len(caption_file) > 1:
@@ -273,7 +263,7 @@ class ScoreCollector:
             )
 
         caption_data = self.read_json(caption_file[0])
-        caption_data = [d['caption'] for d in caption_data]
+        caption_data = [d["caption"] for d in caption_data]
 
         # Calculate stats
         appear_in_train = 0
@@ -291,9 +281,9 @@ class ScoreCollector:
             # Length
             caption_length.append(len(caption))
 
-        vocab_coverage = (len(counts) / (vocab_size - 2)) * 100.  # Exclude <GO> and <EOS>
+        vocab_coverage = (len(counts) / (vocab_size - 2)) * 100.0  # Exclude <GO> and <EOS>
         average_length = sum(caption_length) / len(caption_length)
-        percent_unique = (1. - (appear_in_train / len(caption_data))) * 100.
+        percent_unique = (1.0 - (appear_in_train / len(caption_data))) * 100.0
 
         header = "Vocab coverage,Pct unique,Avg len,Num captions"
         data = f"{vocab_coverage:.1f},{percent_unique:.1f},{average_length:.2f},{len(caption_data):d}"
@@ -301,19 +291,16 @@ class ScoreCollector:
 
     def check_compiled_scores(self):
         out_file = os.path.join(self.config.log_dir, "compiled_test_scores.csv")
-        compiled_scores = list(filter(
-            lambda x: len(x.split(",")) > 1 and not x.startswith("Experiment,"),
-            self.read_file(out_file)
-        ))
+        compiled_scores = list(
+            filter(lambda x: len(x.split(",")) > 1 and not x.startswith("Experiment,"), self.read_file(out_file))
+        )
         for line in tqdm(compiled_scores, desc=f"{self.__class__.__name__}: Checking `compiled_test_scores.csv`"):
             line = line.split(",")
             exp_dir = line[0]
             scores = ",".join(line[1:10])
             test_dir = line[14]
             try:
-                _, ref_scores = self.read_file(
-                    os.path.join(self.config.log_dir, exp_dir, test_dir, "scores.csv")
-                )
+                _, ref_scores = self.read_file(os.path.join(self.config.log_dir, exp_dir, test_dir, "scores.csv"))
                 assert scores == ref_scores, (
                     f"Score mismatch for `{os.path.join(exp_dir, test_dir)}`: "
                     f"Compiled = {scores}    Reference = {ref_scores}"

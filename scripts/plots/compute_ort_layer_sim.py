@@ -21,21 +21,30 @@ def compute_sim(x):
 
 
 def main(
-        output_dir,
-        palette=sns.color_palette("light:#5A9", as_cmap=True),
-        # palette=sns.diverging_palette(220, 20, as_cmap=True),
-        annot=False,
-        output_dpi=600, linewidth=2.,
-        context="paper", fig_scale=1.5,
+    output_dir,
+    palette=sns.color_palette("light:#5A9", as_cmap=True),
+    # palette=sns.diverging_palette(220, 20, as_cmap=True),
+    annot=False,
+    output_dpi=600,
+    linewidth=2.0,
+    context="paper",
+    fig_scale=1.5,
 ):
     sns.set_context(context, font_scale=3.0)
     common_kwargs = dict(
-        cmap=palette, annot=annot, annot_kws={"fontsize": 18}, fmt=".1f",
-        cbar=True, xticklabels=True, yticklabels=True, square=True,
+        cmap=palette,
+        annot=annot,
+        annot_kws={"fontsize": 18},
+        fmt=".1f",
+        cbar=True,
+        xticklabels=True,
+        yticklabels=True,
+        square=True,
     )
 
     state_dict = torch.load(
-        "/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__baseline/model_best.pth")
+        "/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__baseline/model_best.pth"
+    )
 
     encoder_params = [[] for _ in range(6)]
     decoder_params = [[] for _ in range(6)]

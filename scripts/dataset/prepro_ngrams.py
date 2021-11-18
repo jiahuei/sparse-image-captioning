@@ -44,7 +44,7 @@ def precook(s, n=4, out=False):
     counts = defaultdict(int)
     for k in range(1, n + 1):
         for i in range(len(words) - k + 1):
-            ngram = tuple(words[i:i + k])
+            ngram = tuple(words[i : i + k])
             counts[ngram] += 1
     return counts
 
@@ -63,7 +63,7 @@ def cook_refs(refs, n=4):  ## lhuang: oracle will call with "average"
 
 def create_crefs(refs):
     crefs = []
-    for ref in tqdm(refs, ncols=100, desc='create_crefs'):
+    for ref in tqdm(refs, ncols=100, desc="create_crefs"):
         # ref is a list of 5 captions
         crefs.append(cook_refs(ref))
     return crefs
@@ -78,7 +78,7 @@ def compute_doc_freq(crefs):
     :return: None
     """
     document_frequency = defaultdict(float)
-    for refs in tqdm(crefs, ncols=100, desc='compute_doc_freq'):
+    for refs in tqdm(crefs, ncols=100, desc="compute_doc_freq"):
         # refs, k ref captions of one image
         for ngram in set([ngram for ref in refs for (ngram, count) in ref.items()]):
             document_frequency[ngram] += 1
@@ -87,28 +87,30 @@ def compute_doc_freq(crefs):
 
 
 def build_dict(imgs, wtoi, params):
-    wtoi['<eos>'] = 0
+    wtoi["<eos>"] = 0
 
     count_imgs = 0
 
     refs_words = []
     refs_idxs = []
     for img in imgs:
-        if (params['split'] == img['split']) or \
-                (params['split'] == 'train' and img['split'] == 'restval') or \
-                (params['split'] == 'all'):
+        if (
+            (params["split"] == img["split"])
+            or (params["split"] == "train" and img["split"] == "restval")
+            or (params["split"] == "all")
+        ):
             # (params['split'] == 'val' and img['split'] == 'restval') or \
             ref_words = []
             ref_idxs = []
-            for sent in img['sentences']:
-                tmp_tokens = sent['tokens'] + ['<eos>']
-                tmp_tokens = [_ if _ in wtoi else 'UNK' for _ in tmp_tokens]
-                ref_words.append(' '.join(tmp_tokens))
-                ref_idxs.append(' '.join([str(wtoi[_]) for _ in tmp_tokens]))
+            for sent in img["sentences"]:
+                tmp_tokens = sent["tokens"] + ["<eos>"]
+                tmp_tokens = [_ if _ in wtoi else "UNK" for _ in tmp_tokens]
+                ref_words.append(" ".join(tmp_tokens))
+                ref_idxs.append(" ".join([str(wtoi[_]) for _ in tmp_tokens]))
             refs_words.append(ref_words)
             refs_idxs.append(ref_idxs)
             count_imgs += 1
-    print('total imgs:', count_imgs)
+    print("total imgs:", count_imgs)
 
     ngram_words = compute_doc_freq(create_crefs(refs_words))
     ngram_idxs = compute_doc_freq(create_crefs(refs_idxs))
@@ -116,23 +118,19 @@ def build_dict(imgs, wtoi, params):
 
 
 def main(params):
-    imgs = json.load(open(params['input_json'], 'r'))
-    itow = json.load(open(params['dict_json'], 'r'))['ix_to_word']
+    imgs = json.load(open(params["input_json"], "r"))
+    itow = json.load(open(params["dict_json"], "r"))["ix_to_word"]
     wtoi = {w: i for i, w in itow.items()}
 
-    imgs = imgs['images']
+    imgs = imgs["images"]
 
     ngram_words, ngram_idxs, ref_len = build_dict(imgs, wtoi, params)
 
-    with open(params['output_pkl'] + '-words.p', 'wb') as f:
-        pickle.dump(
-            {'document_frequency': ngram_words, 'ref_len': ref_len}, f, protocol=pickle.HIGHEST_PROTOCOL
-        )
+    with open(params["output_pkl"] + "-words.p", "wb") as f:
+        pickle.dump({"document_frequency": ngram_words, "ref_len": ref_len}, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(params['output_pkl'] + '-idxs.p', 'wb') as f:
-        pickle.dump(
-            {'document_frequency': ngram_idxs, 'ref_len': ref_len}, f, protocol=pickle.HIGHEST_PROTOCOL
-        )
+    with open(params["output_pkl"] + "-idxs.p", "wb") as f:
+        pickle.dump({"document_frequency": ngram_idxs, "ref_len": ref_len}, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def parse_arguments() -> Namespace:

@@ -36,8 +36,7 @@ class CaptioningModel(TrainingModule):
         model.train()
         # Save init weights for Lottery Ticket
         torch.save(
-            model.state_dict_dense(discard_pruning_mask=True, prune_weights=False),
-            self.checkpoint_path.format("init")
+            model.state_dict_dense(discard_pruning_mask=True, prune_weights=False), self.checkpoint_path.format("init")
         )
 
         if config.label_smoothing > 0:
@@ -51,16 +50,18 @@ class CaptioningModel(TrainingModule):
         model_params["total"] = sum(model_params["breakdown"].values())
         model_params["trainable params"] = model.total_weight_params
         dump_json(
-            os.path.join(config.log_dir, "model_params.json"), model_params,
-            indent=2, sort_keys=True, ensure_ascii=False
+            os.path.join(config.log_dir, "model_params.json"),
+            model_params,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
         )
         # noinspection PyDictCreation
         mask_params = {"breakdown": {n: p.nelement() for n, p in model.all_pruning_masks(named=True)}}
         mask_params["total"] = sum(mask_params["breakdown"].values())
         mask_params["trainable params"] = model.total_mask_params
         dump_json(
-            os.path.join(config.log_dir, "mask_params.json"), mask_params,
-            indent=2, sort_keys=True, ensure_ascii=False
+            os.path.join(config.log_dir, "mask_params.json"), mask_params, indent=2, sort_keys=True, ensure_ascii=False
         )
 
         optim_params = [{"params": list(model.all_weights(named=False))}]
@@ -69,7 +70,9 @@ class CaptioningModel(TrainingModule):
             optim_params += [
                 {
                     "params": list(model.active_pruning_masks(named=False)),
-                    "lr": config.prune_supermask_lr, "weight_decay": 0, "eps": 1e-2,
+                    "lr": config.prune_supermask_lr,
+                    "weight_decay": 0,
+                    "eps": 1e-2,
                     "pruning_mask": True,
                 }
             ]
@@ -90,9 +93,7 @@ class CaptioningModel(TrainingModule):
                     logger.debug(f"{self.__class__.__name__}: SNIP: Accumulated gradients across {batch_idx} batches.")
                     break
                 data = map_to_cuda(data)
-                loss = loss_fn(
-                    model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
-                )
+                loss = loss_fn(model(**data), data["seqs"][:, 1:], data["masks"][:, 1:])
                 loss.backward()
         if model.mask_type in prune.MAG_HARD + prune.LOTTERY + [prune.SNIP]:
             if not prune.SNIP and not config.model_restored:
@@ -132,9 +133,7 @@ class CaptioningModel(TrainingModule):
                 data = map_to_cuda(data)
                 optimizer.zero_grad()
                 if not sc_flag:
-                    loss = loss_fn(
-                        model(**data), data["seqs"][:, 1:], data["masks"][:, 1:]
-                    )
+                    loss = loss_fn(model(**data), data["seqs"][:, 1:], data["masks"][:, 1:])
                     reward = sc_sample = sc_greedy = None
                 else:
                     loss, reward, sc_sample, sc_greedy = self.compute_scst_loss(
@@ -146,7 +145,7 @@ class CaptioningModel(TrainingModule):
                         config.prune_sparsity_target,
                         weight=config.prune_supermask_sparsity_weight,
                         current_step=self.global_step,
-                        max_step=self.max_train_step
+                        max_step=self.max_train_step,
                     )
 
                 loss.backward()
@@ -162,18 +161,17 @@ class CaptioningModel(TrainingModule):
                     prune_steps = int((0.50 * self.max_train_step - prune_start) / prune_freq)
                     model.update_masks_gradual(
                         sparsity_target=config.prune_sparsity_target,
-                        current_step=self.global_step, start_step=prune_start,
-                        prune_steps=prune_steps, prune_frequency=prune_freq
+                        current_step=self.global_step,
+                        start_step=prune_start,
+                        prune_steps=prune_steps,
+                        prune_frequency=prune_freq,
                     )
 
                 # Console log
                 if self.global_step % 5 == 0:
                     num_ex = batch_size * 5 * (1 if sc_flag else config.seq_per_img)
                     t_taken, t_start = time() - t_start, time()
-                    eta = (
-                            (len(self.train_loader) * config.max_epochs - self.global_step)
-                            * (t_taken / 5) / 3600
-                    )
+                    eta = (len(self.train_loader) * config.max_epochs - self.global_step) * (t_taken / 5) / 3600
                     log_str = (
                         f"Epoch {epoch:3d} iter {self.global_step:9,d} "
                         f"({(batch_idx + 1) / len(self.train_loader) * 100:5.1f} %), "
@@ -184,8 +182,7 @@ class CaptioningModel(TrainingModule):
                         print(f"{log_str}, Loss = {train_loss:6.3f}")
                     else:
                         print(
-                            f"{log_str}, Avg reward = {reward.mean():6.3f}, "
-                            f"Avg baseline = {sc_greedy.mean():.2f}"
+                            f"{log_str}, Avg reward = {reward.mean():6.3f}, " f"Avg baseline = {sc_greedy.mean():.2f}"
                         )
 
                 # Write the training loss summary
@@ -206,10 +203,7 @@ class CaptioningModel(TrainingModule):
                         tb_writer.add_scalar("train/avg_baseline", sc_greedy.mean(), self.global_step)
 
                 # Evaluate on validation set, and save model
-                if (
-                        self.global_step % config.save_checkpoint_every == 0 or
-                        self.global_step == self.max_train_step
-                ):
+                if self.global_step % config.save_checkpoint_every == 0 or self.global_step == self.max_train_step:
                     predictions, scores, _ = self.eval_on_split(self.val_loader, split="val")
 
                     # Write validation result into summary
@@ -245,8 +239,8 @@ class CaptioningModel(TrainingModule):
         config = self.config
         with torch.no_grad():
             config.current_sparsity = self.model.all_mask_sparsities[0].item()
-        model_nnz = 1. - config.current_sparsity
-        target_nnz = 1. - config.prune_sparsity_target
+        model_nnz = 1.0 - config.current_sparsity
+        target_nnz = 1.0 - config.prune_sparsity_target
         nnz_gap = abs(target_nnz - model_nnz) / target_nnz
         target_reached = nnz_gap <= tolerance
         print(
@@ -272,25 +266,21 @@ class CaptioningModel(TrainingModule):
             overall_sparsity = float(overall_sparsity)
             overall_nnz = int(overall_nnz)
         logger.info(
-            f"{self.__class__.__name__}: Model weights pruned: "
-            f"Overall sparsity = {overall_sparsity * 100:.2f}"
+            f"{self.__class__.__name__}: Model weights pruned: " f"Overall sparsity = {overall_sparsity * 100:.2f}"
         )
         # Save model weights
         torch.save(
             model.state_dict_sparse(discard_pruning_mask=True, prune_weights=False),
-            self.checkpoint_path.format("best_pruned_sparse")
+            self.checkpoint_path.format("best_pruned_sparse"),
         )
         torch.save(
             model.state_dict_dense(discard_pruning_mask=True, prune_weights=False),
-            self.checkpoint_path.format("best_pruned")
+            self.checkpoint_path.format("best_pruned"),
         )
         if model.mask_type == prune.REGULAR:
             torch.save(
-                model.state_dict_dense(
-                    discard_pruning_mask=False, prune_weights=False,
-                    binarize_supermasks=True
-                ),
-                self.checkpoint_path.format("best_bin_mask")
+                model.state_dict_dense(discard_pruning_mask=False, prune_weights=False, binarize_supermasks=True),
+                self.checkpoint_path.format("best_bin_mask"),
             )
         logger.info(
             f"{self.__class__.__name__}: Model weights saved to: "
@@ -320,9 +310,9 @@ def main(config: Config):
     if config.prune_type in prune.SUPER_MASKS:
         if config.prune_supermask_sparsity_weight < 0:
             if config.caption_model == "up_down_lstm_prune":
-                config.prune_supermask_sparsity_weight = max(5., 0.5 / (1 - config.prune_sparsity_target))
+                config.prune_supermask_sparsity_weight = max(5.0, 0.5 / (1 - config.prune_sparsity_target))
             else:
-                config.prune_supermask_sparsity_weight = max(5., 1.5 / (1 - config.prune_sparsity_target))
+                config.prune_supermask_sparsity_weight = max(5.0, 1.5 / (1 - config.prune_sparsity_target))
         config.log_dir += f"__wg_{config.prune_supermask_sparsity_weight:.1f}"
     model = CaptioningModel(config)
     model.train()
