@@ -19,10 +19,7 @@ from sparse_caption.utils.model_utils import set_seed, map_to_cuda
 class Model(prune.PruningMixin, nn.Module):
     def __init__(self, mask_type):
         super().__init__(mask_type=mask_type, mask_freeze_scope="out.")
-        mask_params = {
-            "mask_type": mask_type,
-            "mask_init_value": 5.
-        }
+        mask_params = {"mask_type": mask_type, "mask_init_value": 5.0}
         self.embed = MaskedEmbedding(3, 4, **mask_params)
         self.lstm = MaskedLSTMCell(4, 4, **mask_params)
         ffl = MaskedLinear(4, 4, **mask_params)
@@ -46,18 +43,19 @@ class Model(prune.PruningMixin, nn.Module):
             assert sparsity_target is not None
             assert step is not None
             assert max_step is not None
-            loss += self.compute_sparsity_loss(
-                sparsity_target, weight=120, current_step=step, max_step=max_step
-            )
+            loss += self.compute_sparsity_loss(sparsity_target, weight=120, current_step=step, max_step=max_step)
         return loss
 
     def get_optimizer(self):
         optim_params = [{"params": list(self.all_weights(named=False))}]
         if self.mask_type in prune.SUPER_MASKS:
-            optim_params += [{
-                "params": list(self.active_pruning_masks(named=False)),
-                "lr": 10, "weight_decay": 0,
-            }]
+            optim_params += [
+                {
+                    "params": list(self.active_pruning_masks(named=False)),
+                    "lr": 10,
+                    "weight_decay": 0,
+                }
+            ]
         optimizer = optim.Adam(optim_params, lr=1e-2, weight_decay=1e-5)
         return optimizer
 
@@ -72,8 +70,10 @@ class Model(prune.PruningMixin, nn.Module):
             if self.mask_type in prune.MAG_ANNEAL:
                 self.update_masks_gradual(
                     sparsity_target=sparsity_target,
-                    current_step=i, start_step=10,
-                    prune_steps=max(1, int(iters / 4)), prune_frequency=3
+                    current_step=i,
+                    start_step=10,
+                    prune_steps=max(1, int(iters / 4)),
+                    prune_frequency=3,
                 )
 
     def get_sparsity(self, active=True):
@@ -101,10 +101,7 @@ class TestPrune(unittest.TestCase):
     def _test_model(self, mask_type):
         model = Model(mask_type)
         with self.subTest(f"{mask_type} : Initial sparsity check"):
-            self.assertEqual(
-                model.get_sparsity(active=False), 0,
-                "Initial sparsity should be zero"
-            )
+            self.assertEqual(model.get_sparsity(active=False), 0, "Initial sparsity should be zero")
         if model.mask_type in prune.MAG_HARD + prune.LOTTERY + [prune.SNIP]:
             if model.mask_type == prune.SNIP:
                 inputs, labels = model.get_inputs_and_labels()
@@ -113,46 +110,49 @@ class TestPrune(unittest.TestCase):
             model.update_masks_once(sparsity_target=self.SPARSITY_TARGET)
             with self.subTest(f"{mask_type} : One-shot pruning sparsity check"):
                 self.assertAlmostEqual(
-                    model.get_sparsity(active=True), self.SPARSITY_TARGET,
+                    model.get_sparsity(active=True),
+                    self.SPARSITY_TARGET,
                     delta=0.05,
-                    msg=f"Sparsity should be {self.SPARSITY_TARGET}"
+                    msg=f"Sparsity should be {self.SPARSITY_TARGET}",
                 )
         model.train_self(self.SPARSITY_TARGET)
         with self.subTest(f"{mask_type} : Final sparsity check"):
             self.assertAlmostEqual(
-                model.get_sparsity(active=True), self.SPARSITY_TARGET,
+                model.get_sparsity(active=True),
+                self.SPARSITY_TARGET,
                 delta=0.3 if mask_type == prune.REGULAR else 0.05,
-                msg=f"Sparsity should be {self.SPARSITY_TARGET}"
+                msg=f"Sparsity should be {self.SPARSITY_TARGET}",
             )
         with self.subTest(f"{mask_type} : Active sparsity check"):
             self.assertGreater(
                 model.get_sparsity(active=True),
                 model.get_sparsity(active=False),
-                "Active sparsity should be higher as `out` layer is not pruned."
+                "Active sparsity should be higher as `out` layer is not pruned.",
             )
         with self.subTest(f"{mask_type} : Weight sparsity check"):
             self.assertEqual(model.get_weight_sparsity(), 0, "Weights should not be pruned yet.")
         model.prune_weights()
         with self.subTest(f"{mask_type} : Weight sparsity check"):
             self.assertAlmostEqual(
-                model.get_weight_sparsity(), self.SPARSITY_TARGET,
+                model.get_weight_sparsity(),
+                self.SPARSITY_TARGET,
                 delta=0.3,
-                msg=f"Weight sparsity after pruning should be {self.SPARSITY_TARGET}"
+                msg=f"Weight sparsity after pruning should be {self.SPARSITY_TARGET}",
             )
 
     def test_prune(self):
         for mask_type in (
-                prune.REGULAR,
-                prune.MAG_BLIND,
-                prune.MAG_DIST,
-                prune.MAG_UNIFORM,
-                prune.SNIP,
-                prune.MAG_GRAD_BLIND,
-                prune.MAG_GRAD_UNIFORM,
-                # prune.MAG_GRAD_DIST,
-                prune.LOTTERY_MAG_BLIND,
-                prune.LOTTERY_MAG_UNIFORM,
-                prune.LOTTERY_MAG_DIST,
+            prune.REGULAR,
+            prune.MAG_BLIND,
+            prune.MAG_DIST,
+            prune.MAG_UNIFORM,
+            prune.SNIP,
+            prune.MAG_GRAD_BLIND,
+            prune.MAG_GRAD_UNIFORM,
+            # prune.MAG_GRAD_DIST,
+            prune.LOTTERY_MAG_BLIND,
+            prune.LOTTERY_MAG_UNIFORM,
+            prune.LOTTERY_MAG_DIST,
         ):
             sub_test = f"Testing mask_type = {mask_type}"
             with self.subTest(sub_test):
@@ -160,5 +160,5 @@ class TestPrune(unittest.TestCase):
                 self._test_model(mask_type)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

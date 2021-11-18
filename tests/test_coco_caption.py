@@ -17,15 +17,13 @@ class TestCocoCaption(unittest.TestCase):
 
     def test_mscoco_score(self):
         scores, scores_detailed, coco_eval = evaluate_caption_json(
-            res_file=os.path.join(TEST_DATA_DIRPATH, "caption_00156000.json"),
-            ann_file=MscocoDataset.ANNOTATION_FILE
+            res_file=os.path.join(TEST_DATA_DIRPATH, "caption_00156000.json"), ann_file=MscocoDataset.ANNOTATION_FILE
         )
         scores = [round(scores[_], 3) for _ in self.METRICS]
         self.assertEqual(
-            scores, [0.806, 0.655, 0.514, 0.398, 0.288, 0.584, 1.311, 0.220],
-            "Scores are different from expected."
+            scores, [0.806, 0.655, 0.514, 0.398, 0.288, 0.584, 1.311, 0.220], "Scores are different from expected."
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
