@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 def parse_opt(arguments=None) -> Namespace:
     if arguments is not None:
-        assert isinstance(arguments, list), (
-            f"Expected `arguments` to be a list, received: {type(arguments)}"
-        )
+        assert isinstance(arguments, list), f"Expected `arguments` to be a list, received: {type(arguments)}"
 
     # fmt: off
     # noinspection PyTypeChecker
@@ -58,16 +56,10 @@ def parse_opt(arguments=None) -> Namespace:
     # fmt: on
     args, unknown = parser.parse_known_args(arguments)
     TrainingModule.add_argparse_args(
-        parser.add_argument_group(
-            "Training",
-            "Arguments for model training, logging and evaluation."
-        )
+        parser.add_argument_group("Training", "Arguments for model training, logging and evaluation.")
     )
     get_dataset(args.dataset).add_argparse_args(
-        parser.add_argument_group(
-            "Dataset",
-            "Arguments for dataset and dataloaders."
-        )
+        parser.add_argument_group("Dataset", "Arguments for dataset and dataloaders.")
     )
     get_tokenizer(args.tokenizer).add_argparse_args(
         parser.add_argument_group(
@@ -76,10 +68,7 @@ def parse_opt(arguments=None) -> Namespace:
         )
     )
     get_model(args.caption_model).add_argparse_args(
-        parser.add_argument_group(
-            "Model",
-            "Arguments for model, hyperparameters."
-        )
+        parser.add_argument_group("Model", "Arguments for model, hyperparameters.")
     )
     args = parser.parse_args(arguments)
 

@@ -47,41 +47,41 @@ class PruningMixin:
     """
     Mixin class to be used together with torch.nn.Module
     """
+
     named_parameters: Callable
     state_dict: Callable
     load_state_dict: Callable
 
     def __init__(self, *, mask_type, mask_freeze_scope="", **kwargs):
-        assert mask_type in VALID_MASKS, \
-            f"`mask_type` must be one of {VALID_MASKS}, saw `{mask_type}`"
-        assert isinstance(mask_freeze_scope, str), \
-            f"`mask_freeze_scope` must be a str, saw `{type(mask_freeze_scope)}`"
+        assert mask_type in VALID_MASKS, f"`mask_type` must be one of {VALID_MASKS}, saw `{mask_type}`"
+        assert isinstance(mask_freeze_scope, str), f"`mask_freeze_scope` must be a str, saw `{type(mask_freeze_scope)}`"
         self.mask_type = mask_type
         if mask_freeze_scope == "":
             self.mask_freeze_scope = None
         else:
             self.mask_freeze_scope = [_ for _ in mask_freeze_scope.split(",") if _ != ""]
         # self.supermask_requires_grad_set = False
-        self.sparsity_target = 0.
+        self.sparsity_target = 0.0
         super().__init__(**kwargs)
 
     def all_pruning_masks(self, named=True):
         return list(
             (name, param) if named else param
-            for name, param in self.named_parameters() if name.endswith("_pruning_mask")
+            for name, param in self.named_parameters()
+            if name.endswith("_pruning_mask")
         )
 
     def all_pruned_weights(self, named=True):
         weight_names = set(name.replace("_pruning_mask", "") for name, param in self.all_pruning_masks())
         return list(
-            (name, param) if named else param
-            for name, param in self.named_parameters() if name in weight_names
+            (name, param) if named else param for name, param in self.named_parameters() if name in weight_names
         )
 
     def all_weights(self, named=True):
         return list(
             (name, param) if named else param
-            for name, param in self.named_parameters() if not name.endswith("_pruning_mask")
+            for name, param in self.named_parameters()
+            if not name.endswith("_pruning_mask")
         )
 
     def active_pruning_masks(self, named=True):
@@ -103,19 +103,14 @@ class PruningMixin:
             ]
 
     def active_pruned_weights(self, named=True):
-        pruned_weight_names = set(
-            name.replace("_pruning_mask", "")
-            for name, param in self.active_pruning_masks()
-        )
+        pruned_weight_names = set(name.replace("_pruning_mask", "") for name, param in self.active_pruning_masks())
         return list(
-            (name, param) if named else param
-            for name, param in self.named_parameters() if name in pruned_weight_names
+            (name, param) if named else param for name, param in self.named_parameters() if name in pruned_weight_names
         )
 
     def trainable_pruning_masks(self, named=True):
         return list(
-            (name, param) if named else param
-            for name, param in self.all_pruning_masks() if param.requires_grad
+            (name, param) if named else param for name, param in self.all_pruning_masks() if param.requires_grad
         )
 
     @property
@@ -175,61 +170,62 @@ class PruningMixin:
             masks = [rounding_sigmoid(_) for _ in masks]
         for w, m in zip(weights, masks):
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(
-                    f"{self.__class__.__name__}: Prune weights: "
-                    f"Weight = `{w}`    Mask = `{m}`"
-                )
+                logger.debug(f"{self.__class__.__name__}: Prune weights: " f"Weight = `{w}`    Mask = `{m}`")
             w[:] = w * m
 
     def state_dict_dense(
-            self, destination=None, prefix="", keep_vars=False,
-            discard_pruning_mask=False, prune_weights=True, binarize_supermasks=False
+        self,
+        destination=None,
+        prefix="",
+        keep_vars=False,
+        discard_pruning_mask=False,
+        prune_weights=True,
+        binarize_supermasks=False,
     ):
         if prune_weights:
             self.prune_weights()
         state_dict = self.state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         if discard_pruning_mask and binarize_supermasks:
-            raise ValueError(
-                "`discard_pruning_mask` and `binarize_supermasks` cannot be True at the same time."
-            )
+            raise ValueError("`discard_pruning_mask` and `binarize_supermasks` cannot be True at the same time.")
         if discard_pruning_mask:
             for mask_name, _ in self.all_pruning_masks():
                 del state_dict[mask_name]
         if binarize_supermasks:
             if self.mask_type not in SUPER_MASKS:
-                raise ValueError(
-                    f"`binarize_supermasks` can only be True for mask_type in {SUPER_MASKS}."
-                )
+                raise ValueError(f"`binarize_supermasks` can only be True for mask_type in {SUPER_MASKS}.")
             for mask_name, _ in self.all_pruning_masks():
                 state_dict[mask_name] = rounding_sigmoid(state_dict[mask_name])
         return state_dict
 
     def state_dict_sparse(
-            self, destination=None, prefix="", keep_vars=False,
-            discard_pruning_mask=True, prune_weights=True, binarize_supermasks=False
+        self,
+        destination=None,
+        prefix="",
+        keep_vars=False,
+        discard_pruning_mask=True,
+        prune_weights=True,
+        binarize_supermasks=False,
     ):
         state_dict = self.state_dict_dense(
-            destination=destination, prefix=prefix, keep_vars=keep_vars,
-            discard_pruning_mask=discard_pruning_mask, prune_weights=prune_weights,
-            binarize_supermasks=binarize_supermasks
+            destination=destination,
+            prefix=prefix,
+            keep_vars=keep_vars,
+            discard_pruning_mask=discard_pruning_mask,
+            prune_weights=prune_weights,
+            binarize_supermasks=binarize_supermasks,
         )
         all_pruned, _ = zip(*self.all_pruned_weights(named=True))
         all_pruned = set(all_pruned)
         return {
-            k: v.to_sparse() if (isinstance(v, torch.Tensor) and k in all_pruned) else v
-            for k, v in state_dict.items()
+            k: v.to_sparse() if (isinstance(v, torch.Tensor) and k in all_pruned) else v for k, v in state_dict.items()
         }
 
     def load_sparse_state_dict(
-            self, sparse_state_dict: Union[Dict[str, torch.Tensor], Dict[str, torch.Tensor]],
-            strict: bool = True
+        self, sparse_state_dict: Union[Dict[str, torch.Tensor], Dict[str, torch.Tensor]], strict: bool = True
     ):
         self.load_state_dict(state_dict=densify_state_dict(sparse_state_dict), strict=strict)
 
-    def compute_sparsity_loss(
-            self, sparsity_target: float, weight: float,
-            current_step: int, max_step: int
-    ):
+    def compute_sparsity_loss(self, sparsity_target: float, weight: float, current_step: int, max_step: int):
         """
         Loss for controlling sparsity of Supermasks.
         Args:
@@ -243,15 +239,13 @@ class PruningMixin:
         assert self.mask_type in SUPER_MASKS, f"Invalid mask type. Must be one of {SUPER_MASKS}"
         _, masks = zip(*self.active_pruning_masks(named=True))
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                f"{self.__class__.__name__}: Sparsity loss: Mask list = `{list(_)}`"
-            )
+            logger.debug(f"{self.__class__.__name__}: Sparsity loss: Mask list = `{list(_)}`")
         # if self.supermask_requires_grad_set is False:
         #     _, all_masks = zip(*self.all_pruning_masks())
         #     for m in list(set(all_masks) - set(masks)):
         #         m.requires_grad = False
         if len(masks) == 0:
-            return 0.
+            return 0.0
         sampled_masks = [rounding_sigmoid(_) for _ in masks]
         total_sparsity, _, _ = self.calculate_sparsities(sampled_masks, torch.sum)
         loss = torch.abs(sparsity_target - total_sparsity)
@@ -261,7 +255,7 @@ class PruningMixin:
         step = current_step / max_step
         step = 1.0 + torch.cos(torch.tensor(min(1.0, step) * math.pi))
         anneal_rate = step / 2
-        loss = loss * weight * (1. - anneal_rate)
+        loss = loss * weight * (1.0 - anneal_rate)
         self.sparsity_loss["anneal_rate"] = anneal_rate
         self.sparsity_loss["loss_scaled"] = loss
 
@@ -276,8 +270,9 @@ class PruningMixin:
 
     @staticmethod
     def compute_mask(criterion, sparsity_target):
-        assert isinstance(sparsity_target, float) and 0 <= sparsity_target < 1.0, \
-            f"`sparsity_target` must be a float >= 0 and < 1, saw {sparsity_target}"
+        assert (
+            isinstance(sparsity_target, float) and 0 <= sparsity_target < 1.0
+        ), f"`sparsity_target` must be a float >= 0 and < 1, saw {sparsity_target}"
         mask = torch.ones_like(criterion)
         tensor_size = criterion.nelement()
         prune_amount = int(sparsity_target * tensor_size)
@@ -306,15 +301,14 @@ class PruningMixin:
         Returns:
             True if pruning masks are successfully updated.
         """
-        assert self.mask_type in MAG_PRUNE_MASKS, \
-            f"Invalid mask_type: {self.mask_type}. Must be one of {MAG_PRUNE_MASKS}"
+        assert (
+            self.mask_type in MAG_PRUNE_MASKS
+        ), f"Invalid mask_type: {self.mask_type}. Must be one of {MAG_PRUNE_MASKS}"
         _, masks = zip(*self.active_pruning_masks())
         _, weights = zip(*self.active_pruned_weights())
         assert len(weights) == len(masks)
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                f"{self.__class__.__name__}: Pruning ({self.mask_type}): Mask list = `{list(_)}`"
-            )
+            logger.debug(f"{self.__class__.__name__}: Pruning ({self.mask_type}): Mask list = `{list(_)}`")
 
         if self.mask_type == SNIP:
             # mask_ori_shape = [m.shape for m in masks]
@@ -364,28 +358,30 @@ class PruningMixin:
         if len(new_masks) == 1:
             new_masks = torch.split(new_masks[0], [m.nelement() for m in masks])
 
-        assert len(new_masks) == len(masks), \
-            "Threshold list should be either of length 1 or equal length as masks list."
+        assert len(new_masks) == len(
+            masks
+        ), "Threshold list should be either of length 1 or equal length as masks list."
         for m, new_m in zip(masks, new_masks):
             m.view(-1)[:] = new_m.view(-1)
         logger.info(
-            f"{self.__class__.__name__}: Pruning ({self.mask_type}): "
-            f"Pruned to sparsity = `{sparsity_target:.5f}`"
+            f"{self.__class__.__name__}: Pruning ({self.mask_type}): " f"Pruned to sparsity = `{sparsity_target:.5f}`"
         )
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                f"{self.__class__.__name__}: Pruning ({self.mask_type}): "
-                f"Updated masks = `{list(masks)}`"
-            )
+            logger.debug(f"{self.__class__.__name__}: Pruning ({self.mask_type}): " f"Updated masks = `{list(masks)}`")
         self.sparsity_target = sparsity_target
         self.sparsity_check()
         return True
 
     @torch.no_grad()
     def update_masks_gradual(
-            # self, si: float, sf: float, t: int, t0: int, tn: int, dt: int = 1000
-            self, sparsity_target: float, current_step: int, start_step: int, prune_steps: int,
-            initial_sparsity: float = 0., prune_frequency: int = 1000
+        # self, si: float, sf: float, t: int, t0: int, tn: int, dt: int = 1000
+        self,
+        sparsity_target: float,
+        current_step: int,
+        start_step: int,
+        prune_steps: int,
+        initial_sparsity: float = 0.0,
+        prune_frequency: int = 1000,
     ):
         """
         Get current sparsity level for gradual pruning.
@@ -415,13 +411,13 @@ class PruningMixin:
         assert self.mask_type in MAG_ANNEAL
         assert dt > 0, f"Pruning frequency must be greater than zero, saw `{dt}`"
         assert prune_steps > 0, f"Pruning steps must be greater than zero, saw `{prune_steps}`"
-        assert (tn - t0) % dt == 0, \
-            "Pruning end step must be equal to start step added by multiples of frequency."
+        assert (tn - t0) % dt == 0, "Pruning end step must be equal to start step added by multiples of frequency."
 
         is_step_within_pruning_range = (
-                (t >= t0) and
-                # If end_pruning_step is negative, keep pruning forever!
-                ((t <= tn) or (tn < 0))
+            (t >= t0)
+            and
+            # If end_pruning_step is negative, keep pruning forever!
+            ((t <= tn) or (tn < 0))
         )
         is_pruning_step = ((t - t0) % dt) == 0
         is_pruning_step = is_step_within_pruning_range and is_pruning_step
@@ -430,11 +426,9 @@ class PruningMixin:
             # Current sparsity target
             p = (t - t0) / (tn - t0)
             p = min(1.0, max(0.0, p))
-            st = sf + ((si - sf) * ((1. - p) ** 3))
+            st = sf + ((si - sf) * ((1.0 - p) ** 3))
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(
-                    f"{self.__class__.__name__}: Gradual pruning: Sparsity target = `{st}`"
-                )
+                logger.debug(f"{self.__class__.__name__}: Gradual pruning: Sparsity target = `{st}`")
             self.update_masks_once(sparsity_target=st)
         return False
 

@@ -33,9 +33,14 @@ class EncoderDecoder(nn.Module):
     """
 
     def __init__(
-            self, encoder: Callable, decoder: Callable,
-            src_embed: Callable, tgt_embed: Callable, generator: Callable,
-            autoregressive: bool = True, pad_idx: int = 0
+        self,
+        encoder: Callable,
+        decoder: Callable,
+        src_embed: Callable,
+        tgt_embed: Callable,
+        generator: Callable,
+        autoregressive: bool = True,
+        pad_idx: int = 0,
     ):
         super().__init__()
         self.encoder = encoder
@@ -66,9 +71,9 @@ class EncoderDecoder(nn.Module):
             src_mask: (N, S)
         Returns:
         """
-        assert src_mask.ndimension() == 2, (
-            f"{self.__class__.__name__}: Expected `src_mask` has shape (N, S), saw `{src_mask.shape}`"
-        )
+        assert (
+            src_mask.ndimension() == 2
+        ), f"{self.__class__.__name__}: Expected `src_mask` has shape (N, S), saw `{src_mask.shape}`"
         src_mask = src_mask.unsqueeze(-2)
 
         src = self.src_embed(src)
@@ -90,9 +95,7 @@ class EncoderDecoder(nn.Module):
             memory_mask: (N, S)
         Returns:
         """
-        assert tgt.ndimension() == 2, (
-            f"{self.__class__.__name__}: Expected `tgt` has shape (N, T), saw `{tgt.shape}`"
-        )
+        assert tgt.ndimension() == 2, f"{self.__class__.__name__}: Expected `tgt` has shape (N, T), saw `{tgt.shape}`"
         if memory.size(0) != tgt.size(0):
             assert tgt.size(0) % memory.size(0) == 0
             seq_per_img = int(tgt.size(0) / memory.size(0))
@@ -104,9 +107,7 @@ class EncoderDecoder(nn.Module):
             subsequent_mask = torch.triu(subsequent_mask, diagonal=1).eq(0)
             tgt_mask = tgt_mask & subsequent_mask
         tgt_embed = self.tgt_embed(tgt)
-        decoder_output = self.decoder(
-            x=tgt_embed, memory=memory, src_mask=memory_mask, tgt_mask=tgt_mask
-        )
+        decoder_output = self.decoder(x=tgt_embed, memory=memory, src_mask=memory_mask, tgt_mask=tgt_mask)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
                 f"{self.__class__.__name__}: "
@@ -368,9 +369,7 @@ class PositionalEncoding(nn.Module):
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len).unsqueeze(1).float()
-        div_term = torch.exp(
-            torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)
-        )
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0)
@@ -383,12 +382,11 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         if self.incremental_decoding:
-            assert x.size(1) == 1, \
-                f"{self.__class__.__name__}: Expected input to have shape (M, 1, N), saw {x.shape}"
-            x = x + self.pe[:, self.current_time_step:self.current_time_step + 1]
+            assert x.size(1) == 1, f"{self.__class__.__name__}: Expected input to have shape (M, 1, N), saw {x.shape}"
+            x = x + self.pe[:, self.current_time_step : self.current_time_step + 1]
             self.current_time_step += 1
         else:
-            x = x + self.pe[:, :x.size(1)]
+            x = x + self.pe[:, : x.size(1)]
         return self.dropout(x)
 
 
@@ -417,7 +415,6 @@ class OutputEmbedding(nn.Module):
 
 # noinspection PyAbstractClass,PyAttributeOutsideInit
 class CachedTransformerBase(CaptionModel):
-
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -458,10 +455,7 @@ class CachedTransformerBase(CaptionModel):
             module.reset_cache()
 
     def _modules_with_cache(self):
-        return filter(
-            lambda x: getattr(x, "incremental_decoding", False) and hasattr(x, "cache"),
-            self.modules()
-        )
+        return filter(lambda x: getattr(x, "incremental_decoding", False) and hasattr(x, "cache"), self.modules())
 
     def _retrieve_caches(self):
         caches = [m.cache for m in self._modules_with_cache()]
@@ -471,7 +465,7 @@ class CachedTransformerBase(CaptionModel):
     def _update_caches(self, caches):
         idx = 0
         for i, m in enumerate(self._modules_with_cache()):
-            m.cache = [_.transpose(0, 1) for _ in caches[idx: idx + m.cache_size]]
+            m.cache = [_.transpose(0, 1) for _ in caches[idx : idx + m.cache_size]]
             idx += m.cache_size
 
     def _generate_captions(self, att_feats, att_masks, memory, state, opt):
@@ -636,16 +630,17 @@ class Transformer(CachedTransformerBase):
         position = PositionalEncoding(self.d_model, dropout)
         self.core = EncoderDecoder(
             src_embed=nn.Sequential(
-                nn.Linear(self.att_feat_size, self.d_model),
-                nn.ReLU(),
-                nn.Dropout(self.drop_prob_src)
+                nn.Linear(self.att_feat_size, self.d_model), nn.ReLU(), nn.Dropout(self.drop_prob_src)
             ),
             encoder=Encoder(
                 EncoderLayer(
                     self.d_model,
                     MHA(self.num_heads, self.d_model, share_att=self.share_att_encoder),
-                    deepcopy(ff), dropout
-                ), self.num_layers, share_layer=self.share_layer_encoder
+                    deepcopy(ff),
+                    dropout,
+                ),
+                self.num_layers,
+                share_layer=self.share_layer_encoder,
             ),
             tgt_embed=nn.Sequential(InputEmbedding(self.d_model, self.vocab_size), deepcopy(position)),
             decoder=Decoder(
@@ -653,12 +648,15 @@ class Transformer(CachedTransformerBase):
                     self.d_model,
                     CMHA(self.num_heads, self.d_model, self_attention=True, share_att=self.share_att_decoder),
                     CMHA(self.num_heads, self.d_model, share_att=self.share_att_decoder),
-                    deepcopy(ff), dropout
-                ), self.num_layers, share_layer=self.share_layer_decoder
+                    deepcopy(ff),
+                    dropout,
+                ),
+                self.num_layers,
+                share_layer=self.share_layer_decoder,
             ),
             generator=OutputEmbedding(self.d_model, self.vocab_size),
             autoregressive=True,
-            pad_idx=self.pad_idx
+            pad_idx=self.pad_idx,
         )
         self._reset_parameters()
 

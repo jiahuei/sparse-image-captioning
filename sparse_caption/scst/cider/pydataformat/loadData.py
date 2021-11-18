@@ -9,7 +9,8 @@ import json
 import os
 from collections import defaultdict
 
-class LoadData():
+
+class LoadData:
     def __init__(self, path):
         self.pathToData = path
 
@@ -18,14 +19,14 @@ class LoadData():
         path_to_ref_file = os.path.join(self.pathToData, refname)
         path_to_cand_file = os.path.join(self.pathToData, candname)
 
-        ref_list = json.loads(open(path_to_ref_file, 'r').read())
-        cand_list = json.loads(open(path_to_cand_file, 'r').read())
+        ref_list = json.loads(open(path_to_ref_file, "r").read())
+        cand_list = json.loads(open(path_to_cand_file, "r").read())
 
         gts = defaultdict(list)
         res = []
 
         for l in ref_list:
-            gts[l['image_id']].append({"caption": l['caption']})
+            gts[l["image_id"]].append({"caption": l["caption"]})
 
-        res = cand_list;
+        res = cand_list
         return gts, res

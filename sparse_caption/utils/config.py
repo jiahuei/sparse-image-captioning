@@ -18,7 +18,7 @@ version = packaging.version
 
 
 class Config:
-    """ Configuration object."""
+    """Configuration object."""
 
     @classmethod
     def load_config_json(cls, config_filepath, verbose=True):
@@ -40,8 +40,7 @@ class Config:
         self_dict = vars(self)
         if logger.isEnabledFor(logging.DEBUG) and key in self_dict and self_dict[key] != value:
             logger.warning(
-                f"{self.__class__.__name__}: "
-                f"Overwriting `self.{key}` from `{self_dict[key]}` to `{value}`"
+                f"{self.__class__.__name__}: " f"Overwriting `self.{key}` from `{self_dict[key]}` to `{value}`"
             )
         super().__setattr__(key, value)
 
@@ -124,8 +123,7 @@ class Config:
                 del self.scst_beam_search
             else:
                 raise KeyError(
-                    f"{self.__name__}: Expected loaded self to have one of keys: "
-                    f"`scst_mode` or `scst_beam_search`."
+                    f"{self.__name__}: Expected loaded self to have one of keys: " f"`scst_mode` or `scst_beam_search`."
                 )
             if scst == "greedy_baseline":
                 scst_baseline = "greedy"

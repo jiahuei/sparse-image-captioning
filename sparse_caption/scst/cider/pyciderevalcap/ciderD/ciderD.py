@@ -13,11 +13,13 @@ from __future__ import print_function
 from .ciderD_scorer import CiderScorer
 import pdb
 
+
 class CiderD:
     """
     Main Class to compute the CIDEr metric
 
     """
+
     def __init__(self, n=4, sigma=6.0, df="corpus"):
         # set cider to sum over 1 to 4-grams
         self._n = n
@@ -45,10 +47,10 @@ class CiderD:
             ref = gts[id]
 
             # Sanity check.
-            assert(type(hypo) is list)
-            assert(len(hypo) == 1)
-            assert(type(ref) is list)
-            assert(len(ref) > 0)
+            assert type(hypo) is list
+            assert len(hypo) == 1
+            assert type(ref) is list
+            assert len(ref) > 0
             tmp_cider_scorer += (hypo[0], ref)
 
         (score, scores) = tmp_cider_scorer.compute_score()

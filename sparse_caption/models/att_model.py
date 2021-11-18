@@ -23,8 +23,24 @@ from ..utils.model_utils import repeat_tensors, pack_wrapper
 from ..tokenizer import Tokenizer
 
 bad_endings = [
-    'a', 'an', 'the', 'in', 'for', 'at', 'of', 'with', 'before', 'after', 'on', 'upon', 'near', 'to', 'is',
-    'are', 'am', 'the'
+    "a",
+    "an",
+    "the",
+    "in",
+    "for",
+    "at",
+    "of",
+    "with",
+    "before",
+    "after",
+    "on",
+    "upon",
+    "near",
+    "to",
+    "is",
+    "are",
+    "am",
+    "the",
 ]
 
 
@@ -47,7 +63,7 @@ class AttModel(CaptionModel):
         self.unk_idx = config.unk_token_id
         self.pad_idx = config.pad_token_id
 
-        self.use_bn = config.get('use_bn', 0)
+        self.use_bn = config.get("use_bn", 0)
         self.ss_prob = 0.0  # Schedule sampling probability
 
         # For remove bad ending
@@ -59,28 +75,20 @@ class AttModel(CaptionModel):
 
     def make_model(self):
         self.embed = nn.Sequential(
-            nn.Embedding(self.vocab_size, self.input_encoding_size),
-            nn.ReLU(),
-            nn.Dropout(self.drop_prob_lm)
+            nn.Embedding(self.vocab_size, self.input_encoding_size), nn.ReLU(), nn.Dropout(self.drop_prob_lm)
         )
         self.fc_embed = nn.Sequential(
-            nn.Linear(self.fc_feat_size, self.rnn_size),
-            nn.ReLU(),
-            nn.Dropout(self.drop_prob_lm)
+            nn.Linear(self.fc_feat_size, self.rnn_size), nn.ReLU(), nn.Dropout(self.drop_prob_lm)
         )
         self.att_embed = nn.Sequential(
             *(
-                    ((nn.BatchNorm1d(self.att_feat_size),) if self.use_bn else ()) +
-                    (
-                        nn.Linear(self.att_feat_size, self.rnn_size),
-                        nn.ReLU(),
-                        nn.Dropout(self.drop_prob_lm)
-                    ) +
-                    ((nn.BatchNorm1d(self.rnn_size),) if self.use_bn == 2 else ())
+                ((nn.BatchNorm1d(self.att_feat_size),) if self.use_bn else ())
+                + (nn.Linear(self.att_feat_size, self.rnn_size), nn.ReLU(), nn.Dropout(self.drop_prob_lm))
+                + ((nn.BatchNorm1d(self.rnn_size),) if self.use_bn == 2 else ())
             )
         )
 
-        self.logit_layers = self.config.get('logit_layers', 1)
+        self.logit_layers = self.config.get("logit_layers", 1)
         if self.logit_layers == 1:
             self.logit = nn.Linear(self.rnn_size, self.vocab_size)
         else:
@@ -94,12 +102,10 @@ class AttModel(CaptionModel):
         self.ctx2att = nn.Linear(self.rnn_size, self.att_hid_size)
 
     def init_hidden(self, bsz):
-        weight = self.logit.weight \
-            if hasattr(self.logit, "weight") \
-            else self.logit[0].weight
+        weight = self.logit.weight if hasattr(self.logit, "weight") else self.logit[0].weight
         return (
             weight.new_zeros(self.num_layers, bsz, self.rnn_size),
-            weight.new_zeros(self.num_layers, bsz, self.rnn_size)
+            weight.new_zeros(self.num_layers, bsz, self.rnn_size),
         )
 
     def clip_att(self, att_feats, att_masks):
@@ -137,8 +143,7 @@ class AttModel(CaptionModel):
 
         if seq_per_img > 1:
             p_fc_feats, p_att_feats, pp_att_feats, p_att_masks = repeat_tensors(
-                seq_per_img,
-                [p_fc_feats, p_att_feats, pp_att_feats, p_att_masks]
+                seq_per_img, [p_fc_feats, p_att_feats, pp_att_feats, p_att_masks]
             )
 
         for i in range(seqs.size(1)):
@@ -196,8 +201,7 @@ class AttModel(CaptionModel):
             # first step, feed bos
             logprobs, state = self.get_logprobs_state(it, fc_feats, att_feats, p_att_feats, att_masks, state)
             fc_feats, att_feats, p_att_feats, att_masks = repeat_tensors(
-                beam_size,
-                [fc_feats, att_feats, p_att_feats, att_masks]
+                beam_size, [fc_feats, att_feats, p_att_feats, att_masks]
             )
             self.done_beams = self.batch_beam_search(
                 state, logprobs, fc_feats, att_feats, p_att_feats, att_masks, opt=opt

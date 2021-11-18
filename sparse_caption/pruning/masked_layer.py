@@ -24,11 +24,11 @@ class MaskMixin:
     training: bool
 
     def setup_masks(
-            self,
-            parameters: Union[str, List[str], Tuple[str, ...]],
-            mask_type: str,
-            mask_init_value: float = 1.0,
-            bypass_sigmoid_grad: bool = False,
+        self,
+        parameters: Union[str, List[str], Tuple[str, ...]],
+        mask_type: str,
+        mask_init_value: float = 1.0,
+        bypass_sigmoid_grad: bool = False,
     ) -> None:
         if not isinstance(parameters, (list, tuple)):
             parameters = (parameters,)
@@ -47,13 +47,11 @@ class MaskMixin:
             setattr(self, mask_name, deepcopy(weight))
             self.mask_parameters.append(getattr(self, mask_name, None))
         assert all(_ is not None for _ in self.mask_parameters)
-        assert mask_type in prune.VALID_MASKS, \
-            f"`mask_type` must be one of {prune.VALID_MASKS}, saw `{mask_type}`"
+        assert mask_type in prune.VALID_MASKS, f"`mask_type` must be one of {prune.VALID_MASKS}, saw `{mask_type}`"
         self.mask_type = mask_type
 
         if self.mask_type in prune.SUPER_MASKS:
-            assert isinstance(mask_init_value, (float, int)), \
-                "`mask_init_value` must be provided as a float or int."
+            assert isinstance(mask_init_value, (float, int)), "`mask_init_value` must be provided as a float or int."
             self.mask_init_value = float(mask_init_value)
             self.mask_train_sample_fn = lambda x: sampler.bernoulli_sample_sigmoid(x, bypass_sigmoid_grad)
             self.mask_eval_sample_fn = lambda x: sampler.rounding_sigmoid(x, bypass_sigmoid_grad)
@@ -61,11 +59,10 @@ class MaskMixin:
         else:
             if mask_init_value is not None:
                 logger.info(
-                    f"{self.__class__.__name__}: "
-                    f"`mask_init_value` is always 1.0 for mask_type = `{self.mask_type}`"
+                    f"{self.__class__.__name__}: " f"`mask_init_value` is always 1.0 for mask_type = `{self.mask_type}`"
                 )
             # Regular pruning
-            self.mask_init_value = 1.
+            self.mask_init_value = 1.0
             self.mask_train_sample_fn = self.mask_eval_sample_fn = None
             self.mask_trainable = self.mask_type == prune.SNIP
 
@@ -100,9 +97,7 @@ class MaskMixin:
             sampled_mask = sample_fn(mask)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(
-                    f"{self.__class__.__name__}: "
-                    f"Mask type = {self.mask_type}    "
-                    f"Sample fn = {sample_fn}"
+                    f"{self.__class__.__name__}: " f"Mask type = {self.mask_type}    " f"Sample fn = {sample_fn}"
                 )
         else:
             sampled_mask = mask
@@ -123,15 +118,17 @@ class MaskMixin:
 
 # noinspection PyAbstractClass
 class MaskedLinear(MaskMixin, nn.Linear):
-    r"""Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
-    """
-    __constants__ = nn.Linear.__constants__ + ['mask_type', 'mask_init_value', 'bypass_sigmoid_grad']
+    r"""Applies a linear transformation to the incoming data: :math:`y = xA^T + b`"""
+    __constants__ = nn.Linear.__constants__ + ["mask_type", "mask_init_value", "bypass_sigmoid_grad"]
 
     def __init__(
-            self, in_features: int, out_features: int,
-            mask_type: str, mask_init_value: float,
-            bypass_sigmoid_grad: bool = False,
-            **kwargs
+        self,
+        in_features: int,
+        out_features: int,
+        mask_type: str,
+        mask_init_value: float,
+        bypass_sigmoid_grad: bool = False,
+        **kwargs,
     ) -> None:
         super().__init__(in_features, out_features, **kwargs)
         self.setup_masks("weight", mask_type, mask_init_value, bypass_sigmoid_grad)
@@ -148,27 +145,34 @@ class MaskedEmbedding(MaskMixin, nn.Embedding):
     The input to the module is a list of indices, and the output is the corresponding
     word embeddings.
     """
-    __constants__ = nn.Embedding.__constants__ + ['mask_type', 'mask_init_value', 'bypass_sigmoid_grad']
+    __constants__ = nn.Embedding.__constants__ + ["mask_type", "mask_init_value", "bypass_sigmoid_grad"]
 
     def __init__(
-            self, num_embeddings: int, embedding_dim: int,
-            mask_type: str, mask_init_value: float,
-            bypass_sigmoid_grad: bool = False,
-            **kwargs
+        self,
+        num_embeddings: int,
+        embedding_dim: int,
+        mask_type: str,
+        mask_init_value: float,
+        bypass_sigmoid_grad: bool = False,
+        **kwargs,
     ) -> None:
         super().__init__(num_embeddings, embedding_dim, **kwargs)
         self.setup_masks("weight", mask_type, mask_init_value, bypass_sigmoid_grad)
 
     def forward(self, input: Tensor) -> Tensor:
         return F.embedding(
-            input, self.get_masked_weight("weight"), self.padding_idx, self.max_norm,
-            self.norm_type, self.scale_grad_by_freq, self.sparse
+            input,
+            self.get_masked_weight("weight"),
+            self.padding_idx,
+            self.max_norm,
+            self.norm_type,
+            self.scale_grad_by_freq,
+            self.sparse,
         )
 
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
-        r"""Creates Embedding instance from given 2-dimensional FloatTensor.
-        """
+        r"""Creates Embedding instance from given 2-dimensional FloatTensor."""
         raise NotImplementedError
 
 
@@ -181,10 +185,13 @@ class MaskedLSTMCell(MaskMixin, nn.LSTMCell):
     """
 
     def __init__(
-            self, input_size: int, hidden_size: int,
-            mask_type: str, mask_init_value: float,
-            bypass_sigmoid_grad: bool = False,
-            **kwargs
+        self,
+        input_size: int,
+        hidden_size: int,
+        mask_type: str,
+        mask_init_value: float,
+        bypass_sigmoid_grad: bool = False,
+        **kwargs,
     ) -> None:
         super().__init__(input_size, hidden_size, **kwargs)
         self.setup_masks(("weight_ih", "weight_hh"), mask_type, mask_init_value, bypass_sigmoid_grad)
@@ -194,12 +201,15 @@ class MaskedLSTMCell(MaskMixin, nn.LSTMCell):
         if hx is None:
             zeros = torch.zeros(input.size(0), self.hidden_size, dtype=input.dtype, device=input.device)
             hx = (zeros, zeros)
-        self.check_forward_hidden(input, hx[0], '[0]')
-        self.check_forward_hidden(input, hx[1], '[1]')
+        self.check_forward_hidden(input, hx[0], "[0]")
+        self.check_forward_hidden(input, hx[1], "[1]")
         return torch._VF.lstm_cell(
-            input, hx,
-            self.get_masked_weight("weight_ih"), self.get_masked_weight("weight_hh"),
-            self.bias_ih, self.bias_hh,
+            input,
+            hx,
+            self.get_masked_weight("weight_ih"),
+            self.get_masked_weight("weight_hh"),
+            self.bias_ih,
+            self.bias_hh,
         )
 
 
@@ -212,19 +222,25 @@ class MaskedLSTMCellCheckpoint(MaskMixin, nn.LSTMCell):
     """
 
     def __init__(
-            self, input_size: int, hidden_size: int,
-            mask_type: str, mask_init_value: float,
-            bypass_sigmoid_grad: bool = False,
-            **kwargs
+        self,
+        input_size: int,
+        hidden_size: int,
+        mask_type: str,
+        mask_init_value: float,
+        bypass_sigmoid_grad: bool = False,
+        **kwargs,
     ) -> None:
         super().__init__(input_size, hidden_size, **kwargs)
         self.setup_masks(("weight_ih", "weight_hh"), mask_type, mask_init_value, bypass_sigmoid_grad)
 
     def _lstm(self, input, hx0, hx1):
         return torch._VF.lstm_cell(
-            input, (hx0, hx1),
-            self.get_masked_weight("weight_ih"), self.get_masked_weight("weight_hh"),
-            self.bias_ih, self.bias_hh,
+            input,
+            (hx0, hx1),
+            self.get_masked_weight("weight_ih"),
+            self.get_masked_weight("weight_hh"),
+            self.bias_ih,
+            self.bias_hh,
         )
 
     def forward(self, input: Tensor, hx: Optional[Tuple[Tensor, Tensor]] = None) -> Tuple[Tensor, Tensor]:
@@ -232,6 +248,10 @@ class MaskedLSTMCellCheckpoint(MaskMixin, nn.LSTMCell):
         if hx is None:
             zeros = torch.zeros(input.size(0), self.hidden_size, dtype=input.dtype, device=input.device)
             hx = (zeros, zeros)
-        self.check_forward_hidden(input, hx[0], '[0]')
-        self.check_forward_hidden(input, hx[1], '[1]')
-        return torch.utils.checkpoint.checkpoint(self._lstm, input, *hx, )
+        self.check_forward_hidden(input, hx[0], "[0]")
+        self.check_forward_hidden(input, hx[1], "[1]")
+        return torch.utils.checkpoint.checkpoint(
+            self._lstm,
+            input,
+            *hx,
+        )

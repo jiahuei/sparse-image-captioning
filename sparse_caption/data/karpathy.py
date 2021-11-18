@@ -173,7 +173,13 @@ class KarpathyDataset(ABC):
             logger.debug(f"{self.__class__.__name__}: Found annotation file at `{json_fpath}`.")
             return
         logger.debug(f"{self.__class__.__name__}: Generating COCO-style annotation file at `{json_fpath}`.")
-        annot = dict(images=[], annotations=[], info="", type="captions", licenses="",)
+        annot = dict(
+            images=[],
+            annotations=[],
+            info="",
+            type="captions",
+            licenses="",
+        )
         for split in ("val", "test"):
             assert split in self.data, f"Split `{split}` not found in `self.data`."
             for d in self.data[split]:
@@ -184,7 +190,11 @@ class KarpathyDataset(ABC):
         with open(json_fpath, "w") as f:
             json.dump(annot, f)
 
-    def coco_caption_json_dump(self, img_fname_caption_pair: Iterable[Tuple[str, ...]], output_fpath: str,) -> None:
+    def coco_caption_json_dump(
+        self,
+        img_fname_caption_pair: Iterable[Tuple[str, ...]],
+        output_fpath: str,
+    ) -> None:
         """
         Takes in `[(img_fname_str, caption_str), ...]` as `img_fname_caption_pair`,
         and saves the results as a JSON file compatible with `coco_caption` evaluation format.

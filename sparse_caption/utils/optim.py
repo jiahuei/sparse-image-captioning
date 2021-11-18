@@ -53,18 +53,20 @@ class StepLROpt(RateOpt):
     """Optim wrapper that implements rate."""
 
     def __init__(
-            self,
-            optimizer,
-            learning_rate_init,
-            learning_rate_decay_start,
-            learning_rate_decay_every,
-            learning_rate_decay_rate
+        self,
+        optimizer,
+        learning_rate_init,
+        learning_rate_decay_start,
+        learning_rate_decay_every,
+        learning_rate_decay_rate,
     ):
         if learning_rate_decay_start >= 0:
-            assert learning_rate_decay_every > 0, \
-                f"`learning_rate_decay_every` must be > 0, saw {learning_rate_decay_every}"
-            assert 0 < learning_rate_decay_rate < 1, \
-                f"`learning_rate_decay_rate` must be > 0 and < 1, saw {learning_rate_decay_rate}"
+            assert (
+                learning_rate_decay_every > 0
+            ), f"`learning_rate_decay_every` must be > 0, saw {learning_rate_decay_every}"
+            assert (
+                0 < learning_rate_decay_rate < 1
+            ), f"`learning_rate_decay_rate` must be > 0 and < 1, saw {learning_rate_decay_rate}"
         self.optimizer = optimizer
         self.learning_rate_init = learning_rate_init
         self.learning_rate_decay_start = learning_rate_decay_start
@@ -166,7 +168,7 @@ def build_optimizer(params, config):
             config.learning_rate,
             (config.optim_alpha, config.optim_beta),
             config.optim_epsilon,
-            weight_decay=config.weight_decay
+            weight_decay=config.weight_decay,
         )
     else:
         raise Exception(f"Bad option `config.optim`: {config.optim}")

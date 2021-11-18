@@ -19,33 +19,28 @@ class AttModel(att_model.AttModel):
     #     super().__init__(config, tokenizer)
 
     def make_model(self):
-        mask_params = {
-            "mask_type": self.config.prune_type,
-            "mask_init_value": self.config.prune_supermask_init
-        }
+        mask_params = {"mask_type": self.config.prune_type, "mask_init_value": self.config.prune_supermask_init}
         self.embed = nn.Sequential(
             MaskedEmbedding(self.vocab_size, self.input_encoding_size, **mask_params),
             nn.ReLU(),
-            nn.Dropout(self.drop_prob_lm)
+            nn.Dropout(self.drop_prob_lm),
         )
         self.fc_embed = nn.Sequential(
-            MaskedLinear(self.fc_feat_size, self.rnn_size, **mask_params),
-            nn.ReLU(),
-            nn.Dropout(self.drop_prob_lm)
+            MaskedLinear(self.fc_feat_size, self.rnn_size, **mask_params), nn.ReLU(), nn.Dropout(self.drop_prob_lm)
         )
         self.att_embed = nn.Sequential(
             *(
-                    ((nn.BatchNorm1d(self.att_feat_size),) if self.use_bn else ()) +
-                    (
-                        MaskedLinear(self.att_feat_size, self.rnn_size, **mask_params),
-                        nn.ReLU(),
-                        nn.Dropout(self.drop_prob_lm)
-                    ) +
-                    ((nn.BatchNorm1d(self.rnn_size),) if self.use_bn == 2 else ())
+                ((nn.BatchNorm1d(self.att_feat_size),) if self.use_bn else ())
+                + (
+                    MaskedLinear(self.att_feat_size, self.rnn_size, **mask_params),
+                    nn.ReLU(),
+                    nn.Dropout(self.drop_prob_lm),
+                )
+                + ((nn.BatchNorm1d(self.rnn_size),) if self.use_bn == 2 else ())
             )
         )
 
-        self.logit_layers = self.config.get('logit_layers', 1)
+        self.logit_layers = self.config.get("logit_layers", 1)
         if self.logit_layers == 1:
             self.logit = MaskedLinear(self.rnn_size, self.vocab_size, **mask_params)
         else:
@@ -55,8 +50,8 @@ class AttModel(att_model.AttModel):
             ]
             self.logit = nn.Sequential(
                 *(
-                        reduce(lambda x, y: x + y, self.logit) +
-                        [MaskedLinear(self.rnn_size, self.vocab_size, **mask_params)]
+                    reduce(lambda x, y: x + y, self.logit)
+                    + [MaskedLinear(self.rnn_size, self.vocab_size, **mask_params)]
                 )
             )
         self.ctx2att = MaskedLinear(self.rnn_size, self.att_hid_size, **mask_params)
@@ -69,10 +64,7 @@ class Attention(att_model.Attention):
         self.config = config
         self.rnn_size = config.rnn_size
         self.att_hid_size = config.att_hid_size
-        mask_params = {
-            "mask_type": self.config.prune_type,
-            "mask_init_value": self.config.prune_supermask_init
-        }
+        mask_params = {"mask_type": self.config.prune_type, "mask_init_value": self.config.prune_supermask_init}
 
         self.h2att = MaskedLinear(self.rnn_size, self.att_hid_size, **mask_params)
         self.alpha_net = MaskedLinear(self.att_hid_size, 1, **mask_params)
@@ -84,17 +76,12 @@ class UpDownCore(att_model.UpDownCore):
         nn.Module.__init__(self)
         self.config = config
         self.drop_prob_lm = config.drop_prob_lm
-        mask_params = {
-            "mask_type": self.config.prune_type,
-            "mask_init_value": self.config.prune_supermask_init
-        }
+        mask_params = {"mask_type": self.config.prune_type, "mask_init_value": self.config.prune_supermask_init}
 
         self.att_lstm = MaskedLSTMCell(
             config.input_encoding_size + config.rnn_size * 2, config.rnn_size, **mask_params
         )  # we, fc, h^2_t-1
-        self.lang_lstm = MaskedLSTMCell(
-            config.rnn_size * 2, config.rnn_size, **mask_params
-        )  # h^1_t, \hat v
+        self.lang_lstm = MaskedLSTMCell(config.rnn_size * 2, config.rnn_size, **mask_params)  # h^1_t, \hat v
         self.attention = Attention(config)
 
 

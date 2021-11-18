@@ -62,14 +62,10 @@ def evaluate_caption_json(res_file, ann_file):
             ]
         COCO Eval object
     """
-    assert ann_file.endswith('.json'), (
-        "`ann_file` should end with `.json`, saw `{}` instead.".format(ann_file)
-    )
-    assert res_file.endswith('.json'), (
-        "`res_file` should end with `.json`, saw `{}` instead.".format(res_file)
-    )
-    default_ann_dir = os.path.join(COCO_DIR, 'annotations')
-    default_res_dir = os.path.join(COCO_DIR, 'results')
+    assert ann_file.endswith(".json"), "`ann_file` should end with `.json`, saw `{}` instead.".format(ann_file)
+    assert res_file.endswith(".json"), "`res_file` should end with `.json`, saw `{}` instead.".format(res_file)
+    default_ann_dir = os.path.join(COCO_DIR, "annotations")
+    default_res_dir = os.path.join(COCO_DIR, "results")
     # create coco object and cocoRes object
     coco = COCO(os.path.join(default_ann_dir, ann_file))
     coco_res = coco.loadRes(os.path.join(default_res_dir, res_file))
@@ -78,7 +74,7 @@ def evaluate_caption_json(res_file, ann_file):
     coco_eval = COCOEvalCap(coco, coco_res)
 
     # evaluate on a subset of images
-    coco_eval.params['image_id'] = coco_res.getImgIds()
+    coco_eval.params["image_id"] = coco_res.getImgIds()
 
     # evaluate results
     coco_eval.evaluate()

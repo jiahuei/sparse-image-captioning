@@ -23,6 +23,7 @@ class EncoderDecoder(PruningMixin, rtrans.EncoderDecoder):
     A standard Encoder-Decoder architecture. Base for this and many
     other models.
     """
+
     pass
 
 
@@ -37,10 +38,7 @@ class Generator(rtrans.Generator):
 
 # noinspection PyAbstractClass
 class CachedMultiHeadedAttention(rtrans.CachedMultiHeadedAttention):
-    def __init__(
-            self, mask_type, mask_init_value, h, d_model,
-            dropout=0.1 / 3, self_attention=False, share_att=None
-    ):
+    def __init__(self, mask_type, mask_init_value, h, d_model, dropout=0.1 / 3, self_attention=False, share_att=None):
         """Take in model size and number of heads."""
         nn.Module.__init__(self)
         assert d_model % h == 0
@@ -50,10 +48,7 @@ class CachedMultiHeadedAttention(rtrans.CachedMultiHeadedAttention):
         self.self_attention = self_attention
         assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
         self.share_att = share_att
-        self.linears = clones(
-            MaskedLinear(d_model, d_model, mask_type, mask_init_value),
-            3 if share_att else 4
-        )
+        self.linears = clones(MaskedLinear(d_model, d_model, mask_type, mask_init_value), 3 if share_att else 4)
         self.dropout = nn.Dropout(p=dropout)
         self.cache = [None, None]
         self.cache_size = 2
@@ -67,9 +62,7 @@ class BoxMultiHeadedAttention(rtrans.BoxMultiHeadedAttention):
     """
 
     def __init__(
-            self, mask_type, mask_init_value, h, d_model,
-            trigonometric_embedding=True, dropout=0.1 / 3,
-            share_att=None
+        self, mask_type, mask_init_value, h, d_model, trigonometric_embedding=True, dropout=0.1 / 3, share_att=None
     ):
         """Take in model size and number of heads."""
         nn.Module.__init__(self)
@@ -89,14 +82,8 @@ class BoxMultiHeadedAttention(rtrans.BoxMultiHeadedAttention):
         # matrices W_q, W_k, W_v, and one last projection layer
         assert share_att in (None, "kv", "qk"), f"Invalid `share_att`: {share_att}"
         self.share_att = share_att
-        self.linears = clones(
-            MaskedLinear(d_model, d_model, mask_type, mask_init_value),
-            3 if share_att else 4
-        )
-        self.WGs = clones(
-            MaskedLinear(geo_feature_dim, 1, mask_type, mask_init_value, bias=True),
-            self.h
-        )
+        self.linears = clones(MaskedLinear(d_model, d_model, mask_type, mask_init_value), 3 if share_att else 4)
+        self.WGs = clones(MaskedLinear(geo_feature_dim, 1, mask_type, mask_init_value, bias=True), self.h)
 
         # self.attn = None
         self.dropout = nn.Dropout(p=dropout)
@@ -128,13 +115,8 @@ class Embeddings(rtrans.Embeddings):
 # noinspection PyAbstractClass,PyAttributeOutsideInit
 @register_model("relation_transformer_prune")
 class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
-
     def __init__(self, config):
-        super().__init__(
-            mask_type=config.prune_type,
-            mask_freeze_scope=config.prune_mask_freeze_scope,
-            config=config
-        )
+        super().__init__(mask_type=config.prune_type, mask_freeze_scope=config.prune_mask_freeze_scope, config=config)
 
     def make_model(self, h=8, dropout=0.1 / 3):
         """Helper: Construct a model from hyperparameters."""
@@ -150,26 +132,29 @@ class RelationTransformerModel(PruningMixin, rtrans.RelationTransformerModel):
         ff = PositionwiseFeedForward(mask_type, mask_init_value, self.d_model, self.dim_feedforward, dropout)
         position = rtrans.PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
-            mask_type=mask_type, mask_freeze_scope="",
-            encoder=rtrans.Encoder(rtrans.EncoderLayer(
-                self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
+            mask_type=mask_type,
+            mask_freeze_scope="",
+            encoder=rtrans.Encoder(
+                rtrans.EncoderLayer(self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout), self.num_layers
             ),
-            decoder=rtrans.Decoder(rtrans.DecoderLayer(
-                self.d_model, self_attn, attn, deepcopy(ff), dropout), self.num_layers
+            decoder=rtrans.Decoder(
+                rtrans.DecoderLayer(self.d_model, self_attn, attn, deepcopy(ff), dropout), self.num_layers
             ),
             src_embed=lambda x: x,
             tgt_embed=nn.Sequential(
                 Embeddings(mask_type, mask_init_value, self.d_model, self.vocab_size), deepcopy(position)
             ),
-            generator=Generator(mask_type, mask_init_value, self.d_model, self.vocab_size)
+            generator=Generator(mask_type, mask_init_value, self.d_model, self.vocab_size),
         )
         self.att_embed = nn.Sequential(
             MaskedLinear(
-                self.att_feat_size, self.d_model,
-                mask_type, mask_init_value,
+                self.att_feat_size,
+                self.d_model,
+                mask_type,
+                mask_init_value,
             ),
             nn.ReLU(),
-            nn.Dropout(self.drop_prob_src)
+            nn.Dropout(self.drop_prob_src),
         )
         # This was important from their code.
         # Initialize parameters with Glorot / fan_avg.

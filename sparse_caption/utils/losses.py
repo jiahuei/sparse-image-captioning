@@ -24,7 +24,7 @@ class RewardCriterion(nn.Module):
         # reward = reward.repeat(mask.shape[1], 1).transpose(0, 1)
         reward = reward.contiguous().view(-1).unsqueeze(1)
         mask = mask.float()
-        output = - input * (mask * reward).contiguous().view(-1)
+        output = -input * (mask * reward).contiguous().view(-1)
         output = torch.sum(output) / torch.sum(mask)
         return output
 
@@ -35,8 +35,8 @@ class LanguageModelCriterion(nn.Module):
 
     def forward(self, input, target, mask):
         # truncate to the same size
-        target = target[:, :input.size(1)]
-        mask = mask[:, :input.size(1)]
+        target = target[:, : input.size(1)]
+        mask = mask[:, : input.size(1)]
 
         output = -input.gather(2, target.unsqueeze(2)).squeeze(2) * mask
         output = torch.sum(output) / torch.sum(mask)
@@ -57,8 +57,8 @@ class LabelSmoothing(nn.Module):
 
     def forward(self, input, target, mask):
         # truncate to the same size
-        target = target[:, :input.size(1)]
-        mask = mask[:, :input.size(1)]
+        target = target[:, : input.size(1)]
+        mask = mask[:, : input.size(1)]
 
         input = input.contiguous().view(-1, input.size(-1))
         target = target.contiguous().view(-1)

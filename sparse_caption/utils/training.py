@@ -36,6 +36,7 @@ class TrainingModule:
     """
     Base class for training and evaluation.
     """
+
     ALL_METRICS = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
     SCST_SAMPLE = ["beam_search", "random"]
     SCST_BASELINE = ["greedy", "sample"]
@@ -132,13 +133,11 @@ class TrainingModule:
         # self.test_loader = self.test_dataloader()
         self.tb_summary_writer = SummaryWriter(config.log_dir)
         self.scst_scorer = CaptionScorer(
-            config.cached_tokens,
-            cider_weight=config.scst_cider_weight,
-            bleu_weight=config.scst_bleu_weight
+            config.cached_tokens, cider_weight=config.scst_cider_weight, bleu_weight=config.scst_bleu_weight
         )
         self.global_step = 0
         self.max_train_step = config.max_train_step = config.max_epochs * len(self.train_loader)
-        self.best_val_score = 0.
+        self.best_val_score = 0.0
         config.best_global_step = 0
 
     def maybe_load_checkpoint(self, strict=True):
@@ -205,14 +204,16 @@ class TrainingModule:
     def compute_scst_loss(self, model_inputs, gts, loss_fn):
         config = self.config
         model = self.model
-        assert isinstance(model_inputs, dict), \
-            f"Expected `model_inputs` to be dict, saw {type(model_inputs)}"
-        assert config.scst_num_samples > 0, \
-            f"Expected `config.scst_num_samples` to be > 0, saw {config.scst_num_samples}"
-        assert config.scst_sample in self.SCST_SAMPLE, \
-            f"Expected `config.scst_sample` to be one of `{self.SCST_SAMPLE}`, saw {config.scst_sample}"
-        assert config.scst_baseline in self.SCST_BASELINE, \
-            f"Expected `config.scst_baseline` to be one of `{self.SCST_BASELINE}`, saw {config.scst_baseline}"
+        assert isinstance(model_inputs, dict), f"Expected `model_inputs` to be dict, saw {type(model_inputs)}"
+        assert (
+            config.scst_num_samples > 0
+        ), f"Expected `config.scst_num_samples` to be > 0, saw {config.scst_num_samples}"
+        assert (
+            config.scst_sample in self.SCST_SAMPLE
+        ), f"Expected `config.scst_sample` to be one of `{self.SCST_SAMPLE}`, saw {config.scst_sample}"
+        assert (
+            config.scst_baseline in self.SCST_BASELINE
+        ), f"Expected `config.scst_baseline` to be one of `{self.SCST_BASELINE}`, saw {config.scst_baseline}"
 
         if config.scst_baseline == "greedy":
             # Greedy decoding baseline
@@ -225,13 +226,15 @@ class TrainingModule:
         model.train()
         if config.scst_sample == "beam_search":
             sample_res, sample_logprobs = model(
-                **model_inputs, mode="sample",
+                **model_inputs,
+                mode="sample",
                 opt={"beam_size": config.scst_num_samples},
             )
         else:
             assert config.scst_sample == "random"
             sample_res, sample_logprobs = model(
-                **model_inputs, mode="sample",
+                **model_inputs,
+                mode="sample",
                 opt={"num_random_sample": config.scst_num_samples, "beam_size": 0},
             )
 
@@ -243,9 +246,7 @@ class TrainingModule:
         sample_decoded = [[self.tokenizer.decode(__) for __ in _] for _ in sample_res.cpu().numpy()]
 
         # Compute reward
-        sc_sample, sc_greedy = self.scst_scorer(
-            refs=gts, sample=sample_decoded, greedy=greedy_decoded
-        )
+        sc_sample, sc_greedy = self.scst_scorer(refs=gts, sample=sample_decoded, greedy=greedy_decoded)
         if config.scst_baseline == "greedy":
             assert greedy_decoded is not None
             sc_baseline = sc_greedy
@@ -302,8 +303,7 @@ class TrainingModule:
         else:
             # MS-COCO test2014 split has no GT
             scores, scores_detailed, coco_eval = evaluate_caption_json(
-                res_file=json_fpath,
-                ann_file=self.data.ANNOTATION_FILE
+                res_file=json_fpath, ann_file=self.data.ANNOTATION_FILE
             )
             # Save score JSON
             score_fpath = os.path.join(out_dir, f"score_{self.global_step:08d}.json")
@@ -333,8 +333,9 @@ class TrainingModule:
 
     @classmethod
     def eval_model(cls, state_dict, config, split="test"):
-        assert isinstance(config, Config), \
-            f"`config` should be an instance of `utils.config.Config`, saw {type(config)}"
+        assert isinstance(
+            config, Config
+        ), f"`config` should be an instance of `utils.config.Config`, saw {type(config)}"
         self = cls(config)
         self.model.load_state_dict(state_dict)
         map_to_cuda(self.model)
@@ -343,9 +344,7 @@ class TrainingModule:
         elif split == "test":
             self.test_loader = self.test_dataloader()
         else:
-            raise ValueError(
-                f"{self.__class__.__name__}: `split` must be one of ('val', 'train'), saw: {split}"
-            )
+            raise ValueError(f"{self.__class__.__name__}: `split` must be one of ('val', 'train'), saw: {split}")
         self.global_step = self.config.get("best_global_step", 0)
         return self.eval_on_split(self.test_loader, split=split)
 

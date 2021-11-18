@@ -26,9 +26,9 @@ assert os.path.isdir(
 
 
 def configure_logging(
-        logging_level: Union[int, str] = logging.INFO,
-        logging_fmt: str = "%(levelname)s: %(name)s: %(funcName)s: %(message)s",
-        logger_obj: Union[None, logging.Logger] = None,
+    logging_level: Union[int, str] = logging.INFO,
+    logging_fmt: str = "%(levelname)s: %(name)s: %(funcName)s: %(message)s",
+    logger_obj: Union[None, logging.Logger] = None,
 ) -> logging.Logger:
     """
     Setup logging on the root logger, because `transformers` calls `logger.info` upon import.
@@ -102,9 +102,7 @@ def time_function(func):
         value = func(*args, **kwargs)
         if logger.isEnabledFor(logging.DEBUG):
             elapsed_time = time.perf_counter() - tic
-            logger.debug(
-                f"{func.__name__}: Elapsed time: {elapsed_time:.6f} sec"
-            )
+            logger.debug(f"{func.__name__}: Elapsed time: {elapsed_time:.6f} sec")
         return value
 
     return wrapper_timer
@@ -173,9 +171,7 @@ def str_to_bool(input_string: str):
     elif input_string.lower() in ("false", "f", "0"):
         return False
     else:
-        raise argparse.ArgumentTypeError(
-            'Boolean value expected: ("true", "t", "1") or ("false", "f", "0")'
-        )
+        raise argparse.ArgumentTypeError('Boolean value expected: ("true", "t", "1") or ("false", "f", "0")')
 
 
 def str_to_sequence(input_string: str):

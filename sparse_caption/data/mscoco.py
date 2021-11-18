@@ -39,7 +39,7 @@ class MscocoDataset(KarpathyDataset):
             self.data = {
                 "train": self.data["train"] + self.data["val"],
                 "val": self.data["test"],
-                "test": self.get_test2014_split()
+                "test": self.get_test2014_split(),
             }
         else:
             self.data = {
@@ -56,9 +56,7 @@ class MscocoDataset(KarpathyDataset):
                 dest_dir=self.dataset_dir,
                 extract=True,
             )
-            copyfile(
-                src=os.path.join(self.dataset_dir, "annotations", self.ANNOTATION_FILE), dst=annot_fpath
-            )
+            copyfile(src=os.path.join(self.dataset_dir, "annotations", self.ANNOTATION_FILE), dst=annot_fpath)
         self.train_captions_txt_dump()
 
     def get_test2014_split(self):
@@ -66,8 +64,11 @@ class MscocoDataset(KarpathyDataset):
         img_ids = [self.image_filename_to_id(os.path.basename(_)) for _ in img_paths]
         data = [
             {
-                "img_path": p, "img_id": i,
-                "caption": "", "all_captions": [""], "all_gts": [""],
+                "img_path": p,
+                "img_id": i,
+                "caption": "",
+                "all_captions": [""],
+                "all_gts": [""],
             }
             for p, i in zip(img_paths, img_ids)
         ]

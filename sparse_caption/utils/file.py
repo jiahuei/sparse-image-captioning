@@ -69,8 +69,7 @@ def dump_json(path, data, utf8=True, lf_newline=True, **json_kwargs):
     newline = "\n" if lf_newline else None
     if utf8 and json_kwargs.get("ensure_ascii", True):
         logger.warning(
-            f"Opening file handler for `{path}` in UTF-8 mode, "
-            "but `ensure_ascii` is set to True (default) for JSON"
+            f"Opening file handler for `{path}` in UTF-8 mode, " "but `ensure_ascii` is set to True (default) for JSON"
         )
     with open(path, "w", encoding=encoding, newline=newline) as f:
         json.dump(data, f, **json_kwargs)
@@ -122,14 +121,14 @@ def load_pil_image_from_url(url):
 
 
 def get_file(
-        fname,
-        origin,
-        dest_dir,
-        md5_hash=None,
-        file_hash=None,
-        hash_algorithm="auto",
-        extract=False,
-        archive_format="auto",
+    fname,
+    origin,
+    dest_dir,
+    md5_hash=None,
+    file_hash=None,
+    hash_algorithm="auto",
+    extract=False,
+    archive_format="auto",
 ):
     """Downloads a file from a URL if it not already in the cache.
 
@@ -193,11 +192,11 @@ def get_file(
             try:
                 # urlretrieve(origin, fpath, dl_progress)
                 with tqdm(
-                        unit="B",
-                        unit_scale=True,
-                        unit_divisor=1024,
-                        miniters=1,
-                        desc=os.path.basename(fpath),
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    miniters=1,
+                    desc=os.path.basename(fpath),
                 ) as t:
                     urlretrieve(origin, fpath, tqdm_hook(t))
             except HTTPError as e:
@@ -321,6 +320,6 @@ def _extract_archive(file_path, path=".", archive_format="auto"):
 def zip_dir(target_dir, save_dir):
     out = os.path.join(save_dir, os.path.basename(target_dir) + ".zip")
     logger.info(f"Zipping `{target_dir}` into `{out}`")
-    with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for f in list_files(target_dir):
             zf.write(f, f.replace(os.path.dirname(target_dir), "", 1))

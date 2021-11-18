@@ -60,12 +60,8 @@ class BasicCollate:
         images = [self.img_transform(Image.open(_).convert("RGB")) for _ in image_paths]
         images = torch.stack(images, 0)
 
-        input_ids = [
-            torch.as_tensor(self.tokenizer.encode(_, add_bos_eos=True), dtype=torch.int64) for _ in captions
-        ]
-        input_ids = torch.nn.utils.rnn.pad_sequence(
-            input_ids, batch_first=True, padding_value=self.config.pad_token_id
-        )
+        input_ids = [torch.as_tensor(self.tokenizer.encode(_, add_bos_eos=True), dtype=torch.int64) for _ in captions]
+        input_ids = torch.nn.utils.rnn.pad_sequence(input_ids, batch_first=True, padding_value=self.config.pad_token_id)
         assert input_ids[:, 0].eq(self.config.bos_token_id).all().item()
         labels = input_ids[:, 1:]
         labels_len = torch.sum(labels.ne(self.config.pad_token_id), dim=1)
@@ -117,10 +113,7 @@ class UpDownCollate:
 
     def _debug_logging(self, data):
         if logger.isEnabledFor(logging.DEBUG):
-            _batch = "\n".join(
-                f"{k}: {v.size() if isinstance(v, torch.Tensor) else v}"
-                for k, v in data.items()
-            )
+            _batch = "\n".join(f"{k}: {v.size() if isinstance(v, torch.Tensor) else v}" for k, v in data.items())
             logger.debug(f"{self.__class__.__name__}: Batch input: \n{_batch}")
 
     def __call__(self, batch):
@@ -139,10 +132,10 @@ class UpDownCollate:
 
         labels = [
             torch.as_tensor(
-                self.tokenizer.encode(_, add_bos_eos=True, max_seq_length=config.max_seq_length),
-                dtype=torch.int64
+                self.tokenizer.encode(_, add_bos_eos=True, max_seq_length=config.max_seq_length), dtype=torch.int64
             )
-            for gt in all_captions for _ in random.sample(gt, min(config.seq_per_img, len(gt)))
+            for gt in all_captions
+            for _ in random.sample(gt, min(config.seq_per_img, len(gt)))
         ]
         label_masks = [torch.ones(_.shape[0]) for _ in labels]
 
@@ -159,12 +152,10 @@ class UpDownCollate:
 
         data = {
             "att_feats": torch.nn.utils.rnn.pad_sequence(
-                sequence_from_numpy(att_feats), batch_first=True, padding_value=0.
+                sequence_from_numpy(att_feats), batch_first=True, padding_value=0.0
             ),
             "att_masks": att_masks,
-            "seqs": torch.nn.utils.rnn.pad_sequence(
-                sequence_from_numpy(labels), batch_first=True, padding_value=0
-            ),
+            "seqs": torch.nn.utils.rnn.pad_sequence(sequence_from_numpy(labels), batch_first=True, padding_value=0),
             "masks": torch.nn.utils.rnn.pad_sequence(
                 sequence_from_numpy(label_masks), batch_first=True, padding_value=0
             ),
@@ -220,9 +211,7 @@ class ObjectRelationCollate(UpDownCollate):
             self._cache_data(os.path.join(config.input_rel_box_dir, f"{imgid}.npy"), self._get_boxes)
             for imgid in image_ids
         ]
-        data["boxes"] = torch.nn.utils.rnn.pad_sequence(
-            sequence_from_numpy(boxes), batch_first=True, padding_value=0.
-        )
+        data["boxes"] = torch.nn.utils.rnn.pad_sequence(sequence_from_numpy(boxes), batch_first=True, padding_value=0.0)
         self._debug_logging(data)
         return data
 

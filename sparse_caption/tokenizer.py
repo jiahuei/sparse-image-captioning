@@ -97,7 +97,7 @@ class Tokenizer(ABC):
 
     @property
     def vocab_size(self):
-        """ Vocabulary size, including special tokens."""
+        """Vocabulary size, including special tokens."""
         # noinspection PyTypeChecker
         return len(self)
 
@@ -118,20 +118,20 @@ class Tokenizer(ABC):
 
     @abstractmethod
     def encode(
-            self,
-            input_str: str,
-            add_bos_eos: bool = True,
-            max_seq_length: int = 16,
-            sampling=False,
+        self,
+        input_str: str,
+        add_bos_eos: bool = True,
+        max_seq_length: int = 16,
+        sampling=False,
     ) -> List[int]:
         raise NotImplementedError
 
     @abstractmethod
     def encode_tokenized(
-            self,
-            input_list: List[str],
-            add_bos_eos: bool = True,
-            max_seq_length: int = 16,
+        self,
+        input_list: List[str],
+        add_bos_eos: bool = True,
+        max_seq_length: int = 16,
     ) -> List[int]:
         raise NotImplementedError
 
@@ -154,31 +154,31 @@ class Tokenizer(ABC):
     @property
     @abstractmethod
     def bos_token_id(self):
-        """ Id of the beginning of sentence token in the vocabulary."""
+        """Id of the beginning of sentence token in the vocabulary."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def eos_token_id(self):
-        """ Id of the end of sentence token in the vocabulary."""
+        """Id of the end of sentence token in the vocabulary."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def unk_token_id(self):
-        """ Id of the unknown token in the vocabulary."""
+        """Id of the unknown token in the vocabulary."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def pad_token_id(self):
-        """ Id of the padding token in the vocabulary."""
+        """Id of the padding token in the vocabulary."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def mask_token_id(self):
-        """ Id of the mask token in the vocabulary."""
+        """Id of the mask token in the vocabulary."""
         raise NotImplementedError
 
     # @property
@@ -197,27 +197,27 @@ class Tokenizer(ABC):
 
     @property
     def bos_token(self):
-        """ Beginning of sentence token (string)."""
+        """Beginning of sentence token (string)."""
         return self.id_to_token(self.bos_token_id)
 
     @property
     def eos_token(self):
-        """ End of sentence token (string)."""
+        """End of sentence token (string)."""
         return self.id_to_token(self.eos_token_id)
 
     @property
     def unk_token(self):
-        """ Unknown token (string)."""
+        """Unknown token (string)."""
         return self.id_to_token(self.unk_token_id)
 
     @property
     def pad_token(self):
-        """ Padding token (string)."""
+        """Padding token (string)."""
         return self.id_to_token(self.pad_token_id)
 
     @property
     def mask_token(self):
-        """ Mask token (string). E.g. when training a model with masked-language modeling."""
+        """Mask token (string). E.g. when training a model with masked-language modeling."""
         return self.id_to_token(self.mask_token_id)
 
     # @property
@@ -310,21 +310,24 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         setattr(self.config, key, value)
 
     def encode(
-            self,
-            input_str: str,
-            add_bos_eos: bool = True,
-            max_seq_length: int = 16,
-            sampling: bool = False,
+        self,
+        input_str: str,
+        add_bos_eos: bool = True,
+        max_seq_length: int = 16,
+        sampling: bool = False,
     ) -> List[int]:
         if sampling:
             ids = self.processor.encode(
-                input_str, add_bos=add_bos_eos, add_eos=add_bos_eos, out_type=int,
-                enable_sampling=True, alpha=0.1, nbest_size=-1
+                input_str,
+                add_bos=add_bos_eos,
+                add_eos=add_bos_eos,
+                out_type=int,
+                enable_sampling=True,
+                alpha=0.1,
+                nbest_size=-1,
             )
         else:
-            ids = self.processor.encode(
-                input_str, add_bos=add_bos_eos, add_eos=add_bos_eos, out_type=int
-            )
+            ids = self.processor.encode(input_str, add_bos=add_bos_eos, add_eos=add_bos_eos, out_type=int)
         if max_seq_length > 0:
             ids = ids[:max_seq_length]
         # if add_bos_eos:
@@ -332,10 +335,10 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         return ids
 
     def encode_tokenized(
-            self,
-            input_list: List[str],
-            add_bos_eos: bool = True,
-            max_seq_length: int = 16,
+        self,
+        input_list: List[str],
+        add_bos_eos: bool = True,
+        max_seq_length: int = 16,
     ) -> List[int]:
         assert isinstance(input_list, list)
         ids = self.processor.piece_to_id(input_list)
@@ -384,10 +387,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         if os.path.isfile(src_model_path):
             # shutil.copytree(os.path.dirname(src_model_path), self.tokenizer_dir)
             shutil.copy2(src_model_path, self.sp_model_path)
-            shutil.copy2(
-                src_model_path.replace(".model", ".vocab"),
-                self.sp_model_path.replace(".model", ".vocab")
-            )
+            shutil.copy2(src_model_path.replace(".model", ".vocab"), self.sp_model_path.replace(".model", ".vocab"))
             train_file = os.path.join(self.tokenizer_dir, "train_captions.txt")
             if os.path.isfile(train_file):
                 os.remove(train_file)
@@ -469,27 +469,27 @@ class SentencePieceUnigramTokenizer(Tokenizer):
 
     @property
     def bos_token_id(self):
-        """ Id of the beginning of sentence token in the vocabulary."""
+        """Id of the beginning of sentence token in the vocabulary."""
         return self.processor.bos_id()
 
     @property
     def eos_token_id(self):
-        """ Id of the end of sentence token in the vocabulary."""
+        """Id of the end of sentence token in the vocabulary."""
         return self.processor.eos_id()
 
     @property
     def unk_token_id(self):
-        """ Id of the unknown token in the vocabulary."""
+        """Id of the unknown token in the vocabulary."""
         return self.processor.unk_id()
 
     @property
     def pad_token_id(self):
-        """ Id of the padding token in the vocabulary."""
+        """Id of the padding token in the vocabulary."""
         return self.processor.pad_id()
 
     @property
     def mask_token_id(self):
-        """ Id of the mask token in the vocabulary."""
+        """Id of the mask token in the vocabulary."""
         return self.token_to_id("<mask>")
 
     @staticmethod
@@ -585,7 +585,7 @@ class RadixTokenizer(SentencePieceUnigramTokenizer):
 
     def _decode_radix_ids(self, radix_ids: List[int]):
         try:
-            radix_ids = radix_ids[:radix_ids.index(self.eos_token_id)]
+            radix_ids = radix_ids[: radix_ids.index(self.eos_token_id)]
         except ValueError:
             pass
         radix_ids = self.grouper(radix_ids, self.tokens_per_word)
@@ -593,25 +593,23 @@ class RadixTokenizer(SentencePieceUnigramTokenizer):
         return word_ids
 
     def encode(
-            self,
-            input_str: str,
-            add_bos_eos: bool = True,
-            max_seq_length: int = 30,
-            sampling: bool = False,
+        self,
+        input_str: str,
+        add_bos_eos: bool = True,
+        max_seq_length: int = 30,
+        sampling: bool = False,
     ) -> List[int]:
-        assert isinstance(input_str, str), (
-            ""
-        )
+        assert isinstance(input_str, str), ""
         max_seq_length = (max_seq_length - 2) // self.tokens_per_word + 2  # number of word tokens
         ids = super().encode(input_str, add_bos_eos, max_seq_length, sampling)
         ids = self._encode_radix_id(ids)
         return ids
 
     def encode_tokenized(
-            self,
-            input_list: List[str],
-            add_bos_eos: bool = True,
-            max_seq_length: int = 30,
+        self,
+        input_list: List[str],
+        add_bos_eos: bool = True,
+        max_seq_length: int = 30,
     ) -> List[int]:
         assert isinstance(input_list, list)
         ids = self.processor.piece_to_id(input_list)
@@ -650,27 +648,27 @@ class RadixTokenizer(SentencePieceUnigramTokenizer):
 
     @property
     def bos_token_id(self):
-        """ Id of the beginning of sentence token in the vocabulary."""
+        """Id of the beginning of sentence token in the vocabulary."""
         return self.config.radix_base + 1  # Map <bos> to radix_base + 1
 
     @property
     def eos_token_id(self):
-        """ Id of the end of sentence token in the vocabulary."""
+        """Id of the end of sentence token in the vocabulary."""
         return self.config.radix_base + 2  # Map <eos> to radix_base + 2
 
     @property
     def unk_token_id(self):
-        """ Id of the unknown token in the vocabulary."""
+        """Id of the unknown token in the vocabulary."""
         return self.radix_map[-3]
 
     @property
     def pad_token_id(self):
-        """ Id of the padding token in the vocabulary."""
+        """Id of the padding token in the vocabulary."""
         return 0
 
     @property
     def mask_token_id(self):
-        """ Id of the mask token in the vocabulary."""
+        """Id of the mask token in the vocabulary."""
         return self.token_to_id("<mask>")
 
     @staticmethod
@@ -682,7 +680,7 @@ class RadixTokenizer(SentencePieceUnigramTokenizer):
     def decimal_to_base(n, base):
         """Function to convert any base-10 integer to base-N, shifted by 1."""
         if base < 2:
-            raise ValueError('Base cannot be less than 2.')
+            raise ValueError("Base cannot be less than 2.")
         if n < 0:
             sign = -1
             n *= sign

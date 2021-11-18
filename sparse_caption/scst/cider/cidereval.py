@@ -10,13 +10,13 @@ from pydataformat.loadData import LoadData
 from pyciderevalcap.eval import CIDErEvalCap as ciderEval
 
 # load the configuration file
-config = json.loads(open('params.json', 'r').read())
+config = json.loads(open("params.json", "r").read())
 
-pathToData = config['pathToData']
-refName = config['refName']
-candName = config['candName']
-resultFile = config['resultFile']
-df_mode = config['idf']
+pathToData = config["pathToData"]
+refName = config["refName"]
+candName = config["candName"]
+resultFile = config["resultFile"]
+df_mode = config["idf"]
 
 # Print the parameters
 print("Running CIDEr with the following settings")
@@ -37,7 +37,7 @@ gts, res = loadDat.readJson(refName, candName)
 # In[3]:
 
 # calculate cider scores
-scorer = ciderEval(gts, res, 'corpus')
+scorer = ciderEval(gts, res, "corpus")
 # scores: dict of list with key = metric and value = score given to each
 # candidate
 scores = scorer.evaluate()
@@ -48,5 +48,5 @@ scores = scorer.evaluate()
 # scores['CIDEr'] contains CIDEr scores in a list for each candidate
 # scores['CIDErD'] contains CIDEr-D scores in a list for each candidate
 
-with open(resultFile, 'w') as outfile:
+with open(resultFile, "w") as outfile:
     json.dump(scores, outfile)

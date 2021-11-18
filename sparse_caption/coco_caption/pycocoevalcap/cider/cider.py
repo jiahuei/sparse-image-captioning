@@ -10,11 +10,13 @@
 from .cider_scorer import CiderScorer
 import pdb
 
+
 class Cider:
     """
     Main Class to compute the CIDEr metric
 
     """
+
     def __init__(self, test=None, refs=None, n=4, sigma=6.0):
         # set cider to sum over 1 to 4-grams
         self._n = n
@@ -29,7 +31,7 @@ class Cider:
         :return: cider (float) : computed CIDEr score for the corpus
         """
 
-        assert (sorted(gts.keys()) == sorted(res.keys()))
+        assert sorted(gts.keys()) == sorted(res.keys())
         imgIds = sorted(gts.keys())
 
         cider_scorer = CiderScorer(n=self._n, sigma=self._sigma)
@@ -39,10 +41,10 @@ class Cider:
             ref = gts[id]
 
             # Sanity check.
-            assert(type(hypo) is list)
-            assert(len(hypo) == 1)
-            assert(type(ref) is list)
-            assert(len(ref) >= 1)
+            assert type(hypo) is list
+            assert len(hypo) == 1
+            assert type(ref) is list
+            assert len(ref) >= 1
 
             cider_scorer += (hypo[0], ref)
 

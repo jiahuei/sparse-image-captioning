@@ -22,10 +22,10 @@ class CaptionModel(nn.Module):
         super(CaptionModel, self).__init__()
 
     def forward(self, *args, **kwargs):
-        mode = kwargs.get('mode', 'forward')
-        if 'mode' in kwargs:
-            del kwargs['mode']
-        return getattr(self, '_' + mode)(*args, **kwargs)
+        mode = kwargs.get("mode", "forward")
+        if "mode" in kwargs:
+            del kwargs["mode"]
+        return getattr(self, "_" + mode)(*args, **kwargs)
 
     def batch_beam_search(self, init_state, init_logprobs, *args, **kwargs):
 
@@ -78,29 +78,30 @@ class CaptionModel(nn.Module):
             beam_ix = ix // vocab_size  # Nxb which beam
             selected_ix = ix % vocab_size  # Nxb # which world
             state_ix = (beam_ix + torch.arange(batch_size).type_as(beam_ix).unsqueeze(-1) * logprobs.shape[1]).reshape(
-                -1)  # N*b which in Nxb beams
+                -1
+            )  # N*b which in Nxb beams
 
             if t > 0:
                 # gather according to beam_ix
-                assert (beam_seq.gather(1, beam_ix.unsqueeze(-1).expand_as(beam_seq)) ==
-                        beam_seq.reshape(-1, beam_seq.shape[-1])[state_ix].view_as(beam_seq)).all()
+                assert (
+                    beam_seq.gather(1, beam_ix.unsqueeze(-1).expand_as(beam_seq))
+                    == beam_seq.reshape(-1, beam_seq.shape[-1])[state_ix].view_as(beam_seq)
+                ).all()
                 beam_seq = beam_seq.gather(1, beam_ix.unsqueeze(-1).expand_as(beam_seq))
 
-                beam_seq_logprobs = beam_seq_logprobs.gather(1, beam_ix.unsqueeze(-1).unsqueeze(-1).expand_as(
-                    beam_seq_logprobs))
+                beam_seq_logprobs = beam_seq_logprobs.gather(
+                    1, beam_ix.unsqueeze(-1).unsqueeze(-1).expand_as(beam_seq_logprobs)
+                )
 
             beam_seq = torch.cat([beam_seq, selected_ix.unsqueeze(-1)], -1)  # beam_seq Nxbxl
-            beam_logprobs_sum = beam_logprobs_sum.gather(1, beam_ix) + \
-                                logprobs.reshape(batch_size, -1).gather(1, ix)
+            beam_logprobs_sum = beam_logprobs_sum.gather(1, beam_ix) + logprobs.reshape(batch_size, -1).gather(1, ix)
             assert (beam_logprobs_sum == ys).all()
             _tmp_beam_logprobs = unaug_logprobs[state_ix].reshape(batch_size, -1, vocab_size)
             beam_logprobs = unaug_logprobs.reshape(batch_size, -1, vocab_size).gather(
                 1, beam_ix.unsqueeze(-1).expand(-1, -1, vocab_size)
             )  # NxbxV
             assert (_tmp_beam_logprobs == beam_logprobs).all()
-            beam_seq_logprobs = torch.cat([
-                beam_seq_logprobs,
-                beam_logprobs.reshape(batch_size, -1, 1, vocab_size)], 2)
+            beam_seq_logprobs = torch.cat([beam_seq_logprobs, beam_logprobs.reshape(batch_size, -1, 1, vocab_size)], 2)
 
             new_state = [None for _ in state]
             for _ix in range(len(new_state)):
@@ -110,15 +111,15 @@ class CaptionModel(nn.Module):
             return beam_seq, beam_seq_logprobs, beam_logprobs_sum, state
 
         # Start diverse_beam_search
-        opt = kwargs['opt']
-        temperature = opt.get('temperature', 1)  # This should not affect beam search, but will affect dbs
-        beam_size = opt.get('beam_size', 10)
-        group_size = opt.get('group_size', 1)
-        diversity_lambda = opt.get('diversity_lambda', 0.5)
-        decoding_constraint = opt.get('decoding_constraint', 0)
-        remove_bad_endings = opt.get('remove_bad_endings', 0)
-        suppress_UNK = opt.get('suppress_UNK', 0)
-        length_penalty = model_utils.penalty_builder(opt.get('length_penalty', ''))
+        opt = kwargs["opt"]
+        temperature = opt.get("temperature", 1)  # This should not affect beam search, but will affect dbs
+        beam_size = opt.get("beam_size", 10)
+        group_size = opt.get("group_size", 1)
+        diversity_lambda = opt.get("diversity_lambda", 0.5)
+        decoding_constraint = opt.get("decoding_constraint", 0)
+        remove_bad_endings = opt.get("remove_bad_endings", 0)
+        suppress_UNK = opt.get("suppress_UNK", 0)
+        length_penalty = model_utils.penalty_builder(opt.get("length_penalty", ""))
         bdash = beam_size // group_size  # beam per group
 
         batch_size = init_logprobs.shape[0]
@@ -140,9 +141,10 @@ class CaptionModel(nn.Module):
         # Chunk elements in the args
         args = list(args)
         args = model_utils.split_tensors(group_size, args)  # For each arg, turn (Bbg)x... to (Bb)x(g)x...
-        if self.__class__.__name__ == 'AttEnsemble':
-            args = [[[args[j][i][k] for i in range(len(self.models))] for j in range(len(args))] for k in
-                    range(group_size)]  # group_name, arg_name, model_name
+        if self.__class__.__name__ == "AttEnsemble":
+            args = [
+                [[args[j][i][k] for i in range(len(self.models))] for j in range(len(args))] for k in range(group_size)
+            ]  # group_name, arg_name, model_name
         else:
             args = [[args[i][j] for i in range(len(args))] for j in range(group_size)]
 
@@ -153,13 +155,18 @@ class CaptionModel(nn.Module):
                     logprobs = logprobs_table[divm]
                     # suppress previous word
                     if decoding_constraint and t - divm > 0:
-                        logprobs.scatter_(1, beam_seq_table[divm][:, :, t - divm - 1].reshape(-1, 1).to(device),
-                                          float('-inf'))
+                        logprobs.scatter_(
+                            1, beam_seq_table[divm][:, :, t - divm - 1].reshape(-1, 1).to(device), float("-inf")
+                        )
                     if remove_bad_endings and t - divm > 0:
-                        logprobs[torch.from_numpy(np.isin(beam_seq_table[divm][:, :, t - divm - 1].cpu().numpy(),
-                                                          self.bad_endings_ix)).reshape(-1), 0] = float('-inf')
+                        logprobs[
+                            torch.from_numpy(
+                                np.isin(beam_seq_table[divm][:, :, t - divm - 1].cpu().numpy(), self.bad_endings_ix)
+                            ).reshape(-1),
+                            0,
+                        ] = float("-inf")
                     # suppress UNK tokens in the decoding
-                    if suppress_UNK and hasattr(self, 'vocab') and self.vocab[str(logprobs.size(1) - 1)] == 'UNK':
+                    if suppress_UNK and hasattr(self, "vocab") and self.vocab[str(logprobs.size(1) - 1)] == "UNK":
                         logprobs[:, logprobs.size(1) - 1] = logprobs[:, logprobs.size(1) - 1] - 1000
                     # diversity is added here
                     # the function directly modifies the logprobs values and hence, we need to return
@@ -168,17 +175,21 @@ class CaptionModel(nn.Module):
                     logprobs, unaug_logprobs = add_diversity(beam_seq_table, logprobs, t, divm, diversity_lambda, bdash)
 
                     # infer new beams
-                    beam_seq_table[divm], \
-                    beam_seq_logprobs_table[divm], \
-                    beam_logprobs_sum_table[divm], \
-                    state_table[divm] = beam_step(logprobs,
-                                                  unaug_logprobs,
-                                                  bdash,
-                                                  t - divm,
-                                                  beam_seq_table[divm],
-                                                  beam_seq_logprobs_table[divm],
-                                                  beam_logprobs_sum_table[divm],
-                                                  state_table[divm])
+                    (
+                        beam_seq_table[divm],
+                        beam_seq_logprobs_table[divm],
+                        beam_logprobs_sum_table[divm],
+                        state_table[divm],
+                    ) = beam_step(
+                        logprobs,
+                        unaug_logprobs,
+                        bdash,
+                        t - divm,
+                        beam_seq_table[divm],
+                        beam_seq_logprobs_table[divm],
+                        beam_logprobs_sum_table[divm],
+                        state_table[divm],
+                    )
 
                     # if time's up... or if end token is reached then copy beams
                     for b in range(batch_size):
@@ -189,34 +200,37 @@ class CaptionModel(nn.Module):
                         for vix in range(bdash):
                             if is_end[vix]:
                                 final_beam = {
-                                    'seq': beam_seq_table[divm][b, vix].clone(),
-                                    'logps': beam_seq_logprobs_table[divm][b, vix].clone(),
-                                    'unaug_p': beam_seq_logprobs_table[divm][b, vix].sum().item(),
-                                    'p': beam_logprobs_sum_table[divm][b, vix].item()
+                                    "seq": beam_seq_table[divm][b, vix].clone(),
+                                    "logps": beam_seq_logprobs_table[divm][b, vix].clone(),
+                                    "unaug_p": beam_seq_logprobs_table[divm][b, vix].sum().item(),
+                                    "p": beam_logprobs_sum_table[divm][b, vix].item(),
                                 }
-                                final_beam['p'] = length_penalty(t - divm + 1, final_beam['p'])
+                                final_beam["p"] = length_penalty(t - divm + 1, final_beam["p"])
                                 done_beams_table[b][divm].append(final_beam)
                         beam_logprobs_sum_table[divm][b, is_end] -= 1000
 
                     # move the current group one step forward in time
 
                     it = beam_seq_table[divm][:, :, t - divm].reshape(-1).to(logprobs.device)
-                    logprobs_table[divm], state_table[divm] = self.get_logprobs_state(it, *(
-                            args[divm] + [state_table[divm]]))
+                    logprobs_table[divm], state_table[divm] = self.get_logprobs_state(
+                        it, *(args[divm] + [state_table[divm]])
+                    )
                     logprobs_table[divm] = F.log_softmax(logprobs_table[divm] / temperature, dim=-1)
 
         # all beams are sorted by their log-probabilities
-        done_beams_table = [[sorted(done_beams_table[b][i], key=lambda x: -x['p'])[:bdash] for i in range(group_size)]
-                            for b in range(batch_size)]
+        done_beams_table = [
+            [sorted(done_beams_table[b][i], key=lambda x: -x["p"])[:bdash] for i in range(group_size)]
+            for b in range(batch_size)
+        ]
         done_beams = [sum(_, []) for _ in done_beams_table]
         return done_beams
 
     @staticmethod
     def sample_next_word(logprobs, sample_method, temperature):
-        if sample_method == 'greedy':
+        if sample_method == "greedy":
             sample_logprobs, it = torch.max(logprobs.data, 1)
             it = it.view(-1).long()
-        elif sample_method == 'gumbel':  # gumbel softmax
+        elif sample_method == "gumbel":  # gumbel softmax
             # ref: https://gist.github.com/yzh119/fd2146d2aeb329d067568a493b20172f
             def sample_gumbel(shape, eps=1e-20):
                 U = torch.rand(shape).to(logprobs.device)
@@ -231,7 +245,7 @@ class CaptionModel(nn.Module):
             sample_logprobs = logprobs.gather(1, it.unsqueeze(1))  # gather the logprobs at sampled positions
         else:
             logprobs = logprobs / temperature
-            if sample_method.startswith('top'):  # topk sampling
+            if sample_method.startswith("top"):  # topk sampling
                 top_num = float(sample_method[3:])
                 if 0 < top_num < 1:
                     # nucleus sampling from # The Curious Case of Neural Text Degeneration
@@ -245,7 +259,7 @@ class CaptionModel(nn.Module):
                     logprobs.scatter_(1, sorted_indices, sorted_probs.log())
                 else:
                     the_k = int(top_num)
-                    tmp = torch.empty_like(logprobs).fill_(float('-inf'))
+                    tmp = torch.empty_like(logprobs).fill_(float("-inf"))
                     topk, indices = torch.topk(logprobs, the_k, dim=1)
                     tmp = tmp.scatter(1, indices, topk)
                     logprobs = tmp

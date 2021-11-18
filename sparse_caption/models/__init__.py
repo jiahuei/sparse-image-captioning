@@ -50,10 +50,6 @@ def get_model(name: str) -> Any:
 curr_dir = os.path.dirname(__file__)
 for file in os.listdir(curr_dir):
     path = os.path.join(curr_dir, file)
-    if (
-            not file.startswith("_")
-            and not file.startswith(".")
-            and (file.endswith(".py") or os.path.isdir(path))
-    ):
+    if not file.startswith("_") and not file.startswith(".") and (file.endswith(".py") or os.path.isdir(path)):
         module_name = file[: file.find(".py")] if file.endswith(".py") else file
         module = importlib.import_module(f"sparse_caption.models.{module_name}")

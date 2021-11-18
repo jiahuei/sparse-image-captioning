@@ -18,10 +18,16 @@ from typing import Optional, Union
 from copy import deepcopy
 from . import register_model
 from .transformer import (
-    CachedMultiHeadedAttention, PositionwiseFeedForward, PositionalEncoding,
-    InputEmbedding as Embeddings, OutputEmbedding as Generator,
-    LayerNorm, SublayerConnection,
-    Decoder, DecoderLayer, CachedTransformerBase
+    CachedMultiHeadedAttention,
+    PositionwiseFeedForward,
+    PositionalEncoding,
+    InputEmbedding as Embeddings,
+    OutputEmbedding as Generator,
+    LayerNorm,
+    SublayerConnection,
+    Decoder,
+    DecoderLayer,
+    CachedTransformerBase,
 )
 from ..data.collate import ObjectRelationCollate
 from ..utils.model_utils import repeat_tensors, pack_wrapper, clones
@@ -148,8 +154,7 @@ class BoxMultiHeadedAttention(nn.Module):
 
         # tensor with entries R_mn given by a hardcoded embedding of the relative position between bbox_m and bbox_n
         relative_geometry_embeddings = self.BoxRelationalEmbedding(
-            input_box,
-            trigonometric_embedding=self.trigonometric_embedding
+            input_box, trigonometric_embedding=self.trigonometric_embedding
         )
         flatten_relative_geometry_embeddings = relative_geometry_embeddings.view(-1, self.dim_g)
 
@@ -178,9 +183,7 @@ class BoxMultiHeadedAttention(nn.Module):
         relative_geometry_weights = F.relu(relative_geometry_weights)
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, box_attn = self.box_attention(
-            query, key, value, relative_geometry_weights, mask=mask, dropout=self.dropout
-        )
+        x, box_attn = self.box_attention(query, key, value, relative_geometry_weights, mask=mask, dropout=self.dropout)
 
         # 3) "Concat" using a view and apply a final linear.
         x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
@@ -211,8 +214,8 @@ class BoxMultiHeadedAttention(nn.Module):
 
         cx = (x_min + x_max) * 0.5
         cy = (y_min + y_max) * 0.5
-        w = (x_max - x_min) + 1.
-        h = (y_max - y_min) + 1.
+        w = (x_max - x_min) + 1.0
+        h = (y_max - y_min) + 1.0
 
         # cx.view(1,-1) transposes the vector cx, and so dim(delta_x) = (dim(cx), dim(cx))
         delta_x = cx - cx.view(batch_size, 1, -1)
@@ -237,11 +240,11 @@ class BoxMultiHeadedAttention(nn.Module):
         if trigonometric_embedding:
             feat_range = torch.arange(dim_g / 8, device=f_g.device)
             dim_mat = feat_range / (dim_g / 8)
-            dim_mat = 1. / (torch.pow(wave_len, dim_mat))
+            dim_mat = 1.0 / (torch.pow(wave_len, dim_mat))
 
             dim_mat = dim_mat.view(1, 1, 1, -1)
             position_mat = position_mat.view(batch_size, matrix_size[1], matrix_size[2], 4, -1)
-            position_mat = 100. * position_mat
+            position_mat = 100.0 * position_mat
 
             mul_mat = position_mat * dim_mat
             mul_mat = mul_mat.view(batch_size, matrix_size[1], matrix_size[2], -1)
@@ -312,23 +315,21 @@ class RelationTransformerModel(CachedTransformerBase):
         position = PositionalEncoding(self.d_model, dropout)
         model = EncoderDecoder(
             Encoder(
-                EncoderLayer(
-                    self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout
-                ), self.num_layers, share_layer=self.share_layer_encoder
+                EncoderLayer(self.d_model, deepcopy(bbox_attn), deepcopy(ff), dropout),
+                self.num_layers,
+                share_layer=self.share_layer_encoder,
             ),
             Decoder(
-                DecoderLayer(
-                    self.d_model, self_attn, attn, deepcopy(ff), dropout
-                ), self.num_layers, share_layer=self.share_layer_decoder
+                DecoderLayer(self.d_model, self_attn, attn, deepcopy(ff), dropout),
+                self.num_layers,
+                share_layer=self.share_layer_decoder,
             ),
             lambda x: x,  # nn.Sequential(Embeddings(self.d_model, src_vocab), deepcopy(position)),
             nn.Sequential(Embeddings(self.d_model, self.vocab_size), deepcopy(position)),
-            Generator(self.d_model, self.vocab_size)
+            Generator(self.d_model, self.vocab_size),
         )
         self.att_embed = nn.Sequential(
-            nn.Linear(self.att_feat_size, self.d_model),
-            nn.ReLU(),
-            nn.Dropout(self.drop_prob_src)
+            nn.Linear(self.att_feat_size, self.d_model), nn.ReLU(), nn.Dropout(self.drop_prob_src)
         )
         # This was important from their code.
         # Initialize parameters with Glorot / fan_avg.
@@ -338,11 +339,11 @@ class RelationTransformerModel(CachedTransformerBase):
         self.model = model
 
     def _prepare_feature(
-            self,
-            att_feats: Tensor,
-            att_masks: Optional[Tensor] = None,
-            boxes: Optional[Tensor] = None,
-            seq: Optional[Tensor] = None
+        self,
+        att_feats: Tensor,
+        att_masks: Optional[Tensor] = None,
+        boxes: Optional[Tensor] = None,
+        seq: Optional[Tensor] = None,
     ):
 
         att_feats, att_masks = self.clip_att(att_feats, att_masks)
@@ -380,9 +381,7 @@ class RelationTransformerModel(CachedTransformerBase):
         else:
             # Retrieve reordered cache from state, and update them
             self._update_caches(state[1:])
-        out = self.model.decode(
-            memory, mask, ys, self.subsequent_mask(ys.size(1)).to(memory.device)
-        )
+        out = self.model.decode(memory, mask, ys, self.subsequent_mask(ys.size(1)).to(memory.device))
         logprobs = self.model.generator(out[:, -1])
         # Add layer cache into state list, transposed so that beam_step can reorder them
         return logprobs, [ys.unsqueeze(0)] + self._retrieve_caches()

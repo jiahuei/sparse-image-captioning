@@ -20,14 +20,10 @@ class CaptionScorer(object):
     interface.
     """
 
-    def __init__(
-            self, path_to_cached_tokens: str,
-            cider_weight: float = 1.0,
-            bleu_weight: Union[List, Tuple] = None
-    ):
+    def __init__(self, path_to_cached_tokens: str, cider_weight: float = 1.0, bleu_weight: Union[List, Tuple] = None):
         assert isinstance(cider_weight, float)
         if bleu_weight is None:
-            bleu_weight = [0.] * 4
+            bleu_weight = [0.0] * 4
         else:
             assert isinstance(bleu_weight, (list, tuple))
         assert len(bleu_weight) == 4
@@ -45,8 +41,7 @@ class CaptionScorer(object):
         if same_sub_len:
             lens = set(len(_) for _ in inputs)
             assert len(lens) == 1, (
-                f"Each image should have the same number of captions."
-                f"Received captions per image: {lens}"
+                f"Each image should have the same number of captions." f"Received captions per image: {lens}"
             )
 
     def __call__(self, refs, sample, greedy=None):
@@ -58,14 +53,12 @@ class CaptionScorer(object):
         self.input_check(refs, same_sub_len=False)
         self.input_check(sample)
         assert len(refs) == len(sample), (
-            f"`ref` and `sample` have different lengths: "
-            f"refs = {len(refs)}, sample = {len(sample)}"
+            f"`ref` and `sample` have different lengths: " f"refs = {len(refs)}, sample = {len(sample)}"
         )
         if greedy:
             self.input_check(greedy)
             assert len(sample) == len(greedy), (
-                f"`sample` and `greedy` have different lengths: "
-                f"sample = {len(sample)}, greedy = {len(greedy)}"
+                f"`sample` and `greedy` have different lengths: " f"sample = {len(sample)}, greedy = {len(greedy)}"
             )
         else:
             assert greedy is None, "`greedy` should be one of: None, list or tuple."
@@ -81,7 +74,7 @@ class CaptionScorer(object):
             item_id += 1
         for i in range(len(sample)):
             for j in range(num_sample_per_img):
-                gts[item_id], res[item_id] = refs[i], sample[i][j: j + 1]
+                gts[item_id], res[item_id] = refs[i], sample[i][j : j + 1]
                 item_id += 1
         num_items = item_id
         assert (len(sample) * num_sample_per_img + num_greedy) == num_items
@@ -107,9 +100,7 @@ class CaptionScorer(object):
         sc_sample = scores[num_greedy:]
 
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                f"{self.__class__.__name__}: Captions: greedy = `{greedy}`    sampled = `{sample}`"
-            )
+            logger.debug(f"{self.__class__.__name__}: Captions: greedy = `{greedy}`    sampled = `{sample}`")
             logger.debug(
                 f"{self.__class__.__name__}: "
                 f"Average scores: greedy = `{sc_greedy.mean()}`    sampled = `{sc_sample.mean()}`"
