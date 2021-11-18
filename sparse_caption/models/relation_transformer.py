@@ -14,18 +14,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 from argparse import ArgumentParser, _ArgumentGroup
-from typing import Optional, Union, Dict
+from typing import Optional, Union
 from copy import deepcopy
-from models import register_model
-from models.transformer import (
+from . import register_model
+from .transformer import (
     CachedMultiHeadedAttention, PositionwiseFeedForward, PositionalEncoding,
     InputEmbedding as Embeddings, OutputEmbedding as Generator,
     LayerNorm, SublayerConnection,
     Decoder, DecoderLayer, CachedTransformerBase
 )
-from data.collate import ObjectRelationCollate
-from utils.model_utils import repeat_tensors, pack_wrapper, clones
-from utils.misc import str_to_bool
+from ..data.collate import ObjectRelationCollate
+from ..utils.model_utils import repeat_tensors, pack_wrapper, clones
 
 logger = logging.getLogger(__name__)
 

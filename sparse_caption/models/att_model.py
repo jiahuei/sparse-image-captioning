@@ -14,13 +14,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from argparse import ArgumentParser, _ArgumentGroup
-from typing import Union, Dict
+from typing import Union
 from functools import reduce
-from models import register_model
-from models.caption_model import CaptionModel
-from data.collate import AttCollate
-from utils.model_utils import repeat_tensors, pack_wrapper
-from tokenizer import Tokenizer
+from . import register_model
+from .caption_model import CaptionModel
+from ..data.collate import AttCollate
+from ..utils.model_utils import repeat_tensors, pack_wrapper
+from ..tokenizer import Tokenizer
 
 bad_endings = [
     'a', 'an', 'the', 'in', 'for', 'at', 'of', 'with', 'before', 'after', 'on', 'upon', 'near', 'to', 'is',

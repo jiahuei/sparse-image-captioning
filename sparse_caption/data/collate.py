@@ -6,7 +6,6 @@ Created on 21 Apr 2020 22:25:24
 
 import logging
 import os
-import json
 import random
 import numpy as np
 import multiprocessing.managers as mp
@@ -15,11 +14,11 @@ import torchvision.transforms as transforms
 from argparse import ArgumentParser, _ArgumentGroup
 from typing import Union, Optional, Dict, List
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from torchvision.transforms import Compose
-from utils.model_utils import sequence_from_numpy
-from utils.misc import get_memory_info
-from tokenizer import Tokenizer
+from ..utils.model_utils import sequence_from_numpy
+from ..utils.misc import get_memory_info
+from ..tokenizer import Tokenizer
 
 logger = logging.getLogger(__name__)
 

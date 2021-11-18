@@ -5,21 +5,17 @@ Created on 08 Jan 2021 17:39:15
 """
 import unittest
 import os
-from copy import deepcopy
-from opts import parse_opt
-from utils.config import Config
-from utils.misc import BASE_DIR
-
-TEST_DATA_DIR = os.path.join(BASE_DIR, "test_data")
+from sparse_caption.opts import parse_opt
+from sparse_caption.utils.config import Config
+from .paths import TEST_DIRPATH, TEST_DATA_DIRPATH
 
 
 class TestTrain(unittest.TestCase):
-
     def setUp(self) -> None:
         self.common_args = (
             "--dataset mscoco_testing "
-            f"--dataset_dir {TEST_DATA_DIR} "
-            f"--log_dir {os.path.join(BASE_DIR, 'experiments')} "
+            f"--dataset_dir {TEST_DATA_DIRPATH} "
+            f"--log_dir {os.path.join(TEST_DIRPATH, 'experiments')} "
             "--learning_rate 0.01 "
             "--optim_epsilon 0.01 "
             "--batch_size 2 "
@@ -57,30 +53,16 @@ class TestTrain(unittest.TestCase):
         )
         self.prune_args = dict(
             supermask=(
-                "--prune_type supermask "
-                "--prune_sparsity_target 0.9 "
-                "--prune_supermask_sparsity_weight 120 "
+                "--prune_type supermask " "--prune_sparsity_target 0.9 " "--prune_supermask_sparsity_weight 120 "
             ),
             # mag_grad_uniform=(
             #     "--prune_type mag_grad_uniform "
             #     "--prune_sparsity_target 0.9 "
             # ),
-            snip=(
-                "--prune_type snip "
-                "--prune_sparsity_target 0.9 "
-            ),
-            mag_blind=(
-                "--prune_type mag_blind "
-                "--prune_sparsity_target 0.9 "
-            ),
-            mag_uniform=(
-                "--prune_type mag_uniform "
-                "--prune_sparsity_target 0.9 "
-            ),
-            mag_dist=(
-                "--prune_type mag_dist "
-                "--prune_sparsity_target 0.9 "
-            ),
+            snip=("--prune_type snip " "--prune_sparsity_target 0.9 "),
+            mag_blind=("--prune_type mag_blind " "--prune_sparsity_target 0.9 "),
+            mag_uniform=("--prune_type mag_uniform " "--prune_sparsity_target 0.9 "),
+            mag_dist=("--prune_type mag_dist " "--prune_sparsity_target 0.9 "),
         )
 
     def _test_model(self, config, main_fn):
@@ -91,12 +73,13 @@ class TestTrain(unittest.TestCase):
             except FileNotFoundError as e:
                 if not ("model_best.pth" in str(e) or "model_best_pruned_sparse.pth" in str(e)):
                     self.fail(f"Training failed: {name}")
-            except:
+            except Exception:
                 self.fail(f"Training failed: {name}")
 
     # noinspection PyTypeChecker
     def test_train_regular(self):
-        from train_transformer import main
+        from scripts.train_transformer import main
+
         for model_args in self.model_args.values():
             args = self.common_args + model_args
             print(args)
@@ -105,7 +88,8 @@ class TestTrain(unittest.TestCase):
 
     # noinspection PyTypeChecker
     def test_train_prune(self):
-        from train_n_prune_transformer import main
+        from scripts.train_n_prune_transformer import main
+
         for model, model_args in self.model_args.items():
             if model == "transformer":
                 continue
@@ -118,5 +102,5 @@ class TestTrain(unittest.TestCase):
                 self._test_model(Config(**vars(args)), main)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -7,7 +7,6 @@ import os
 import logging
 import importlib
 from typing import Any
-from torch import nn
 
 logger = logging.getLogger(__name__)
 
@@ -57,21 +56,4 @@ for file in os.listdir(curr_dir):
             and (file.endswith(".py") or os.path.isdir(path))
     ):
         module_name = file[: file.find(".py")] if file.endswith(".py") else file
-        module = importlib.import_module("models." + module_name)
-
-# def get_model(name, prune_model=False):
-#     model_name = name.lower()
-#     if model_name == "relation_transformer":
-#         if prune_model:
-#             from models.relation_transformer_prune import RelationTransformerModel
-#         else:
-#             from models.relation_transformer import RelationTransformerModel
-#         return RelationTransformerModel
-#     elif model_name == "up_down_lstm":
-#         if prune_model:
-#             from models.att_model_prune import UpDownModel
-#         else:
-#             from models.att_model import UpDownModel
-#         return UpDownModel
-#     else:
-#         raise Exception(f"Bad option: {name}")
+        module = importlib.import_module(f"sparse_caption.models.{module_name}")

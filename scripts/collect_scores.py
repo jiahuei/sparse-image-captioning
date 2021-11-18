@@ -19,8 +19,8 @@ from copy import deepcopy
 from time import localtime, strftime
 from decimal import Decimal
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
-from utils.file import list_files
-from utils.config import Config
+from sparse_caption.utils.file import list_files
+from sparse_caption.utils.config import Config
 
 
 class Score:

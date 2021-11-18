@@ -9,7 +9,7 @@ import torch
 from utils.config import Config
 from utils.misc import configure_logging, replace_from_right
 from utils.model_utils import densify_state_dict
-from utils.lightning import LightningModule
+from utils.training import TrainingModule
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ def main(args):
         split = "test"
     else:
         raise ValueError(f"One of `beam_size_val` or `beam_size_test` must be > 0")
-    return LightningModule.eval_model(state_dict=state_dict, config=config, split=split)
+    return TrainingModule.eval_model(state_dict=state_dict, config=config, split=split)
 
 
 if __name__ == "__main__":

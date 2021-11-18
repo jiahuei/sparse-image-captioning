@@ -7,9 +7,9 @@ python -m unittest coco_caption/test_coco_caption.py
 """
 import unittest
 import os
-from coco_caption.eval import evaluate_caption_json
-from data.mscoco import MscocoDataset
-from utils.misc import BASE_DIR
+from sparse_caption.coco_caption.eval import evaluate_caption_json
+from sparse_caption.data.mscoco import MscocoDataset
+from .paths import TEST_DATA_DIRPATH
 
 
 class TestCocoCaption(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestCocoCaption(unittest.TestCase):
 
     def test_mscoco_score(self):
         scores, scores_detailed, coco_eval = evaluate_caption_json(
-            res_file=os.path.join(BASE_DIR, "test_data", "caption_00156000.json"),
+            res_file=os.path.join(TEST_DATA_DIRPATH, "caption_00156000.json"),
             ann_file=MscocoDataset.ANNOTATION_FILE
         )
         scores = [round(scores[_], 3) for _ in self.METRICS]

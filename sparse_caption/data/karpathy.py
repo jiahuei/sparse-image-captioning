@@ -8,16 +8,13 @@ import os
 import json
 import random
 from tqdm import tqdm
-from typing import Callable, Tuple, Iterable, Union
+from typing import Tuple, Iterable, Union
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from argparse import ArgumentParser, _ArgumentGroup
-from utils import (
-    misc as misc_utils,
-    file as file_utils,
-)
-from data.collate import ListDataset
-from utils.config import Config
+from .collate import ListDataset
+from ..utils import misc as misc_utils, file as file_utils
+from ..utils.config import Config
 
 # from coco_caption.pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 
@@ -59,10 +56,6 @@ class KarpathyDataset(ABC):
         if split not in ("train", "val", "test"):
             error_mssg = f"Invalid split `{split}`, please pass in one of ('train', 'val', 'test')."
             raise ValueError(error_mssg)
-        is_training = split == "train"
-        # if is_training and generation_mode:
-        #     error_mssg = "Training and generation mode cannot both be `True`."
-        #     raise ValueError(error_mssg)
 
         if generation_mode:
             # Avoid repeated image since most datasets have > 1 captions per image
@@ -87,7 +80,6 @@ class KarpathyDataset(ABC):
         return ListDataset(data)
 
     def download_and_process_karpathy_json(self):
-        config = self.config
         # Read Karpathy's caption JSON file
         raw_json = os.path.join(self.dataset_dir, self.RAW_JSON_FILE)
         if os.path.isfile(raw_json):
@@ -117,8 +109,7 @@ class KarpathyDataset(ABC):
             # For SCST: coco_caption scorers require tokenized GT captions
             all_gts = [" ".join(sent["tokens"]) for sent in d["sentences"]]
             all_captions = [
-                sent["raw"] if self.config.retokenize_captions else " ".join(sent["tokens"])
-                for sent in d["sentences"]
+                sent["raw"] if self.config.retokenize_captions else " ".join(sent["tokens"]) for sent in d["sentences"]
             ]
             for cap, sent in zip(all_captions, d["sentences"]):
                 tmp_dict = {
@@ -145,13 +136,11 @@ class KarpathyDataset(ABC):
     def random_image_check(self, num_samples: int = 5) -> None:
         # Randomly check some image files
         passed = all(
-            os.path.isfile(curr_data["img_path"])
-            for curr_data in random.sample(self.data["train"], num_samples)
+            os.path.isfile(curr_data["img_path"]) for curr_data in random.sample(self.data["train"], num_samples)
         )
         if not passed:
             raise FileNotFoundError(
-                "One or more training images are missing. "
-                "Perhaps you need to re-download the dataset images."
+                "One or more training images are missing. " "Perhaps you need to re-download the dataset images."
             )
 
     def train_captions_txt_dump(self) -> None:
@@ -184,7 +173,7 @@ class KarpathyDataset(ABC):
             logger.debug(f"{self.__class__.__name__}: Found annotation file at `{json_fpath}`.")
             return
         logger.debug(f"{self.__class__.__name__}: Generating COCO-style annotation file at `{json_fpath}`.")
-        annot = dict(images=[], annotations=[], info="", type="captions", licenses="", )
+        annot = dict(images=[], annotations=[], info="", type="captions", licenses="",)
         for split in ("val", "test"):
             assert split in self.data, f"Split `{split}` not found in `self.data`."
             for d in self.data[split]:
@@ -195,9 +184,7 @@ class KarpathyDataset(ABC):
         with open(json_fpath, "w") as f:
             json.dump(annot, f)
 
-    def coco_caption_json_dump(
-            self, img_fname_caption_pair: Iterable[Tuple[str, ...]], output_fpath: str,
-    ) -> None:
+    def coco_caption_json_dump(self, img_fname_caption_pair: Iterable[Tuple[str, ...]], output_fpath: str,) -> None:
         """
         Takes in `[(img_fname_str, caption_str), ...]` as `img_fname_caption_pair`,
         and saves the results as a JSON file compatible with `coco_caption` evaluation format.
@@ -209,9 +196,7 @@ class KarpathyDataset(ABC):
             The file path of the JSON file.
         """
         assert isinstance(img_fname_caption_pair, Iterable)
-        assert output_fpath.endswith(
-            ".json"
-        ), f"`output_fpath` should end with `.json`, saw `{output_fpath}` instead."
+        assert output_fpath.endswith(".json"), f"`output_fpath` should end with `.json`, saw `{output_fpath}` instead."
         # Get image IDs
         coco_json = []
         for img_fname, caption in img_fname_caption_pair:

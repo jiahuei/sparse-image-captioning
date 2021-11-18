@@ -12,13 +12,10 @@ Copyright (c) Facebook, Inc. and its affiliates.
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 """
-
-import os
 import logging
 import importlib
 from typing import Type
-from data.karpathy import KarpathyDataset
-from data.collate import BasicCollate
+from .karpathy import KarpathyDataset
 
 logger = logging.getLogger(__name__)
 
@@ -70,4 +67,4 @@ for file in os.listdir(curr_dir):
             and (file.endswith(".py") or os.path.isdir(path))
     ):
         module_name = file[: file.find(".py")] if file.endswith(".py") else file
-        module = importlib.import_module("data." + module_name)
+        module = importlib.import_module(f"sparse_caption.data.{module_name}")

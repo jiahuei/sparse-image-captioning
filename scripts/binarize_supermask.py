@@ -6,10 +6,10 @@ Created on 29 Oct 2020 19:28:34
 import os
 import logging
 import torch
-from pruning import prune
-from pruning.sampler import rounding_sigmoid
-from utils.config import Config
-from utils.misc import configure_logging
+from sparse_caption.pruning import prune
+from sparse_caption.pruning.sampler import rounding_sigmoid
+from sparse_caption.utils.config import Config
+from sparse_caption.utils.misc import configure_logging
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 logger = logging.getLogger(__name__)

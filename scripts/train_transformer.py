@@ -6,17 +6,17 @@ Created on 28 Aug 2020 17:34:10
 import os
 import torch
 from time import time
-from opts import parse_opt
-from utils import losses, optim
-from utils.config import Config
-from utils.misc import configure_logging
-from utils.model_utils import set_seed, map_to_cuda
-from utils.file import dump_json
-from utils.lightning import LightningModule
+from sparse_caption.opts import parse_opt
+from sparse_caption.utils import losses, optim
+from sparse_caption.utils.config import Config
+from sparse_caption.utils.misc import configure_logging
+from sparse_caption.utils.model_utils import set_seed, map_to_cuda
+from sparse_caption.utils.file import dump_json
+from sparse_caption.utils.training import TrainingModule
 
 
 # noinspection PyAttributeOutsideInit
-class CaptioningModel(LightningModule):
+class CaptioningModel(TrainingModule):
 
     def train(self):
         self.prepare()

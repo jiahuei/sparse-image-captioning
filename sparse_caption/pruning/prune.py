@@ -9,8 +9,8 @@ import torch
 import math
 from argparse import ArgumentParser, _ArgumentGroup
 from typing import Callable, Union, Dict
-from pruning.sampler import rounding_sigmoid
-from utils.model_utils import count_nonzero, densify_state_dict
+from .sampler import rounding_sigmoid
+from ..utils.model_utils import count_nonzero, densify_state_dict
 
 logger = logging.getLogger(__name__)
 

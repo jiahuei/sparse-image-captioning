@@ -10,9 +10,9 @@ import torch
 from copy import deepcopy
 from torch import nn, optim
 from torch.nn import functional as F
-from pruning import prune
-from pruning.masked_layer import MaskedLinear, MaskedLSTMCell, MaskedEmbedding
-from utils.model_utils import set_seed, map_to_cuda
+from sparse_caption.pruning import prune
+from sparse_caption.pruning.masked_layer import MaskedLinear, MaskedLSTMCell, MaskedEmbedding
+from sparse_caption.utils.model_utils import set_seed, map_to_cuda
 
 
 # noinspection PyAbstractClass

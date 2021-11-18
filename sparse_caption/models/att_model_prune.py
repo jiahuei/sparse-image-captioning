@@ -5,13 +5,12 @@ Created on 14 Oct 2020 14:34:47
 """
 import torch.nn as nn
 from argparse import ArgumentParser, _ArgumentGroup
-from typing import Union, Dict
+from typing import Union
 from functools import reduce
-from models import register_model
-from models import att_model
-from tokenizer import Tokenizer
-from pruning.prune import PruningMixin
-from pruning.masked_layer import MaskedLinear, MaskedEmbedding, MaskedLSTMCell
+from . import register_model, att_model
+from ..tokenizer import Tokenizer
+from ..pruning.prune import PruningMixin
+from ..pruning.masked_layer import MaskedLinear, MaskedEmbedding, MaskedLSTMCell
 
 
 # noinspection PyAbstractClass,PyAttributeOutsideInit

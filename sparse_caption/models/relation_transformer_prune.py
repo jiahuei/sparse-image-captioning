@@ -4,16 +4,15 @@ Created on 09 Oct 2020 17:27:20
 @author: jiahuei
 """
 import logging
-import torch
 import torch.nn as nn
 from copy import deepcopy
 from argparse import ArgumentParser, _ArgumentGroup
-from typing import Optional, Union
-from models import register_model
-from models import relation_transformer as rtrans
-from utils.model_utils import clones
-from pruning.masked_layer import MaskedLinear, MaskedEmbedding
-from pruning.prune import PruningMixin
+from typing import Union
+from . import register_model
+from . import relation_transformer as rtrans
+from ..utils.model_utils import clones
+from ..pruning.masked_layer import MaskedLinear, MaskedEmbedding
+from ..pruning.prune import PruningMixin
 
 logger = logging.getLogger(__name__)
 

@@ -9,9 +9,8 @@ import logging
 from typing import Union
 from shutil import copyfile
 from argparse import ArgumentParser, _ArgumentGroup
-# from torchvision.transforms import Compose
-from data import KarpathyDataset, register_dataset
-from utils import file as file_utils
+from . import KarpathyDataset, register_dataset
+from ..utils import file as file_utils
 
 logger = logging.getLogger(__name__)
 

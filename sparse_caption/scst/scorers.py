@@ -7,14 +7,10 @@ Created on Tue Apr  2 17:57:43 2019
 import logging
 import numpy as np
 from typing import Union, Tuple, List
-from coco_caption.pycocoevalcap.bleu.bleu import Bleu
-from coco_caption.pycocoevalcap.bleu.bleu_scorer import BleuScorer
-from scst.cider.pyciderevalcap.ciderD.ciderD import CiderD
-
-# from scst.cider.pyciderevalcap.cider.cider import Cider
+from ..coco_caption.pycocoevalcap.bleu.bleu import Bleu
+from .cider.pyciderevalcap.ciderD.ciderD import CiderD
 
 
-_DEBUG = False
 logger = logging.getLogger(__name__)
 
 

@@ -6,18 +6,18 @@ Created on 28 Aug 2020 17:34:10
 import os
 import torch
 from time import time
-from opts import parse_opt
-from utils import losses, optim
-from utils.config import Config
-from utils.misc import configure_logging, replace_from_right
-from utils.model_utils import set_seed, map_to_cuda, densify_state_dict
-from utils.file import dump_json
-from utils.lightning import LightningModule
-from pruning import prune
+from sparse_caption.opts import parse_opt
+from sparse_caption.utils import losses, optim
+from sparse_caption.utils.config import Config
+from sparse_caption.utils.misc import configure_logging, replace_from_right
+from sparse_caption.utils.model_utils import set_seed, map_to_cuda, densify_state_dict
+from sparse_caption.utils.file import dump_json
+from sparse_caption.utils.training import TrainingModule
+from sparse_caption.pruning import prune
 
 
 # noinspection PyAttributeOutsideInit
-class CaptioningModel(LightningModule):
+class CaptioningModel(TrainingModule):
     def __init__(self, config: Config):
         # assert config.prune_type in prune.VALID_MASKS, \
         #     f"`config.prune_type` must be one of {prune.VALID_MASKS}, saw `{config.prune_type}`"

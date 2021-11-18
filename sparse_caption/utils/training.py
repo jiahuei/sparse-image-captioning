@@ -17,25 +17,24 @@ from typing import Dict, Callable, Union
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
-from utils.config import Config
-from utils.misc import csv_to_float_list
-from utils.optim import ALL_OPTIMIZERS, ALL_SCHEDULERS
-from utils.model_utils import map_to_cuda
-from data import get_dataset, KarpathyDataset
-from tokenizer import get_tokenizer, Tokenizer
-from models import get_model
-from coco_caption.eval import evaluate_caption_json
-from scst.scorers import CaptionScorer
+from .config import Config
+from .misc import csv_to_float_list
+from .optim import ALL_OPTIMIZERS, ALL_SCHEDULERS
+from .model_utils import map_to_cuda
+from ..data import get_dataset, KarpathyDataset
+from ..tokenizer import get_tokenizer, Tokenizer
+from ..models import get_model
+from ..coco_caption.eval import evaluate_caption_json
+from ..scst.scorers import CaptionScorer
 
 logger = logging.getLogger(__name__)
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 # noinspection PyAttributeOutsideInit
-# class ImgCapLightningModule(pl.LightningModule):
-class LightningModule:
+class TrainingModule:
     """
-    A placeholder for Pytorch Lightning `LightningModule`
+    Base class for training and evaluation.
     """
     ALL_METRICS = ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4", "METEOR", "ROUGE_L", "CIDEr", "SPICE"]
     SCST_SAMPLE = ["beam_search", "random"]
@@ -491,12 +490,12 @@ class LightningModule:
         )
         parser.add_argument(
             "--scst_sample", type=str, default="random",
-            choices=LightningModule.SCST_SAMPLE,
+            choices=TrainingModule.SCST_SAMPLE,
             help="str: SCST sampling method."
         )
         parser.add_argument(
             "--scst_baseline", type=str, default="sample",
-            choices=LightningModule.SCST_BASELINE,
+            choices=TrainingModule.SCST_BASELINE,
             help="str: SCST baseline method."
         )
         parser.add_argument(

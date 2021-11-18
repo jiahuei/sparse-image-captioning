@@ -13,7 +13,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import model_utils as model_utils
+from ..utils import model_utils as model_utils
 
 
 # noinspection PyAbstractClass

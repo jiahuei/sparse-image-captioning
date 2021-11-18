@@ -6,10 +6,10 @@ Created on 16 Sep 2020 17:21:25
 import os
 import logging
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
-from utils.lightning import LightningModule
-from data import get_dataset, DATASET_REGISTRY
-from tokenizer import get_tokenizer, TOKENIZER_REGISTRY
-from models import get_model, MODEL_REGISTRY
+from .utils.training import TrainingModule
+from .data import get_dataset, DATASET_REGISTRY
+from .tokenizer import get_tokenizer, TOKENIZER_REGISTRY
+from .models import get_model, MODEL_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def parse_opt(arguments=None) -> Namespace:
     # )
     # fmt: on
     args, unknown = parser.parse_known_args(arguments)
-    LightningModule.add_argparse_args(
+    TrainingModule.add_argparse_args(
         parser.add_argument_group(
             "Training",
             "Arguments for model training, logging and evaluation."

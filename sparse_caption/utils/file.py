@@ -32,7 +32,7 @@ from tqdm import tqdm
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlretrieve
-from utils.misc import humanise_number
+from .misc import humanise_number
 
 logger = logging.getLogger(__name__)
 

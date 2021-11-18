@@ -4,17 +4,14 @@ Created on 23 Sep 2020 17:36:39
 @author: jiahuei
 """
 import logging
-import math
 import torch
 from torch import Tensor
 from torch import nn
 from torch.nn import init, functional as F
 from torch.nn.parameter import Parameter
-
-from torch.nn import Module
 from copy import deepcopy
 from typing import Tuple, List, Union, Optional
-from pruning import prune, sampler
+from . import prune, sampler
 
 logger = logging.getLogger(__name__)
 

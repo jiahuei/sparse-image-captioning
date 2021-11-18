@@ -13,14 +13,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 from argparse import ArgumentParser, _ArgumentGroup
-from typing import Union, Dict, Callable
+from typing import Union, Callable
 from copy import deepcopy
 from itertools import chain
-from models import register_model
-from models.caption_model import CaptionModel
-from data.collate import UpDownCollate
-from utils.model_utils import repeat_tensors, clones
-from utils.misc import str_to_sequence, str_to_none
+from . import register_model
+from .caption_model import CaptionModel
+from ..data.collate import UpDownCollate
+from ..utils.model_utils import repeat_tensors, clones
+from ..utils.misc import str_to_sequence, str_to_none
 
 logger = logging.getLogger(__name__)
 
