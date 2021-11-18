@@ -1,5 +1,4 @@
 h5py
-lmdb
 matplotlib
 pandas
 Pillow
@@ -7,6 +6,7 @@ pycocotools
 scipy
 seaborn
 sentencepiece
+six
 tensorboard
 torch
 torchtext
