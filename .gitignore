@@ -5,9 +5,8 @@ scripts/*.png
 tests/experiments
 *_jh.sh
 
-# Ignore extra (generated) files in vis folder.
-vis/vis.json
-vis/imgs/*.jpg
+# Sphinx docs
+docs/_build
 
 # PyCharm
 .idea/
