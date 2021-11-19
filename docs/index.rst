@@ -13,8 +13,6 @@ Welcome to SparCa's documentation!
    get_started.md
 
 
-
-
 Indices and tables
 ==================
 

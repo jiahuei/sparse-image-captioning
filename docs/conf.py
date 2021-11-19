@@ -9,10 +9,12 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+
+import os
+import sys
+from sparse_caption.version import __version__
+
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
@@ -22,7 +24,7 @@ copyright = "2021, CiSIPLab Universiti Malaya, Jia-Huei Tan"
 author = "CiSIPLab Universiti Malaya, Jia-Huei Tan"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.0-alpha"
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,6 +36,7 @@ release = "1.0.0-alpha"
 extensions = [
     "sphinx.ext.autodoc",  # Core library for html generation from docstrings
     "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
