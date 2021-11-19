@@ -3,7 +3,7 @@ SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 
 # Change this
-DATASET_DIR="/master/datasets"
+DATASET_DIR="/datasets"
 ###
 
 MSCOCO_DIR="${DATASET_DIR}/mscoco"
