@@ -59,7 +59,7 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
 
     # For dev, optional
     conda install pytest
-    conda install -c conda-forge black doc8 sphinx sphinx-autobuild sphinx_rtd_theme
+    conda install -c conda-forge black doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
     ```
 2. Install Java 8.
 3. Done.
