@@ -12,12 +12,13 @@
 
 import os
 import sys
-from sparse_caption.version import __version__
 
 sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
+
+from sparse_caption.version import __version__  # noqa: E402
 
 project = "SparCa"
 copyright = "2021, CiSIPLab Universiti Malaya, Jia-Huei Tan"
