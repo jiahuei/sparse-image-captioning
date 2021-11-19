@@ -2,6 +2,8 @@
 
 ![Tests](https://github.com/jiahuei/sparse-image-captioning/actions/workflows/tests.yml/badge.svg)
 ![Black](https://github.com/jiahuei/sparse-image-captioning/actions/workflows/black.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/sparse-image-captioning/badge/?version=latest)](https://sparse-image-captioning.readthedocs.io/en/latest/?badge=latest)
+
 
 [PDF](https://www.sciencedirect.com/science/article/pii/S003132032100546X) | [ArXiv](https://arxiv.org/abs/2110.03298)
 
@@ -11,12 +13,18 @@
 
 Released on July 20, 2021
 
-# Description
+
+## Description
 
 This work explores model pruning for image captioning task at the first time. Empirically, we show that 80% to 95% sparse networks can either match or even slightly outperform their dense counterparts. In order to promote Green Computer Vision, we release the pre-trained sparse models for UD and ORT that are capable of achieving CIDEr scores >120 on MS-COCO dataset; yet are only 8.7 MB (reduction of 96% compared to dense UD) and 14.5 MB (reduction of 94% compared to dense ORT) in model size.
 
 <p align="center"> <img src="resources/pr2021.jpg" width="35%"> </p>
 <p align="center"> Figure 1: We show that our deep captioning networks with 80% to 95% sparse are capable to either match or even slightly outperform their dense counterparts.</p>
+
+
+## Get Started
+
+[Please refer to the documentation](https://sparse-image-captioning.readthedocs.io/en/latest/).
 
 
 ## Features
@@ -53,7 +61,7 @@ This work explores model pruning for image captioning task at the first time. Em
     * _(untested)_ Unigram, BPE, Character
 * Datasets
     * MS-COCO
-    * _(to be added)_ Flickr8k, Flickr30k, InstaPIC-1.1M
+    * _(contributions welcome)_ Flickr8k, Flickr30k, InstaPIC-1.1M
 
 
 ## Pre-trained Sparse and ACORT Models
@@ -63,105 +71,6 @@ The checkpoints are [available at this repo](https://github.com/jiahuei/sparse-c
 Soft-attention models implemented in TensorFlow 1.9 are available at [this repo](https://github.com/jiahuei/tf-sparse-captioning).
 
 
-## Main Requirements
-
-* python == 3.7, 3.8
-* pytorch >= 1.6
-* sentencepiece >= 0.1.91
-* torchvision >= 0.7.0
-
-See the rest in `requirements_base.txt` and `requirements.txt`
-
-On Windows, you might need to install "Microsoft C++ Build Tools" in order to build `pycocotools`, 
-by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-
-
-## Setup
-
-For convenience, setup is done using Docker.
-
-1. Run `docker build -t jiahuei/pytorch:1.6.0-java8 -f Dockerfile .` to build the Docker image.
-2. Run `bash docker_run.sh` to launch a container. Edit paths in the script as needed.
-3. In the container, run `python /master/src/scripts/dataset/setup.sh` to perform dataset pre-processing.
-4. Done
-
-
-## Usage
-
-Refer to `resources/commands_pruning.sh` and `resources/commands_acort.sh` for more examples.
-
-These paths below assume a Docker setup following `docker_run.sh`.
-
-### Training
-```shell script
-# Baseline dense
-MODEL_TYPE="up_down_lstm"
-MODEL_ID="UpDownLSTM"
-SCHEDULER="cosine"
-
-python /master/src/scripts/train_transformer.py \
-    --caption_model ${MODEL_TYPE} \
-    --dataset_dir ${DATASET_DIR} \
-    --log_dir ${LOG_DIR} \
-    --lr_scheduler ${SCHEDULER} \
-    --learning_rate 0.01 \
-    --optim_epsilon 0.01 \
-    --id ${MODEL_ID}__baseline \
-    --cache_min_free_ram ${CACHE_FREE_RAM}
-
-# Pruning
-MODEL_TYPE="up_down_lstm_prune"
-
-for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-    for PRUNE_WEIGHT in 40 80 120; do
-        python /master/src/scripts/train_n_prune_transformer.py \
-            --caption_model ${MODEL_TYPE} \
-            --dataset_dir ${DATASET_DIR} \
-            --log_dir ${LOG_DIR} \
-            --lr_scheduler ${SCHEDULER} \
-            --learning_rate 0.01 \
-            --optim_epsilon 0.01 \
-            --drop_prob_lm 0.1 \
-            --prune_type supermask \
-            --prune_sparsity_target ${PRUNE_SPARSITY_TARGET} \
-            --prune_supermask_sparsity_weight ${PRUNE_WEIGHT} \
-            --id ${MODEL_ID}__${PRUNE_TYPE}__${PRUNE_SPARSITY_TARGET} \
-            --cache_min_free_ram ${CACHE_FREE_RAM}
-    done
-done
-```
-
-### Inference
-To evaluate the models, simply run:
-```shell script
-python /master/src/scripts/eval_model.py \
-    --log_dir ${LOG_DIR} \
-    --beam_size_test 2 \
-    --id RTrans__supermask__0.9875__wg_80.0
-```
-
-
-## MS-COCO Online Evaluation
-
-To perform online server evaluation:
-1. Run `python /master/src/scripts/eval_model.py` with `--mscoco_online_test` option.
-    For example:
-    ```shell script
-    python /master/src/scripts/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --beam_size_test 5 \
-        --mscoco_online_test \
-        --id ${ID}
-    ```
-2. Rename the JSON files to `captions_test2014__results.json` and `captions_val2014__results.json`.
-    * `captions_val2014__results.json` will contain fake captions, just there to fulfil submission format
-3. Zip the files and [submit](https://competitions.codalab.org/competitions/3221#participate).
-
-
-## Visualisation
-
-You can explore and visualise generated captions [using this Streamlit app](https://github.com/jiahuei/MSCOCO-caption-explorer).
-
 
 ## Acknowledgements
 
@@ -170,17 +79,8 @@ You can explore and visualise generated captions [using this Streamlit app](http
 * `coco_caption` in Python 3: [salaniz/pycocoevalcap](https://github.com/salaniz/pycocoevalcap/tree/ad63453cfab57a81a02b2949b17a91fab1c3df77)
 
 
-## Notes
-
-### `pycocotools` installation issues
-
-* One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
-* To resolve it, either:
-    * Install `numpy` and `cython` prior to installing `pycocotools`
-    * Maybe try `pycocotools-fix` instead
-* This issue may lead to GitHub CI failing, if a different `numpy` version is reinstalled after `pycocotools` is built
-
 ## Citation
+
 If you find this work useful for your research, please cite
 ```
 @article{tan2021end,
