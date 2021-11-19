@@ -7,5 +7,5 @@ conda install -c fastai sentencepiece
 conda install -c conda-forge tensorboard six
 
 conda install pytest
-conda install -c conda-forge black sphinx sphinx_rtd_theme
+conda install -c conda-forge black doc8 sphinx sphinx-autobuild sphinx_rtd_theme
 ```
