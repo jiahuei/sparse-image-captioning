@@ -15,6 +15,13 @@ The full list of required packages can be found `requirements_base.txt` and `req
 The exact dependency versions that are tested can be found in `requirements_dev_base.txt` and `requirements_dev.txt`.
 ```
 
+```{admonition} Possible {pycocotools} installation issues
+* One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
+* To resolve it, either:
+    * Install `numpy` and `cython` prior to installing `pycocotools`
+    * Maybe try using `pycocotools-fix` instead
+```
+
 
 ## Installation and Setup
 

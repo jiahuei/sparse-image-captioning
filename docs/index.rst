@@ -13,6 +13,7 @@ Welcome to SparCa's documentation!
 
    get_started.md
    usage.md
+   features.md
 
 
 

@@ -68,7 +68,7 @@ To perform online server evaluation:
         --mscoco_online_test \
         --id ${ID}
     ```
-2. Rename the JSON files to `captions_test2014__results.json` and `captions_val2014__results.json`.
+2. Rename the output JSON files to `captions_test2014__results.json` and `captions_val2014__results.json`.
     * `captions_val2014__results.json` will contain fake captions, just there to fulfil submission format
 3. Zip the files and [submit](https://competitions.codalab.org/competitions/3221#participate).
 
