@@ -2,7 +2,7 @@
 SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
-DATASET_DIR="/master/datasets/mscoco"
+DATASET_DIR="/datasets/mscoco"
 CACHE_FREE_RAM=0.3
 
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
@@ -10,7 +10,7 @@ export CUDA_VISIBLE_DEVICES="1"
 
 
 ### Collect scores ###
-python src/sparse_caption/scripts/collect_scores.py --check_compiled_scores
+python /workspace/scripts/collect_scores.py --check_compiled_scores
 
 
 ### Eval ###
@@ -19,7 +19,7 @@ python src/sparse_caption/scripts/collect_scores.py --check_compiled_scores
 #    --mscoco_online_test  \
 #    --model_file model_best.pth \
 #    --beam_size_val 5 \
-python /master/src/sparse_caption/eval_model.py \
+python /workspace/scripts/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --id RTrans__supermask__0.9875__wg_80.0
@@ -33,7 +33,7 @@ MODEL_TYPE="up_down_lstm"
 MODEL_ID="UpDownLSTM"
 SCHEDULER="cosine"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -50,7 +50,7 @@ SCST_NUM_SAMPLES=15
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -80,7 +80,7 @@ BASELINE="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/UpDownLSTM
 for PRUNE_TYPE in "supermask"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
         for PRUNE_WEIGHT in 40 80 120; do
-            python /master/src/sparse_caption/train_n_prune_transformer.py \
+            python /workspace/scripts/train_n_prune_transformer.py \
                 --caption_model ${MODEL_TYPE} \
                 --dataset_dir ${DATASET_DIR} \
                 --log_dir ${LOG_DIR} \
@@ -99,7 +99,7 @@ done
 
 for PRUNE_TYPE in "mag_grad_uniform" "snip"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --log_dir ${LOG_DIR} \
@@ -116,7 +116,7 @@ done
 
 for PRUNE_TYPE in "mag_blind" "mag_uniform" "mag_dist"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE} \
@@ -135,7 +135,7 @@ done
 
 for PRUNE_TYPE in "lottery_mag_uniform"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE} \
@@ -155,7 +155,7 @@ BASELINE="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/UpDownLSTM
 
 for PRUNE_TYPE in "lottery_mask_freeze"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE}__${PRUNE_SPARSITY_TARGET} \
@@ -179,7 +179,7 @@ SCST_NUM_SAMPLES=60
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/sparse_caption/train_n_prune_transformer.py \
+python /workspace/scripts/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -212,7 +212,7 @@ MODEL_TYPE="relation_transformer"
 MODEL_ID="RTrans"
 SCHEDULER="noam"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -227,7 +227,7 @@ SCST_NUM_SAMPLES=15
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -257,7 +257,7 @@ BASELINE="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__ba
 for PRUNE_TYPE in "supermask"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
         for PRUNE_WEIGHT in 40 80 120; do
-            python /master/src/sparse_caption/train_n_prune_transformer.py \
+            python /workspace/scripts/train_n_prune_transformer.py \
                 --caption_model ${MODEL_TYPE} \
                 --dataset_dir ${DATASET_DIR} \
                 --log_dir ${LOG_DIR} \
@@ -274,7 +274,7 @@ done
 
 for PRUNE_TYPE in "mag_grad_uniform" "snip"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --log_dir ${LOG_DIR} \
@@ -289,7 +289,7 @@ done
 
 for PRUNE_TYPE in "mag_blind" "mag_uniform" "mag_dist"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE} \
@@ -306,7 +306,7 @@ done
 
 for PRUNE_TYPE in "lottery_mag_uniform"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE} \
@@ -324,7 +324,7 @@ BASELINE="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/RTrans__ma
 
 for PRUNE_TYPE in "lottery_mask_freeze"; do
     for PRUNE_SPARSITY_TARGET in 0.9875 0.975 0.95; do
-        python /master/src/sparse_caption/train_n_prune_transformer.py \
+        python /workspace/scripts/train_n_prune_transformer.py \
             --caption_model ${MODEL_TYPE} \
             --dataset_dir ${DATASET_DIR} \
             --start_from ${BASELINE}__${PRUNE_SPARSITY_TARGET} \
@@ -346,7 +346,7 @@ SCST_NUM_SAMPLES=15
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/sparse_caption/train_n_prune_transformer.py \
+python /workspace/scripts/train_n_prune_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \

@@ -2,7 +2,7 @@
 SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 LOG_DIR="/home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1"
-DATASET_DIR="/master/datasets/mscoco"
+DATASET_DIR="/datasets/mscoco"
 CACHE_FREE_RAM=0.3
 
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
@@ -10,15 +10,16 @@ export CUDA_VISIBLE_DEVICES="1"
 
 
 ### Collect scores ###
-python src/sparse_caption/scripts/collect_scores.py --check_compiled_scores
+python /workspace/scripts/collect_scores.py --check_compiled_scores
 
 
 ### Eval ###
 #    --eval_dir_suffix  \
 #    --load_as_float16  \
 #    --mscoco_online_test  \
+#    --model_file model_best.pth \
 #    --beam_size_val 5 \
-python /master/src/sparse_caption/eval_model.py \
+python /workspace/scripts/eval_model.py \
     --log_dir ${LOG_DIR} \
     --beam_size_test 2 \
     --model_file model_best.pth \
@@ -34,7 +35,7 @@ MODEL_ID="ACORT"
 SCHEDULER="noam"
 
 # -base
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -52,7 +53,7 @@ python /master/src/sparse_caption/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -small
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -80,7 +81,7 @@ MODEL_ID="ORT"
 SCHEDULER="noam"
 
 # -base
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -89,7 +90,7 @@ python /master/src/sparse_caption/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -small
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -100,7 +101,7 @@ python /master/src/sparse_caption/train_transformer.py \
     --cache_min_free_ram ${CACHE_FREE_RAM}
 
 # -xsmall
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -123,7 +124,7 @@ SCST_NUM_SAMPLES=15
 SCST_SAMPLE="random"
 SCST_BASELINE="sample"
 
-python /master/src/sparse_caption/train_transformer.py \
+python /workspace/scripts/train_transformer.py \
     --caption_model ${MODEL_TYPE} \
     --dataset_dir ${DATASET_DIR} \
     --log_dir ${LOG_DIR} \
@@ -154,79 +155,8 @@ python /master/src/sparse_caption/train_transformer.py \
 
 
 ######################
-# Speed Tests
+# ACORT
 ######################
-
-MODEL_TYPE="relation_transformer"
-MODEL_ID="ACORT"
-SCHEDULER="noam"
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id Radix_b768_RTrans__baseline__ls_2layer_both__tied_kv_both
-    sleep 5m
-done
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id Radix_b768_RTrans__baseline__ls_2layer_both_r1__tied_kv_both
-    sleep 5m
-done
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id Radix_b768_RTrans__baseline__ls_2layer_both__tied_kv_both_4M
-    sleep 5m
-done
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir /home/jiahuei/Documents/1_TF_files/relation_trans/mscoco_v1/ \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id RTrans__baseline
-    sleep 5m
-done
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id RTrans__baseline__slim_17M
-    sleep 5m
-done
-
-for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/eval_model.py \
-        --log_dir ${LOG_DIR} \
-        --batch_size_eval 1 \
-        --beam_size_test 2 \
-        --model_file model_best.pth \
-        --eval_dir_suffix "_b1_speedtest_run${x}" \
-        --id RTrans__baseline__slim_4M
-    sleep 5m
-done
-
 
 MODEL_TYPE="relation_transformer"
 MODEL_ID="ACORT"
@@ -234,7 +164,7 @@ SCHEDULER="noam"
 
 # -base
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -255,7 +185,7 @@ done
 
 # -base-AL
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -276,7 +206,7 @@ done
 
 # -small
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -302,7 +232,7 @@ SCHEDULER="noam"
 
 # -base
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -314,7 +244,7 @@ done
 
 # -small
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
@@ -329,7 +259,7 @@ done
 
 # -xsmall
 for x in 1 2 3 4 5; do
-    python /master/src/sparse_caption/train_transformer.py \
+    python /workspace/scripts/train_transformer.py \
         --caption_model ${MODEL_TYPE} \
         --dataset_dir ${DATASET_DIR} \
         --log_dir ${LOG_DIR} \
