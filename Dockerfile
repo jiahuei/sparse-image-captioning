@@ -1,11 +1,5 @@
 FROM pytorch/pytorch:1.6.0-cuda10.1-cudnn7-devel
 
-# cuDNN should be version 7.6.5
-RUN cat /usr/include/cudnn.h | grep CUDNN_MAJOR -A 2
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
-
-
-RUN apt-get update && apt-get install -y apt-utils sudo
 
 ### Time Zone ###
 ARG TZ=Asia/Kuala_Lumpur
@@ -14,37 +8,47 @@ RUN apt-get update && apt-get install -y tzdata
 RUN ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
+## Install Linux packages
+# libgl1 is for OpenCV : https://stackoverflow.com/a/68666500
 RUN apt-get update && apt-get install -y \
-    wget nano curl ssh zip unzip \
-    libxrender1 libxext6 software-properties-common protobuf-compiler \
-    git git-lfs
+    apt-utils \
+    curl \
+    git \
+    git-lfs \
+    libxext6 \
+    libxrender1 \
+    libgl1 \
+    nano \
+    protobuf-compiler \
+    software-properties-common \
+    ssh \
+    sudo \
+    unzip \
+    wget \
+    zip
 
 RUN git lfs install
 
-RUN apt-get update && apt-get install -y python3-dev python3-pip
-RUN apt-get update && apt-get install -y \
-    python3-tk python3-pil python3-lxml \
-    python3-setuptools python3-cryptography python3-openssl \
-    python3-socks python3-venv
 
+### Install / Update Python 3 ###
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    python3-pip
+RUN apt-get update && apt-get install -y \
+    python3-cryptography \
+    python3-distutils \
+    python3-lxml \
+    python3-openssl \
+    python3-pil \
+    python3-setuptools \
+    python3-socks \
+    python3-tk \
+    python3-venv
 RUN pip3 --version
 RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools wheel
-
-### Aliases ###
 RUN ln -s /usr/bin/python3 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
-
-### Python Packages ###
-COPY requirements_base.txt requirements_base.txt
-COPY requirements.txt requirements.txt
-#COPY requirements_extra.txt requirements_extra.txt
-RUN pip install --upgrade -r requirements_base.txt
-RUN pip install --upgrade -r requirements.txt
-#RUN pip install --upgrade -r requirements.txt -r requirements_extra.txt
-
-# Perhaps install TensorRT to suppress TensorFlow warnings
-# https://stackoverflow.com/questions/60368298/could-not-load-dynamic-library-libnvinfer-so-6
 
 
 ### JAVA 8 ###
@@ -53,12 +57,18 @@ RUN pip install --upgrade -r requirements.txt
 RUN apt-get update && apt-get install -y openjdk-8-jdk
 
 
+### Python Packages ###
+COPY requirements.txt requirements.txt
+RUN pip3 install --upgrade --no-cache-dir --use-feature=2020-resolver -r requirements.txt
+
+
 ### Clean-up ###
 RUN apt-get clean
 
 
 ### Create a non-root user
 # https://github.com/facebookresearch/detectron2/blob/v0.3/docker/Dockerfile
+# https://code.visualstudio.com/docs/remote/containers-advanced#_creating-a-nonroot-user
 ARG USER_ID=1000
 RUN useradd -m --no-log-init --system  --uid ${USER_ID} appuser -g sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
@@ -66,6 +76,7 @@ USER appuser
 ENV PATH="/home/appuser/.local/bin:${PATH}"
 
 
-WORKDIR /master/src
-
-CMD bash
+### Install the packege in editable mode ###
+# When launching the container, mount the code directory to /workspace
+WORKDIR /workspace
+CMD pip install -e . && bash
