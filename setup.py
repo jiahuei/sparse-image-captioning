@@ -23,7 +23,7 @@ if __name__ == "__main__":
         name=package,
         version=version,
         description="",
-        author="Jia-Huei Tan",
+        author="CiSIPLab Universiti Malaya, Jia-Huei Tan",
         packages=[package],
         python_requires=">=3.7",
         install_requires=[str(r) for r in pkg_resources.parse_requirements(requirements)],
