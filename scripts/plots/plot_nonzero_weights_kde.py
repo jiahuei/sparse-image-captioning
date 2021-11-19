@@ -34,7 +34,7 @@ crest3 = sns.color_palette("crest_r", n_colors=3)
 summer3 = sns.color_palette("summer_r", n_colors=4)[1:]
 mako3 = sns.color_palette("mako_r", n_colors=3)
 flare3 = sns.color_palette("flare", n_colors=3)
-blue3 = sns.cubehelix_palette(3, start=.5, rot=-.5)
+blue3 = sns.cubehelix_palette(3, start=0.5, rot=-0.5)
 cranberry3 = sns.dark_palette("#b2124d", n_colors=3, reverse=True)[:3]
 coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
 
@@ -42,9 +42,11 @@ coffee3 = sns.dark_palette("#a6814c", n_colors=4, reverse=True)[:3]
 sns.set_theme(
     style="whitegrid",
     rc={
-        "axes.edgecolor": ".3", "grid.color": "0.9",  # "axes.grid.axis": "y",
-        "legend.loc": "lower left", "legend.framealpha": "0.6"
-    }
+        "axes.edgecolor": ".3",
+        "grid.color": "0.9",  # "axes.grid.axis": "y",
+        "legend.loc": "lower left",
+        "legend.framealpha": "0.6",
+    },
 )
 
 
@@ -124,7 +126,7 @@ class KDE:
                 # Just hard-code this for now
                 "caption_model": "Soft-Attention LSTM",
                 "prune_type": prune.REGULAR if "REG" in model_dir else prune.MAG_GRAD_BLIND,
-                "prune_sparsity_target": 0.975
+                "prune_sparsity_target": 0.975,
             }
 
         nonzero_weights = flat_weights_np[flat_weights_np != 0]
@@ -180,11 +182,13 @@ class KDE:
 
         # colours = ("goldenrod", "sandybrown", "chocolate", "peru")
         # colours = ("c", "cadetblue", "lightseagreen", "skyblue")
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4. * self.FIG_SCALE, 3. * self.FIG_SCALE))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.0 * self.FIG_SCALE, 3.0 * self.FIG_SCALE))
         ax = sns.kdeplot(
             data,
-            fill=True, common_norm=False,  # palette="crest",
-            alpha=.5, linewidth=0,
+            fill=True,
+            common_norm=False,  # palette="crest",
+            alpha=0.5,
+            linewidth=0,
             color="c",
             ax=ax,
         )
@@ -194,7 +198,8 @@ class KDE:
             ax.set_title(fig_title, pad=plt.rcParams["font.size"] * 1.5)
         if isinstance(fig_footnote, str):
             ft = plt.figtext(
-                0.90, 0.0,
+                0.90,
+                0.0,
                 fig_footnote,
                 horizontalalignment="right",
                 fontsize="xx-small",
@@ -205,30 +210,22 @@ class KDE:
         despine_white(fig)
         # Adjust margins and layout
         # https://stackoverflow.com/a/56727331
-        plt.savefig(
-            output_fig_path, dpi=self.FIG_DPI,
-            bbox_extra_artists=bbox_extra_artists, bbox_inches="tight"
-        )
+        plt.savefig(output_fig_path, dpi=self.FIG_DPI, bbox_extra_artists=bbox_extra_artists, bbox_inches="tight")
         print(f"Saved figure: `{output_fig_path}`")
         plt.clf()
         plt.close("all")
 
     @staticmethod
     def parse_opt() -> Namespace:
-        # fmt: off
         # noinspection PyTypeChecker
         parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+        parser.add_argument("--log_dir", type=str, default="", help="str: Logging / Saving directory.")
+        parser.add_argument("--id", type=str, default="", help="An id identifying this run/job.")
         parser.add_argument(
-            "--log_dir", type=str, default="",
-            help="str: Logging / Saving directory."
-        )
-        parser.add_argument(
-            "--id", type=str, default="",
-            help="An id identifying this run/job."
-        )
-        parser.add_argument(
-            "--model_file", type=str, default="model_best_pruned_sparse.pth,model_best.pth",
-            help="str: Model checkpoint file."
+            "--model_file",
+            type=str,
+            default="model_best_pruned_sparse.pth,model_best.pth",
+            help="str: Model checkpoint file.",
         )
         parser.add_argument(
             "--logging_level",
@@ -241,7 +238,7 @@ class KDE:
         return args
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     configure_logging("WARNING")
     kde = KDE()
     if kde.config.id:

@@ -26,9 +26,9 @@ class Caption:
     def add_data(self, key, caption_json, score_json):
         captions = self._read_json(key, caption_json)
         scores = self._read_json(key, score_json)
-        assert len(captions) == len(scores), (
-            f"Each caption must be paired with its score. Saw {len(captions)} captions and {len(scores)} scores."
-        )
+        assert len(captions) == len(
+            scores
+        ), f"Each caption must be paired with its score. Saw {len(captions)} captions and {len(scores)} scores."
         self.df = pd.concat([self.df, captions, scores], axis=1)
 
     def sort_data(self, metric=None, agg_score="mean", agg_model="mean", use_diff=True):

@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_opt() -> Namespace:
-    # fmt: off
     # noinspection PyTypeChecker
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
@@ -26,14 +25,8 @@ def parse_opt() -> Namespace:
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
         help="str: Logging level.",
     )
-    parser.add_argument(
-        "--log_dir", type=str, default="",
-        help="str: Logging / Saving directory."
-    )
-    parser.add_argument(
-        "--id", type=str, default="",
-        help="An id identifying this run/job."
-    )
+    parser.add_argument("--log_dir", type=str, default="", help="str: Logging / Saving directory.")
+    parser.add_argument("--id", type=str, default="", help="An id identifying this run/job.")
     args = parser.parse_args()
     args.log_dir = os.path.join(args.log_dir, f"{args.id}")
     return args
@@ -41,8 +34,7 @@ def parse_opt() -> Namespace:
 
 def main(args):
     config = Config.load_config_json(os.path.join(args.log_dir, "config.json"))
-    assert config.prune_type == prune.REGULAR, \
-        f"Expected mask_type to be `{prune.REGULAR}`, saw `{config.prune_type}`."
+    assert config.prune_type == prune.REGULAR, f"Expected mask_type to be `{prune.REGULAR}`, saw `{config.prune_type}`."
 
     ckpt_path = os.path.join(args.log_dir, "model_best.pth")
     out_path = ckpt_path.replace(".pth", "_bin_mask.pth")
