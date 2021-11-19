@@ -8,18 +8,12 @@ The main requirements for `sparse_caption` are as follows:
 * pytorch
 * sentencepiece
 * torchvision
+* Java 8
 
 The full list of required packages can be found `requirements_base.txt` and `requirements.txt`.
 
 ```{admonition} Dependency Versions
 The exact dependency versions that are tested can be found in `requirements_dev_base.txt` and `requirements_dev.txt`.
-```
-
-```{admonition} Possible *pycocotools* installation issues
-* One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
-* To resolve it, either:
-    * Install `numpy` and `cython` prior to installing `pycocotools`
-    * Maybe try using `pycocotools-fix` instead
 ```
 
 
@@ -41,6 +35,18 @@ Setup using Docker is the most convenient.
    ```
 3. In the container, run `bash /workspace/scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction.
 4. Done.
+
+```{warning}
+Upon container launch, the `sparse_caption` package will be installed in editable mode.
+
+Thus, the repository directory should be mounted to `/workspace` in the container.
+```
+
+### Pip
+
+1. Install the package: `pip install -e .`
+2. Install Java 8.
+3. Done.
 
 ### Anaconda
 
@@ -65,5 +71,13 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
     conda install pytest
     conda install -c conda-forge black doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
     ```
-2. Install Java 8.
-3. Done.
+2. Install the package: `pip install -e .`
+3. Install Java 8.
+4. Done.
+
+```{admonition} Possible *pycocotools* installation issues
+* One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
+* To resolve it, either:
+    * Install `numpy` and `cython` prior to installing `pycocotools`
+    * Maybe try using `pycocotools-fix` instead
+```
