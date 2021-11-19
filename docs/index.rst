@@ -9,9 +9,10 @@ Welcome to SparCa's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Get Started
+   :caption: Contents
 
    get_started.md
+   usage.md
 
 
 

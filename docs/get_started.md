@@ -1,6 +1,6 @@
 # Get Started
 
-# Requirements
+## Requirements
 
 The main requirements for `sparse_caption` are as follows:
 
@@ -16,9 +16,9 @@ The exact dependency versions that are tested can be found in `requirements_dev_
 ```
 
 
-# Installation and Setup
+## Installation and Setup
 
-## Docker
+### Docker
 Setup using Docker is the most convenient.
 
 1. Run `docker build -t <YOUR_TAG> -f Dockerfile .` to build the image.
@@ -35,17 +35,14 @@ Setup using Docker is the most convenient.
 3. In the container, run `bash /workspace/scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction.
 4. Done.
 
-## Anaconda
+### Anaconda
 
 ```{admonition} Windows
 1. On Windows, you might need to install "Microsoft C++ Build Tools" in order to build `pycocotools`, 
 by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
 2. Tick the options as shown:
-    .. image:: win-build-tools.png
-    :scale: 50 %
-    :alt: win-build-tools
-    :align: left
+    ![win-build-tools](win-build-tools.png)
 ```
 
 1. These commands should install the required packages:
