@@ -1,7 +1,7 @@
 # Learning to Prune Image Captioning Models
 
-![Tests](https://github.com/jiahuei/sparse-image-captioning/blob/main/.github/workflows/tests.yml/badge.svg)
-![Black](https://github.com/jiahuei/sparse-image-captioning/blob/main/.github/workflows/black.yml/badge.svg)
+![Tests](https://github.com/jiahuei/sparse-image-captioning/actions/workflows/tests.yml/badge.svg)
+![Black](https://github.com/jiahuei/sparse-image-captioning/actions/workflows/black.yml/badge.svg)
 
 [PDF](https://www.sciencedirect.com/science/article/pii/S003132032100546X) | [ArXiv](https://arxiv.org/abs/2110.03298)
 
