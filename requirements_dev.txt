@@ -19,3 +19,4 @@ flake8~=3.9.2
 pytest~=6.2.5
 pytest-cov~=2.12.1
 mypy~=0.910
+sphinx~=4.3.0

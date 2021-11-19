@@ -7,5 +7,5 @@ conda install -c fastai sentencepiece
 conda install -c conda-forge tensorboard six
 
 conda install pytest
-conda install -c conda-forge black
+conda install -c conda-forge black sphinx
 ```
