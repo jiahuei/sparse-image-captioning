@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 from sparse_caption.version import __version__  # noqa: E402
 
-project = "SparCa"
+project = "Sparse Image Captioning"
 copyright = "2021, CiSIPLab Universiti Malaya, Jia-Huei Tan"
 author = "CiSIPLab Universiti Malaya, Jia-Huei Tan"
 
