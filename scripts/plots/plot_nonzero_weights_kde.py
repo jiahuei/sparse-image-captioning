@@ -3,8 +3,7 @@
 Created on 09 Nov 2020 22:25:38
 @author: jiahuei
 
-cd sparse_caption
-python -m scripts.plot_nonzero_weights_kde --log_dir x --id y
+python scripts/plot_nonzero_weights_kde.py --log_dir x --id y
 
 /home/jiahuei/Documents/1_TF_files/prune/mscoco_v3
 word_w256_LSTM_r512_h1_ind_xu_REG_1.0e+02_init_5.0_L1_wg_60.0_ann_sps_0.975_dec_prune_cnnFT/run_01_sparse
@@ -22,11 +21,11 @@ from scipy.stats import mstats
 from matplotlib import pyplot as plt
 from matplotlib import ticker
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
-from pruning import prune
-from utils.model_utils import densify_state_dict
-from utils.misc import replace_from_right, configure_logging
-from utils.file import list_dir
-from utils.config import Config
+from sparse_caption.pruning import prune
+from sparse_caption.utils.model_utils import densify_state_dict
+from sparse_caption.utils.misc import replace_from_right, configure_logging
+from sparse_caption.utils.file import list_dir
+from sparse_caption.utils.config import Config
 
 logger = logging.getLogger(__name__)
 gray3 = sns.color_palette("gray_r", n_colors=3)
