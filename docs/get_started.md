@@ -1,6 +1,6 @@
 # Get Started
 
-## TLDR
+## TL;DR
 
 1. Clone the repo: `git clone https://github.com/jiahuei/sparse-image-captioning.git`
 2. Change directory: `cd sparse-image-captioning`
@@ -60,7 +60,7 @@ Thus, the repository directory should be mounted to `/workspace` in the containe
 
 ### Pip
 
-See [TL;DR](get_started.md#TLDR)
+See [TL;DR](#tldr)
 
 ```{admonition} Windows
 1. On Windows, you might need to install "Microsoft C++ Build Tools" in order to build `pycocotools`, 
@@ -85,7 +85,7 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
     conda install pytest
     conda install -c conda-forge black doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
     ```
-2. Follow [TL;DR](get_started.md#TLDR)
+2. Follow [TL;DR](#tldr)
 
 ```{admonition} Possible *pycocotools* installation issues
 * One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
