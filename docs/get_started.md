@@ -9,9 +9,12 @@
    * Editable mode: `pip install -e .`
 4. Install Java 8
 5. Test installation: `import sparse_caption`
-6. Run `bash scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction
+6. Run `bash scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction. **Change the `DATASET_DIR` variable in the script to your desired path**
 7. Done
 
+```{admonition} Dataset Path
+Change the `DATASET_DIR` variable in the `scripts/dataset/setup.sh` script to your desired path.
+```
 
 ## Requirements
 
