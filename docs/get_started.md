@@ -1,5 +1,18 @@
 # Get Started
 
+## TL;DR
+
+1. Clone the repo: `git clone https://github.com/jiahuei/sparse-image-captioning.git`
+2. Change directory: `cd sparse-image-captioning`
+3. Install the package using either:
+   * Regular: `pip install .`
+   * Editable mode: `pip install -e .`
+4. Install Java 8
+5. Test installation: `import sparse_caption`
+6. Run `bash scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction
+7. Done
+
+
 ## Requirements
 
 The main requirements for `sparse_caption` are as follows:
@@ -22,8 +35,10 @@ The exact dependency versions that are tested can be found in `requirements_dev_
 ### Docker
 Setup using Docker is the most convenient.
 
-1. Run `docker build -t <YOUR_TAG> -f Dockerfile .` to build the image.
-2. Run the command below to launch a container. **Change `<YOUR_DATASET_PATH>` to your desired path.** All dataset files will be placed inside `<YOUR_DATASET_PATH>`.
+1. Clone the repo: `git clone https://github.com/jiahuei/sparse-image-captioning.git`
+2. Change directory: `cd sparse-image-captioning`
+3. Run `docker build -t <YOUR_TAG> -f Dockerfile .` to build the image
+4. Run the command below to launch a container. **Change `<YOUR_DATASET_PATH>` to your desired path.** All dataset files will be placed inside `<YOUR_DATASET_PATH>`.
    ```bash
     docker run -it \
         --gpus all \
@@ -33,8 +48,9 @@ Setup using Docker is the most convenient.
         -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY \
         --rm <YOUR_TAG>
    ```
-3. In the container, run `bash /workspace/scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction.
-4. Done.
+5. Test installation: `import sparse_caption`
+6. In the container, run `bash /workspace/scripts/dataset/setup.sh` to perform dataset download, pre-processing, and feature extraction
+7. Done
 
 ```{warning}
 Upon container launch, the `sparse_caption` package will be installed in editable mode.
@@ -44,11 +60,7 @@ Thus, the repository directory should be mounted to `/workspace` in the containe
 
 ### Pip
 
-1. Install the package: `pip install -e .`
-2. Install Java 8.
-3. Done.
-
-### Anaconda
+See [TL;DR](get_started.md#TL;DR)
 
 ```{admonition} Windows
 1. On Windows, you might need to install "Microsoft C++ Build Tools" in order to build `pycocotools`, 
@@ -57,6 +69,8 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
 2. Tick the options as shown:
     ![win-build-tools](win-build-tools.png)
 ```
+
+### Anaconda
 
 1. These commands should install the required packages:
     ```bash
@@ -71,9 +85,7 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
     conda install pytest
     conda install -c conda-forge black doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
     ```
-2. Install the package: `pip install -e .`
-3. Install Java 8.
-4. Done.
+2. Follow [TL;DR](get_started.md#TL;DR)
 
 ```{admonition} Possible *pycocotools* installation issues
 * One might run into issues related to `numpy` or `cython` when importing `pycocotools`.
