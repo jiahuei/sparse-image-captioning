@@ -94,9 +94,7 @@ class CaptioningModel(TrainingModule):
                     if not sc_flag:
                         print(f"{log_str}, Loss = {train_loss:6.3f}")
                     else:
-                        print(
-                            f"{log_str}, Avg reward = {reward.mean():6.3f}, " f"Avg baseline = {sc_greedy.mean():.2f}"
-                        )
+                        print(f"{log_str}, Avg reward = {reward.mean():6.3f}, Avg baseline = {sc_greedy.mean():.2f}")
 
                 # Write the training loss summary
                 if self.global_step % config.losses_log_every == 0:

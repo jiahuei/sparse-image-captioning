@@ -170,7 +170,7 @@ class PruningMixin:
             masks = [rounding_sigmoid(_) for _ in masks]
         for w, m in zip(weights, masks):
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"{self.__class__.__name__}: Prune weights: " f"Weight = `{w}`    Mask = `{m}`")
+                logger.debug(f"{self.__class__.__name__}: Prune weights: Weight = `{w}`    Mask = `{m}`")
             w[:] = w * m
 
     def state_dict_dense(
@@ -364,10 +364,10 @@ class PruningMixin:
         for m, new_m in zip(masks, new_masks):
             m.view(-1)[:] = new_m.view(-1)
         logger.info(
-            f"{self.__class__.__name__}: Pruning ({self.mask_type}): " f"Pruned to sparsity = `{sparsity_target:.5f}`"
+            f"{self.__class__.__name__}: Pruning ({self.mask_type}): Pruned to sparsity = `{sparsity_target:.5f}`"
         )
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"{self.__class__.__name__}: Pruning ({self.mask_type}): " f"Updated masks = `{list(masks)}`")
+            logger.debug(f"{self.__class__.__name__}: Pruning ({self.mask_type}): Updated masks = `{list(masks)}`")
         self.sparsity_target = sparsity_target
         self.sparsity_check()
         return True

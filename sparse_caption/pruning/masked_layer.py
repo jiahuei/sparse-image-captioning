@@ -59,7 +59,7 @@ class MaskMixin:
         else:
             if mask_init_value is not None:
                 logger.info(
-                    f"{self.__class__.__name__}: " f"`mask_init_value` is always 1.0 for mask_type = `{self.mask_type}`"
+                    f"{self.__class__.__name__}: `mask_init_value` is always 1.0 for mask_type = `{self.mask_type}`"
                 )
             # Regular pruning
             self.mask_init_value = 1.0
@@ -96,9 +96,7 @@ class MaskMixin:
                 sample_fn = self.mask_eval_sample_fn
             sampled_mask = sample_fn(mask)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(
-                    f"{self.__class__.__name__}: " f"Mask type = {self.mask_type}    " f"Sample fn = {sample_fn}"
-                )
+                logger.debug(f"{self.__class__.__name__}: Mask type = {self.mask_type}    Sample fn = {sample_fn}")
         else:
             sampled_mask = mask
         masked_weight = sampled_mask * weight

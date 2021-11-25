@@ -40,9 +40,9 @@ class CaptionScorer(object):
         assert all(isinstance(_, (list, tuple)) for _ in inputs)
         if same_sub_len:
             lens = set(len(_) for _ in inputs)
-            assert len(lens) == 1, (
-                f"Each image should have the same number of captions." f"Received captions per image: {lens}"
-            )
+            assert (
+                len(lens) == 1
+            ), f"Each image should have the same number of captions.Received captions per image: {lens}"
 
     def __call__(self, refs, sample, greedy=None):
         if self.scorers is None:
@@ -52,14 +52,14 @@ class CaptionScorer(object):
             }
         self.input_check(refs, same_sub_len=False)
         self.input_check(sample)
-        assert len(refs) == len(sample), (
-            f"`ref` and `sample` have different lengths: " f"refs = {len(refs)}, sample = {len(sample)}"
-        )
+        assert len(refs) == len(
+            sample
+        ), f"`ref` and `sample` have different lengths: refs = {len(refs)}, sample = {len(sample)}"
         if greedy:
             self.input_check(greedy)
-            assert len(sample) == len(greedy), (
-                f"`sample` and `greedy` have different lengths: " f"sample = {len(sample)}, greedy = {len(greedy)}"
-            )
+            assert len(sample) == len(
+                greedy
+            ), f"`sample` and `greedy` have different lengths: sample = {len(sample)}, greedy = {len(greedy)}"
         else:
             assert greedy is None, "`greedy` should be one of: None, list or tuple."
 

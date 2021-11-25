@@ -44,9 +44,11 @@ for infile in infiles:
             item["image_id"] = int(item["image_id"])
             item["num_boxes"] = int(item["num_boxes"])
             if len(item["boxes"]) % 4 != 0 or len(item["features"]) % 4 != 0:
-                assert item["image_id"] in (300104, 147295, 321486), (
-                    f"Expected problematic images (300104, 147295, 321486), " f"saw {item['image_id']} instead."
-                )
+                assert item["image_id"] in (
+                    300104,
+                    147295,
+                    321486,
+                ), f"Expected problematic images (300104, 147295, 321486), saw {item['image_id']} instead."
                 # https://github.com/peteanderson80/bottom-up-attention/issues/7#issuecomment-332477816
                 # https://github.com/ruotianluo/self-critical.pytorch/issues/63#issuecomment-432939699
                 continue

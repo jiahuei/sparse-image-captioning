@@ -181,9 +181,7 @@ class CaptioningModel(TrainingModule):
                     if not sc_flag:
                         print(f"{log_str}, Loss = {train_loss:6.3f}")
                     else:
-                        print(
-                            f"{log_str}, Avg reward = {reward.mean():6.3f}, " f"Avg baseline = {sc_greedy.mean():.2f}"
-                        )
+                        print(f"{log_str}, Avg reward = {reward.mean():6.3f}, Avg baseline = {sc_greedy.mean():.2f}")
 
                 # Write the training loss summary
                 if self.global_step % config.losses_log_every == 0:
@@ -265,9 +263,7 @@ class CaptioningModel(TrainingModule):
             overall_sparsity, overall_nnz, tensor_sps, tensor_names = model.all_mask_sparsities
             overall_sparsity = float(overall_sparsity)
             overall_nnz = int(overall_nnz)
-        logger.info(
-            f"{self.__class__.__name__}: Model weights pruned: " f"Overall sparsity = {overall_sparsity * 100:.2f}"
-        )
+        logger.info(f"{self.__class__.__name__}: Model weights pruned: Overall sparsity = {overall_sparsity * 100:.2f}")
         # Save model weights
         torch.save(
             model.state_dict_sparse(discard_pruning_mask=True, prune_weights=False),
