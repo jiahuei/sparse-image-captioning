@@ -34,15 +34,15 @@ This work explores model pruning for image captioning task at the first time. Em
     * [Object Relation Transformer](https://papers.nips.cc/paper/9293-image-captioning-transforming-objects-into-words.pdf)
     * A Compact Object Relation Transformer (ACORT)
 * Unstructured weight pruning
-    * Supermask (end-to-end pruning)
-    * Gradual magnitude pruning
-    * Lottery ticket
-    * One-shot magnitude pruning
-    * Single-shot Network Pruning (SNIP)
-* Self-Critical Sequence Training (SCST)
+    * [Supermask (end-to-end pruning)](https://arxiv.org/abs/2110.03298)
+    * [Gradual magnitude pruning](https://arxiv.org/abs/1710.01878)
+    * [Lottery ticket](https://arxiv.org/abs/1803.03635)
+    * One-shot magnitude pruning ([paper 1](https://arxiv.org/abs/1506.02626), [paper 2](https://arxiv.org/abs/1606.09274))
+    * [Single-shot Network Pruning (SNIP)](https://arxiv.org/abs/1810.02340)
+* Self-Critical Sequence Training (SCST)]()
     * Random sampling + Greedy search baseline: [vanilla SCST](https://openaccess.thecvf.com/content_cvpr_2017/html/Rennie_Self-Critical_Sequence_Training_CVPR_2017_paper.html)
     * Beam search sampling + Greedy search baseline: à la [Up-Down](http://openaccess.thecvf.com/content_cvpr_2018/html/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.html)
-    * Random sampling + Sample mean baseline: ("new SCST" in `ruotianluo/self-critical.pytorch`)
+    * Random sampling + Sample mean baseline: [arxiv paper](https://arxiv.org/abs/2003.09971)
     * Beam search sampling + Sample mean baseline: à la [M2 Transformer](http://openaccess.thecvf.com/content_CVPR_2020/html/Cornia_Meshed-Memory_Transformer_for_Image_Captioning_CVPR_2020_paper.html)
     * Optimise CIDEr and/or BLEU scores with custom weightage
     * Based on [ruotianluo/self-critical.pytorch](https://github.com/ruotianluo/self-critical.pytorch/tree/3.2)
