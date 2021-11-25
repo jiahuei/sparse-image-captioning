@@ -34,7 +34,7 @@ This work explores model pruning for image captioning task at the first time. Em
     * [Object Relation Transformer](https://papers.nips.cc/paper/9293-image-captioning-transforming-objects-into-words.pdf)
     * A Compact Object Relation Transformer (ACORT)
 * Unstructured weight pruning
-    * [Supermask (end-to-end pruning)](https://arxiv.org/abs/2110.03298)
+    * [Supermask Pruning (SMP, end-to-end pruning)](https://arxiv.org/abs/2110.03298)
     * [Gradual magnitude pruning](https://arxiv.org/abs/1710.01878)
     * [Lottery ticket](https://arxiv.org/abs/1803.03635)
     * One-shot magnitude pruning ([paper 1](https://arxiv.org/abs/1506.02626), [paper 2](https://arxiv.org/abs/1606.09274))
@@ -70,6 +70,26 @@ The checkpoints are [available at this repo](https://github.com/jiahuei/sparse-c
 
 Soft-attention models implemented in TensorFlow 1.9 are available at [this repo](https://github.com/jiahuei/tf-sparse-captioning).
 
+
+## CIDEr score of pruning methods
+
+### Up-Down (UD)
+
+| Sparsity | NNZ | Dense Baseline | SMP | Lottery ticket (class-blind) | Lottery ticket (class-uniform) | Lottery ticket (gradual) | Gradual pruning | Hard pruning (class-blind) | Hard pruning (class-distribution) | Hard pruning (class-uniform) | SNIP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.950 | 2.7 M | 111.3 | **112.5** | - | 107.7 | 109.5 | 109.7 | - | 110.0 | 110.2 | 38.2 |
+| 0.975 | 1.3 M | 111.3 | **110.6** | - | 103.8 | 106.6 | 107.0 | - | 105.9 | 105.4 | 34.7 |
+| 0.988 | 0.7 M | 111.3 | **109.0** | - | 99.3 | 102.2 | 103.4 | - | 101.3 | 100.5 | 32.6 |
+| 0.991 | 0.5 M | 111.3 | **107.8** |  |  |  |  |  |  |  |  |
+
+### Object Relation Transformer (ORT)
+
+| Sparsity | NNZ | Dense Baseline | SMP | Lottery ticket (gradual) | Gradual pruning | Hard pruning (class-blind) | Hard pruning (class-distribution) | Hard pruning (class-uniform) | SNIP |
+|---|---|---|---|---|---|---|---|---|---|
+| 0.950 | 2.8 M | 114.7 | 113.7 | **115.7** | 115.3 | 4.1 | 112.5 | 113.0 | 47.2 |
+| 0.975 | 1.4 M | 114.7 | **113.7** | 112.9 | 113.2 | 0.7 | 106.6 | 106.9 | 44.0 |
+| 0.988 | 0.7 M | 114.7 | **110.7** | 109.8 | 110.0 | 0.9 | 96.9 | 59.8 | 37.3 |
+| 0.991 | 0.5 M | 114.7 | **109.3** | 107.1 | 107.0 |  |  |  |  |
 
 
 ## Acknowledgements
