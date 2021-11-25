@@ -9,7 +9,6 @@ import os
 import logging
 import json
 import torch
-import numpy as np
 from time import perf_counter
 from tqdm import tqdm
 from argparse import ArgumentParser, _ArgumentGroup
@@ -246,14 +245,11 @@ class TrainingModule:
         sample_decoded = [[self.tokenizer.decode(__) for __ in _] for _ in sample_res.cpu().numpy()]
 
         # Compute reward
-        sc_sample, sc_greedy = self.scst_scorer(refs=gts, sample=sample_decoded, greedy=greedy_decoded)
         if config.scst_baseline == "greedy":
             assert greedy_decoded is not None
-            sc_baseline = sc_greedy
         else:
             assert greedy_decoded is None
-            sc_baseline = np.mean(sc_sample.reshape(-1, config.scst_num_samples), axis=-1)
-        sc_baseline = np.repeat(sc_baseline, config.scst_num_samples)
+        sc_sample, sc_baseline = self.scst_scorer(refs=gts, sample=sample_decoded, baseline=greedy_decoded)
         reward = map_to_cuda(torch.from_numpy(sc_sample - sc_baseline).type_as(sample_logprobs))
         mask = sample_res.view(sample_res.size(0) * sample_res.size(1), -1) != model.pad_idx
         loss = loss_fn(sample_logprobs, mask=mask, reward=reward)
@@ -312,7 +308,7 @@ class TrainingModule:
             with open(score_fpath.replace(".json", "_detailed.json"), "w") as f:
                 json.dump(scores_detailed, fp=f, indent=2, sort_keys=True, ensure_ascii=False)
             # Save score CSV
-            score_csv_fpath = os.path.join(out_dir, f"scores.csv")
+            score_csv_fpath = os.path.join(out_dir, "scores.csv")
             if os.path.isfile(score_csv_fpath):
                 score_str = ""
             else:

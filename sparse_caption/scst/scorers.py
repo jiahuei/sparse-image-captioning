@@ -42,9 +42,9 @@ class CaptionScorer(object):
             lens = set(len(_) for _ in inputs)
             assert (
                 len(lens) == 1
-            ), f"Each image should have the same number of captions.Received captions per image: {lens}"
+            ), f"Each image should have the same number of captions. Received captions per image: {lens}"
 
-    def __call__(self, refs, sample, greedy=None):
+    def __call__(self, refs, sample, baseline=None):
         if self.scorers is None:
             self.scorers = {
                 "ciderD": CiderD(df=self.path_to_cached_tokens),
@@ -55,29 +55,29 @@ class CaptionScorer(object):
         assert len(refs) == len(
             sample
         ), f"`ref` and `sample` have different lengths: refs = {len(refs)}, sample = {len(sample)}"
-        if greedy:
-            self.input_check(greedy)
+        if baseline:
+            self.input_check(baseline)
             assert len(sample) == len(
-                greedy
-            ), f"`sample` and `greedy` have different lengths: sample = {len(sample)}, greedy = {len(greedy)}"
+                baseline
+            ), f"`sample` and `baseline` have different lengths: sample = {len(sample)}, baseline = {len(baseline)}"
         else:
-            assert greedy is None, "`greedy` should be one of: None, list or tuple."
+            assert baseline is None, "`baseline` should be one of: None, list or tuple."
 
         weights = self.weights
-        num_greedy = len(greedy) if greedy else 0
+        num_baseline = len(baseline) if baseline else 0
         num_sample_per_img = len(sample[0])
         gts = {}
         res = {}
         item_id = 0
-        for i in range(num_greedy):
-            gts[item_id], res[item_id] = refs[i], greedy[i]
+        for i in range(num_baseline):
+            gts[item_id], res[item_id] = refs[i], baseline[i]
             item_id += 1
         for i in range(len(sample)):
             for j in range(num_sample_per_img):
                 gts[item_id], res[item_id] = refs[i], sample[i][j : j + 1]
                 item_id += 1
         num_items = item_id
-        assert (len(sample) * num_sample_per_img + num_greedy) == num_items
+        assert (len(sample) * num_sample_per_img + num_baseline) == num_items
         assert len(gts.keys()) == num_items
 
         scores = {}
@@ -96,29 +96,22 @@ class CaptionScorer(object):
 
         scores = sum(scores.values())  # Sum across metrics
         assert len(scores) == num_items
-        sc_greedy = scores[:num_greedy] if greedy else np.array([0])
-        sc_sample = scores[num_greedy:]
+        sc_sample = scores[num_baseline:]
+        if baseline:
+            sc_baseline = scores[:num_baseline]
+            sc_baseline = np.repeat(sc_baseline, num_sample_per_img)
+        else:
+            sc_sample_sum = sc_sample.reshape([-1, num_sample_per_img]).sum(-1)
+            sc_baseline = (np.repeat(sc_sample_sum, num_sample_per_img) - sc_sample) / (num_sample_per_img - 1)
 
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"{self.__class__.__name__}: Captions: greedy = `{greedy}`    sampled = `{sample}`")
+            logger.debug(f"{self.__class__.__name__}: Captions: baseline = `{baseline}`    sampled = `{sample}`")
             logger.debug(
                 f"{self.__class__.__name__}: "
-                f"Average scores: greedy = `{sc_greedy.mean()}`    sampled = `{sc_sample.mean()}`"
-            )
-            greedy_num_words = 0
-            sample_num_words = 0
-            for i in range(num_items):
-                if i < num_greedy:
-                    greedy_num_words += len(res[i][0].split(" "))
-                else:
-                    sample_num_words += len(res[i][0].split(" "))
-            logger.debug(
-                f"{self.__class__.__name__}: Average # of words: "
-                f"greedy = `{greedy_num_words / num_greedy if greedy else 0:.2f}`    "
-                f"sampled = `{sample_num_words / (num_items - num_greedy):.2f}`"
+                f"Average scores: baseline = `{sc_baseline.mean()}`    sampled = `{sc_sample.mean()}`"
             )
 
-        return sc_sample, sc_greedy
+        return sc_sample, sc_baseline
 
 
 class BleuSilent(Bleu):
@@ -133,7 +126,7 @@ Cross-entropy loss derivative is p_i - y_i,
     where p is the output of softmax and y is the one-hot label.
     This means XE loss grad is prob of class i minus 1.0 if true or 0 if false.
 
-SCST loss derivative is 
+SCST loss derivative is
     [r(sampled) - r(greedy)] * [p(sample @ t) - oneHot(sample @ t)]
     This means it is equivalent to a weighted version of XE loss, where
     the labels are sampled captions, and the weights are baselined rewards.
