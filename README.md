@@ -103,3 +103,12 @@ The project is open source under BSD-3 license (see the ``` LICENSE ``` file).
 
 &#169;2021 Universiti Malaya.
 
+
+## Dev Info
+
+Run Black linting:
+```bash
+black --line-length=120 --safe sparse_caption
+black --line-length=120 --safe tests
+black --line-length=120 --safe scripts
+```
