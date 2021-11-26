@@ -17,12 +17,12 @@ from ast import literal_eval
 logger = logging.getLogger(__name__)
 
 up_dir = os.path.dirname
-CURR_DIR = up_dir(os.path.realpath(__file__))
-BASE_DIR = up_dir(CURR_DIR)
-REPO_DIR = up_dir(BASE_DIR)
+MISC_DIR = up_dir(os.path.realpath(__file__))
+PACKAGE_DIR = up_dir(MISC_DIR)
+ROOT_DIR = up_dir(PACKAGE_DIR)
 assert os.path.isdir(
-    os.path.join(REPO_DIR, "sparse_caption")
-), f"`REPO_DIR` should point to `caption-vae-transformer`, saw `{REPO_DIR}` instead."
+    os.path.join(ROOT_DIR, "sparse_caption")
+), f"`ROOT_DIR` should contain the package `sparse_caption`, saw `{os.listdir(ROOT_DIR)}` instead."
 
 
 def configure_logging(

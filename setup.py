@@ -2,7 +2,7 @@ import os
 import pkg_resources
 from setuptools import setup
 
-CURR_DIR = os.path.dirname(__file__)
+CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def read_requirements_file(path):

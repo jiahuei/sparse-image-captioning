@@ -17,7 +17,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from .config import Config
-from .misc import csv_to_float_list
+from .misc import csv_to_float_list, ROOT_DIR
 from .optim import ALL_OPTIMIZERS, ALL_SCHEDULERS
 from .model_utils import map_to_cuda
 from ..data import get_dataset, KarpathyDataset
@@ -27,7 +27,6 @@ from ..coco_caption.eval import evaluate_caption_json
 from ..scst.scorers import CaptionScorer
 
 logger = logging.getLogger(__name__)
-CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 # noinspection PyAttributeOutsideInit
@@ -374,7 +373,7 @@ class TrainingModule:
             help="An id identifying this run/job."
         )
         parser.add_argument(
-            "--log_dir", type=str, default=CURR_DIR,
+            "--log_dir", type=str, default=ROOT_DIR,
             help="str: Logging / Saving directory."
         )
         parser.add_argument(

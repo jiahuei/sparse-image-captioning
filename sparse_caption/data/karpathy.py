@@ -25,7 +25,7 @@ class KarpathyDataset(ABC):
     """Captioning data and inputs."""
 
     ANNOTATION_FILE = RAW_JSON_FILE = ""
-    DEFAULT_ANNOT_DIR = os.path.join(misc_utils.BASE_DIR, "coco_caption", "annotations")
+    DEFAULT_ANNOT_DIR = os.path.join(misc_utils.PACKAGE_DIR, "coco_caption", "annotations")
 
     def __init__(self, config: Config) -> None:
         """Set the path for images, captions and vocabulary wrapper.
