@@ -15,4 +15,4 @@ jobs:
         with:
           options: "--line-length=120 --check --verbose --diff"
           src: "./sparse_caption ./tests ./scripts"
-          version: "21.10b0"
+          version: "21.11b0"

@@ -86,7 +86,7 @@ by [downloading from this link](https://visualstudio.microsoft.com/visual-cpp-bu
 
     # For dev, optional
     conda install pytest
-    conda install -c conda-forge black doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
+    conda install -c conda-forge black=21.11b0 flake8 doc8 myst-parser sphinx sphinx-autobuild sphinx_rtd_theme
     ```
 2. Follow [TL;DR](#tldr)
 
