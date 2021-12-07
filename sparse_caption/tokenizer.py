@@ -398,7 +398,7 @@ class SentencePieceUnigramTokenizer(Tokenizer):
         if not isinstance(config.tokenizer_train_files, str):
             raise ValueError(
                 f"{self.__class__.__name__}: "
-                f"`config.tokenizer_train_files` must be provided in absence of `sp_model_path`."
+                f"`config.tokenizer_train_files` must be provided in absence of `config.start_from`."
             )
         logger.info(f"{self.__class__.__name__}: Training on `{config.tokenizer_train_files}`.")
         os.makedirs(self.tokenizer_dir, exist_ok=True)
@@ -526,7 +526,16 @@ class CharacterTokenizer(SentencePieceUnigramTokenizer):
     Character tokenizer implemented using Sentence Piece.
     """
 
-    MODEL_TYPE = "character"
+    MODEL_TYPE = "char"
+
+    def encode(
+        self,
+        input_str: str,
+        add_bos_eos: bool = True,
+        max_seq_length: int = 60,
+        sampling: bool = False,
+    ) -> List[int]:
+        return super().encode(input_str, add_bos_eos, max_seq_length, sampling)
 
 
 @register_tokenizer("word")
