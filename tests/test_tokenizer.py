@@ -26,6 +26,7 @@ class TestTrain(unittest.TestCase):
         )
 
     def test_tokenizer(self):
+        self.assertTrue(len(TOKENIZER_REGISTRY) > 1, "There should be more than 1 tokenizer in `TOKENIZER_REGISTRY`.")
 
         for tok_name in TOKENIZER_REGISTRY:
             config = self.config
