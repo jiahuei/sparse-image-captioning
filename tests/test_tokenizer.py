@@ -32,7 +32,6 @@ class TestTrain(unittest.TestCase):
             config.log_dir = os.path.join(self.base_log_dir, tok_name)
             config.tokenizer = tok_name
             tokenizer_dir = os.path.join(config.log_dir, "tokenizer")
-            tokenizer_files = os.listdir(tokenizer_dir)
 
             # Prepare training data
             self.data = get_dataset(config.dataset)(config)
@@ -42,6 +41,7 @@ class TestTrain(unittest.TestCase):
             with self.subTest(f"Testing tokenizer: {tok_name}"):
                 tokenizer = get_tokenizer(config.tokenizer)(config)
                 self.assertIsInstance(tokenizer, Tokenizer, "Tokenizer object is not a subclass of `Tokenizer`.")
+                tokenizer_files = os.listdir(tokenizer_dir)
                 self.assertTrue(len(tokenizer_files) > 0, "Tokenizer directory should not be empty.")
                 self.assertTrue(
                     any(_.endswith(".model") for _ in tokenizer_files),
