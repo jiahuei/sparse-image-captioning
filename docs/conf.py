@@ -41,6 +41,7 @@ extensions = [
     "sphinx_rtd_theme",
 ]
 
+napoleon_google_docstring = True
 myst_heading_anchors = 2
 
 # Add any paths that contain templates here, relative to this directory.
